@@ -1,19 +1,20 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowLeft, Download, Save } from "lucide-react";
+import { ArrowLeft, Save } from "lucide-react";
+import { BlogZipButton } from "./BlogZipButton";
 import { PrimaryButton } from "./PrimaryButton";
-import { SecondaryAnchor } from "./SecondaryAnchor";
+import type { BlogItem } from "../types/BlogItem";
 
 type BlogEditorHeaderProps = {
-  blogId: string;
+  downloadBlog: BlogItem;
   isSaving: boolean;
   message: string;
   saveBlog: () => void;
 };
 
 export const BlogEditorHeader = ({
-  blogId,
+  downloadBlog,
   isSaving,
   message,
   saveBlog,
@@ -32,10 +33,7 @@ export const BlogEditorHeader = ({
           {message ? (
             <span className="text-sm font-medium text-black">{message}</span>
           ) : null}
-          <SecondaryAnchor href={`/api/blogs/${blogId}/download`}>
-            <Download size={16} aria-hidden="true" />
-            Zip
-          </SecondaryAnchor>
+          <BlogZipButton blog={downloadBlog} />
           <PrimaryButton disabled={isSaving} onClick={saveBlog} type="button">
             <Save size={16} aria-hidden="true" />
             {isSaving ? "Saving" : "Save"}

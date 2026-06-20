@@ -1,8 +1,13 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
+import { useMutation, useQuery } from "convex/react";
 import { isLiveWorkspaceEnabled } from "@/config/isLiveWorkspaceEnabled";
+import { castBlogId } from "@/server/convex/castBlogId";
+import { getBlogQuery } from "@/server/convex/references/getBlogQuery";
+import { updateBlogContentMutation } from "@/server/convex/references/updateBlogContentMutation";
 import { demoBlogs } from "../constants/demoBlogs";
+import { mapConvexBlog } from "../mappers/mapConvexBlog";
 import type { BlogEditorState } from "../types/BlogEditorState";
 
 type UseBlogEditorOptions = {
@@ -11,48 +16,40 @@ type UseBlogEditorOptions = {
 };
 
 export const useBlogEditor = ({ blogId, forceDemo }: UseBlogEditorOptions) => {
+  const isLive = !forceDemo && isLiveWorkspaceEnabled();
+  const convexBlogId = castBlogId(blogId);
   const fallbackBlog = useMemo(
     () => demoBlogs.find((blog) => blog.id === blogId) || demoBlogs[0],
     [blogId],
+  );
+  const liveBlog = useQuery(
+    getBlogQuery,
+    isLive ? { blogId: convexBlogId } : "skip",
+  );
+  const updateBlogContent = useMutation(updateBlogContentMutation);
+  const liveState = useMemo(
+    () => ({
+      excerpt: liveBlog?.excerpt || fallbackBlog?.excerpt || "",
+      mdx: liveBlog?.mdx || fallbackBlog?.mdx || "",
+      title: liveBlog?.title || fallbackBlog?.title || "",
+    }),
+    [fallbackBlog, liveBlog],
   );
   const [state, setState] = useState<BlogEditorState>({
     excerpt: fallbackBlog?.excerpt || "",
     mdx: fallbackBlog?.mdx || "",
     title: fallbackBlog?.title || "",
   });
+  const [isDirty, setIsDirty] = useState(false);
   const [message, setMessage] = useState("");
   const [isSaving, setIsSaving] = useState(false);
-
-  useEffect(() => {
-    if (forceDemo || !isLiveWorkspaceEnabled()) {
-      return;
-    }
-
-    let isMounted = true;
-
-    fetch(`/api/blogs/${blogId}`)
-      .then(async (response) => {
-        if (!response.ok) throw new Error("Demo mode");
-        return (await response.json()) as { blog?: BlogEditorState };
-      })
-      .then((data) => {
-        if (!isMounted || !data.blog) return;
-        setState({
-          excerpt: data.blog.excerpt,
-          mdx: data.blog.mdx,
-          title: data.blog.title,
-        });
-      })
-      .catch(() => undefined);
-
-    return () => {
-      isMounted = false;
-    };
-  }, [blogId, forceDemo]);
+  const editorState = isDirty ? state : liveState;
+  const blog = liveBlog ? mapConvexBlog(liveBlog) : fallbackBlog;
 
   const updateField = (field: keyof BlogEditorState, value: string) => {
+    setIsDirty(true);
     setState((current) => ({
-      ...current,
+      ...(isDirty ? current : editorState),
       [field]: value,
     }));
   };
@@ -62,25 +59,17 @@ export const useBlogEditor = ({ blogId, forceDemo }: UseBlogEditorOptions) => {
     setMessage("");
 
     try {
-      if (forceDemo || !isLiveWorkspaceEnabled()) {
+      if (!isLive) {
         setMessage("Saved in preview.");
         return;
       }
 
-      const response = await fetch(`/api/blogs/${blogId}`, {
-        body: JSON.stringify(state),
-        headers: {
-          "Content-Type": "application/json",
-        },
-        method: "PATCH",
+      await updateBlogContent({
+        blogId: convexBlogId,
+        excerpt: editorState.excerpt,
+        mdx: editorState.mdx,
+        title: editorState.title,
       });
-
-      if (!response.ok) {
-        const data = (await response.json().catch(() => ({}))) as {
-          error?: string;
-        };
-        throw new Error(data.error || "Could not save yet.");
-      }
 
       setMessage("Saved.");
     } catch (error) {
@@ -92,9 +81,10 @@ export const useBlogEditor = ({ blogId, forceDemo }: UseBlogEditorOptions) => {
 
   return {
     isSaving,
+    blog,
     message,
     saveBlog,
-    state,
+    state: editorState,
     updateField,
   };
 };

@@ -6,15 +6,14 @@ Users can download a generated blog as a zip that can be dropped into an MDX blo
 
 ## How It Works
 
-Downloading calls `GET /api/blogs/[blogId]/download`.
+Downloading from the app calls `POST /api/blogs/download` with the blog that is already loaded in the browser.
 
-The download route loads the blog from Convex, collects feature and inline image URLs, fetches any images it can, rewrites those image URLs to local `./images/...` paths, and builds a zip.
+The download route checks the signed-in user, collects feature and inline image URLs from the posted blog, fetches any images it can, rewrites those image URLs to local `./images/...` paths, and builds a zip.
 
 If an image cannot be fetched, the original remote URL stays in the MDX.
 
-The route first tries the normal Clerk-to-Convex token read. If Clerk cannot
-mint the Convex server token, the route uses the already authenticated Clerk
-user id and asks Convex for that blog only when `blog.userId` matches.
+The old `GET /api/blogs/[blogId]/download` route returns a simple message so
+stale links do not trigger a server-side Convex read.
 
 ## Zip Contents
 
@@ -25,8 +24,9 @@ user id and asks Convex for that blog only when `blog.userId` matches.
 
 ## Relevant Code
 
-- `src/app/api/blogs/[blogId]/download/route.ts`
-- `src/server/convex/fetchRouteBlog.ts`
+- `src/app/api/blogs/download/route.ts`
+- `src/features/workspace/components/BlogZipButton.tsx`
+- `src/features/workspace/utils/downloadBlogZip.ts`
 - `src/server/download/buildBlogZip.ts`
 - `src/server/download/collectBlogImageUrls.ts`
 - `src/server/download/downloadBlogImages.ts`
@@ -37,8 +37,8 @@ user id and asks Convex for that blog only when `blog.userId` matches.
 ## File Tree
 
 ```text
-src/app/api/blogs/[blogId]/download/
-src/server/convex/fetchRouteBlog.ts
+src/app/api/blogs/download/
+src/features/workspace/components/BlogZipButton.tsx
+src/features/workspace/utils/
 src/server/download/
-convex/blogs/getBlogForRoute.ts
 ```

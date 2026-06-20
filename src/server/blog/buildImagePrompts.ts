@@ -20,7 +20,6 @@ export const buildImagePrompts = ({
         scene:
           "a polished editorial hero scene that shows the main situation behind the keyword and feels tied to the product category",
       }),
-      role: "feature" as const,
     },
     {
       alt: `${keyword} simple infographic`,
@@ -31,7 +30,6 @@ export const buildImagePrompts = ({
         scene:
           "a clean infographic-style visual with simple shapes, arrows, and icons that explain the core idea without any readable words",
       }),
-      role: "supporting" as const,
     },
     {
       alt: `${keyword} step by step`,
@@ -42,7 +40,6 @@ export const buildImagePrompts = ({
         scene:
           "a realistic step-by-step work moment with a person organizing the next action in a beginner-friendly way",
       }),
-      role: "supporting" as const,
     },
     {
       alt: `${keyword} outcome`,
@@ -53,7 +50,6 @@ export const buildImagePrompts = ({
         scene:
           "the reader after making progress, with a calmer and clearer version of the same product-related situation",
       }),
-      role: "supporting" as const,
     },
   ];
 };

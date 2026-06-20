@@ -3,6 +3,7 @@
 import { BlogEditorFields } from "./BlogEditorFields";
 import { BlogEditorHeader } from "./BlogEditorHeader";
 import { BlogEditorPreview } from "./BlogEditorPreview";
+import { buildEditorDownloadBlog } from "../mappers/buildEditorDownloadBlog";
 import { useBlogEditor } from "../hooks/useBlogEditor";
 
 type BlogEditorViewProps = {
@@ -12,11 +13,16 @@ type BlogEditorViewProps = {
 
 export const BlogEditorView = ({ blogId, forceDemo }: BlogEditorViewProps) => {
   const editor = useBlogEditor({ blogId, forceDemo });
+  const downloadBlog = buildEditorDownloadBlog({
+    baseBlog: editor.blog,
+    blogId,
+    state: editor.state,
+  });
 
   return (
     <div className="min-h-screen bg-white text-black">
       <BlogEditorHeader
-        blogId={blogId}
+        downloadBlog={downloadBlog}
         isSaving={editor.isSaving}
         message={editor.message}
         saveBlog={editor.saveBlog}

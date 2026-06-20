@@ -1,5 +1,6 @@
 import Image from "next/image";
-import { Download, Edit3 } from "lucide-react";
+import { Edit3 } from "lucide-react";
+import { BlogZipButton } from "./BlogZipButton";
 import { SecondaryAnchor } from "./SecondaryAnchor";
 import { SectionTitle } from "./SectionTitle";
 import type { BlogItem } from "../types/BlogItem";
@@ -26,10 +27,7 @@ export const BlogPreviewPanel = ({ blog }: BlogPreviewPanelProps) => {
               <Edit3 size={16} aria-hidden="true" />
               Edit
             </SecondaryAnchor>
-            <SecondaryAnchor href={`/api/blogs/${blog.id}/download`}>
-              <Download size={16} aria-hidden="true" />
-              Zip
-            </SecondaryAnchor>
+            <BlogZipButton blog={blog} />
           </div>
         }
         title="Preview"
