@@ -4,7 +4,7 @@ import type { TopicItem } from "../types/TopicItem";
 
 type TopicListProps = {
   topics: TopicItem[];
-  writeBlog: (topicId: string) => void;
+  writeBlog: (topicId: string) => Promise<void> | void;
 };
 
 export const TopicList = ({ topics, writeBlog }: TopicListProps) => {

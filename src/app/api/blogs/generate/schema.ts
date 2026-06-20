@@ -1,5 +1,7 @@
 import { z } from "zod";
+import { storedProductSchema } from "./storedProductSchema";
 
 export const blogGenerateRequestSchema = z.object({
-  topicId: z.string().min(1, "Choose a topic first."),
+  keyword: z.string().trim().min(1, "Choose a topic first."),
+  product: storedProductSchema,
 });

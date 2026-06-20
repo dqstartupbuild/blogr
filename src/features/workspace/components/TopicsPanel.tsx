@@ -6,7 +6,7 @@ import type { TopicItem } from "../types/TopicItem";
 type TopicsPanelProps = {
   topics: TopicItem[];
   addTopic: (keyword: string) => void;
-  writeBlog: (topicId: string) => void;
+  writeBlog: (topicId: string) => Promise<void> | void;
 };
 
 export const TopicsPanel = ({

@@ -8,21 +8,23 @@ It researches the topic, chooses internal links from the scanned product site, f
 
 ## How It Works
 
-1. `POST /api/blogs/generate` checks the signed-in user.
-2. The topic is marked as `writing`.
-3. The route loads the topic and current product profile from Convex.
+1. The workspace marks the topic as `writing` through the signed-in Convex client.
+2. `POST /api/blogs/generate` checks the signed-in user.
+3. The workspace sends the selected keyword and current product profile to the route.
 4. Firecrawl Search collects source pages.
 5. Internal links are scored against the keyword.
 6. YouTube videos are found through the YouTube API when `YOUTUBE_API_KEY` exists, otherwise a YouTube search link is used.
 7. Replicate image generation creates a feature image and supporting images when `REPLICATE_API_TOKEN` exists.
 8. Replicate writer generation returns blog metadata and MDX.
-9. The blog is saved through `upsertGeneratedBlog`, and the topic is marked as written.
+9. The workspace saves the blog through `upsertGeneratedBlog`, which marks the topic as written.
 
-If anything fails after writing starts, the topic is marked as failed with a short error.
+If anything fails after writing starts, the workspace marks the topic as failed
+with a short error.
 
 ## Relevant Code
 
 - `src/app/api/blogs/generate/route.ts`
+- `src/features/workspace/hooks/useLiveWorkspace.ts`
 - `src/server/blog/generateBlogForKeyword.ts`
 - `src/server/blog/runBlogResearch.ts`
 - `src/server/blog/chooseInternalLinks.ts`

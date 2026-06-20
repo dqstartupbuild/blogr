@@ -7,11 +7,15 @@ import { getCurrentProductQuery } from "@/server/convex/references/getCurrentPro
 import { listBlogsQuery } from "@/server/convex/references/listBlogsQuery";
 import { listTopicsQuery } from "@/server/convex/references/listTopicsQuery";
 import { saveProductScanMutation } from "@/server/convex/references/saveProductScanMutation";
+import { updateTopicStatusMutation } from "@/server/convex/references/updateTopicStatusMutation";
+import { upsertGeneratedBlogMutation } from "@/server/convex/references/upsertGeneratedBlogMutation";
+import { castTopicId } from "@/server/convex/castTopicId";
 import { buildInitialProductScanProduct } from "../mappers/buildInitialProductScanProduct";
 import { mapConvexBlog } from "../mappers/mapConvexBlog";
 import { mapConvexProduct } from "../mappers/mapConvexProduct";
 import { mapConvexTopic } from "../mappers/mapConvexTopic";
 import { mapProductScanResult } from "../mappers/mapProductScanResult";
+import type { BlogGenerateResponse } from "../types/BlogGenerateResponse";
 import type { BlogItem } from "../types/BlogItem";
 import type { ProductProfile } from "../types/ProductProfile";
 import type { ProductScanResponse } from "../types/ProductScanResponse";
@@ -30,6 +34,8 @@ export const useLiveWorkspace = (initialMode: WorkspaceViewMode) => {
   const blogResults = useQuery(listBlogsQuery);
   const createTopic = useMutation(createTopicMutation);
   const saveProductScan = useMutation(saveProductScanMutation);
+  const updateTopicStatus = useMutation(updateTopicStatusMutation);
+  const upsertGeneratedBlog = useMutation(upsertGeneratedBlogMutation);
   const product = scannedProduct || mapConvexProduct(productResult);
   const topics = useMemo(
     () => (topicResults || []).map(mapConvexTopic),
@@ -97,19 +103,60 @@ export const useLiveWorkspace = (initialMode: WorkspaceViewMode) => {
   };
 
   const writeBlog = async (topicId: string) => {
-    const response = await fetch("/api/blogs/generate", {
-      body: JSON.stringify({ topicId }),
-      headers: {
-        "Content-Type": "application/json",
-      },
-      method: "POST",
-    });
+    const topic = topics.find((item) => item.id === topicId);
 
-    if (!response.ok) {
-      throw new Error("Could not write that blog yet.");
+    if (!topic) {
+      return;
     }
 
-    setMode("blogs");
+    const convexTopicId = castTopicId(topicId);
+
+    if (!productResult) {
+      await updateTopicStatus({
+        lastError: "Scan your product website first.",
+        status: "failed",
+        topicId: convexTopicId,
+      }).catch(() => undefined);
+      return;
+    }
+
+    await updateTopicStatus({ status: "writing", topicId: convexTopicId });
+
+    try {
+      const response = await fetch("/api/blogs/generate", {
+        body: JSON.stringify({
+          keyword: topic.keyword,
+          product: productResult,
+        }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+        method: "POST",
+      });
+      const data = (await response
+        .json()
+        .catch(() => ({}))) as BlogGenerateResponse;
+
+      if (!response.ok || !data.blog) {
+        throw new Error(data.error || "Could not write that blog yet.");
+      }
+
+      const blogId = await upsertGeneratedBlog({
+        ...data.blog,
+        topicId: convexTopicId,
+      });
+
+      setSelectedBlogId(blogId);
+      setMode("blogs");
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "Could not write that blog yet.";
+      await updateTopicStatus({
+        lastError: message,
+        status: "failed",
+        topicId: convexTopicId,
+      }).catch(() => undefined);
+    }
   };
 
   return {

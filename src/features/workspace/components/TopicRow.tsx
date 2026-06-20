@@ -5,7 +5,7 @@ import type { TopicItem } from "../types/TopicItem";
 
 type TopicRowProps = {
   topic: TopicItem;
-  writeBlog: (topicId: string) => void;
+  writeBlog: (topicId: string) => Promise<void> | void;
 };
 
 export const TopicRow = ({ topic, writeBlog }: TopicRowProps) => {
@@ -21,7 +21,9 @@ export const TopicRow = ({ topic, writeBlog }: TopicRowProps) => {
       </div>
       <SecondaryButton
         disabled={topic.status === "writing"}
-        onClick={() => writeBlog(topic.id)}
+        onClick={() => {
+          void Promise.resolve(writeBlog(topic.id)).catch(() => undefined);
+        }}
         type="button"
       >
         <Sparkles size={16} aria-hidden="true" />
