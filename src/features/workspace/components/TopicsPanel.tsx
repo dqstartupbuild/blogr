@@ -15,7 +15,7 @@ export const TopicsPanel = ({
   writeBlog,
 }: TopicsPanelProps) => {
   return (
-    <section className="rounded-lg border border-[#ded8ca] bg-[#fffdf8] p-4 shadow-sm">
+    <section className="rounded-lg border border-black bg-white p-4">
       <SectionTitle title="Topics" />
       <TopicCreator addTopic={addTopic} />
       <TopicList topics={topics} writeBlog={writeBlog} />

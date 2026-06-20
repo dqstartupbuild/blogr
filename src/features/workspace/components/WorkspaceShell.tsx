@@ -17,7 +17,7 @@ export const WorkspaceShell = ({
   setMode,
 }: WorkspaceShellProps) => {
   return (
-    <div className="min-h-screen bg-[#f7f5ef] text-[#1d2320]">
+    <div className="min-h-screen bg-white text-black">
       <WorkspaceHeader />
       <div className="mx-auto flex w-full max-w-7xl flex-col gap-5 px-4 py-5 sm:px-6 lg:px-8">
         <WorkspaceTabs mode={mode} setMode={setMode} />

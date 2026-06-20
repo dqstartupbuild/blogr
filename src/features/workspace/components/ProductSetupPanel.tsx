@@ -20,7 +20,7 @@ export const ProductSetupPanel = ({
   const [niche, setNiche] = useState(product.niche);
 
   return (
-    <section className="rounded-lg border border-[#ded8ca] bg-[#fffdf8] p-4 shadow-sm">
+    <section className="rounded-lg border border-black bg-white p-4">
       <SectionTitle title="Product" />
       <form
         className="mt-4 grid gap-3 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto]"
@@ -50,17 +50,18 @@ export const ProductSetupPanel = ({
           </PrimaryButton>
         </div>
       </form>
-      <div className="mt-4 grid gap-3 text-sm text-[#4d5a53] lg:grid-cols-[minmax(0,1fr)_220px]">
+      <div className="mt-4 grid gap-3 text-sm text-black lg:grid-cols-[minmax(0,1fr)_220px]">
         <p>{product.description}</p>
         <div className="flex flex-wrap gap-2">
           {product.colors.map((color) => (
             <span
               aria-label={`Brand color ${color}`}
-              className="h-8 w-8 rounded-md border border-black/10"
+              className="inline-flex h-8 min-w-20 items-center justify-center rounded-md border border-black bg-white px-2 text-xs font-semibold text-black"
               key={color}
-              style={{ backgroundColor: color }}
               title={color}
-            />
+            >
+              {color}
+            </span>
           ))}
         </div>
       </div>

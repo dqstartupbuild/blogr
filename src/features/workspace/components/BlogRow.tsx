@@ -15,23 +15,23 @@ export const BlogRow = ({
 }: BlogRowProps) => {
   return (
     <button
-      className={`grid w-full gap-3 rounded-md border bg-white p-4 text-left transition hover:border-[#1d2320] ${
-        isSelected ? "border-[#1d2320]" : "border-[#e6e0d4]"
+      className={`grid w-full gap-3 rounded-md border bg-white p-4 text-left text-black transition hover:bg-black hover:text-white ${
+        isSelected ? "border-black" : "border-black"
       }`}
       onClick={() => setSelectedBlogId(blog.id)}
       type="button"
     >
       <div className="flex items-start justify-between gap-3">
         <FileText
-          className="mt-1 shrink-0 text-[#2563eb]"
+          className="mt-1 shrink-0"
           size={18}
           aria-hidden="true"
         />
         <StatusBadge status={blog.status} />
       </div>
       <div>
-        <p className="text-sm font-semibold text-[#1d2320]">{blog.title}</p>
-        <p className="mt-2 line-clamp-2 text-sm text-[#66736b]">
+        <p className="text-sm font-semibold">{blog.title}</p>
+        <p className="mt-2 line-clamp-2 text-sm">
           {blog.excerpt}
         </p>
       </div>

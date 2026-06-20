@@ -49,3 +49,4 @@ This will replace the local `convex/_generated` shim with the fully typed genera
 - [Zip export](docs/zip-export.md)
 - [Auth](docs/auth.md)
 - [Convex data](docs/convex-data.md)
+- [Theme](docs/theme.md)

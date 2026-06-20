@@ -14,7 +14,7 @@ export const BlogsPanel = ({
   setSelectedBlogId,
 }: BlogsPanelProps) => {
   return (
-    <section className="rounded-lg border border-[#ded8ca] bg-[#fffdf8] p-4 shadow-sm">
+    <section className="rounded-lg border border-black bg-white p-4">
       <SectionTitle title="Blogs" />
       <BlogList
         blogs={blogs}

@@ -11,14 +11,14 @@ type BlogPreviewPanelProps = {
 export const BlogPreviewPanel = ({ blog }: BlogPreviewPanelProps) => {
   if (!blog) {
     return (
-      <aside className="rounded-lg border border-[#ded8ca] bg-[#fffdf8] p-4 shadow-sm">
+      <aside className="rounded-lg border border-black bg-white p-4">
         <SectionTitle title="Preview" />
       </aside>
     );
   }
 
   return (
-    <aside className="rounded-lg border border-[#ded8ca] bg-[#fffdf8] p-4 shadow-sm xl:sticky xl:top-5 xl:self-start">
+    <aside className="rounded-lg border border-black bg-white p-4 xl:sticky xl:top-5 xl:self-start">
       <SectionTitle
         action={
           <div className="flex gap-2">
@@ -39,11 +39,11 @@ export const BlogPreviewPanel = ({ blog }: BlogPreviewPanelProps) => {
           <Image alt="" fill src={blog.featureImageUrl} className="object-cover" />
         </div>
       ) : null}
-      <h3 className="mt-4 text-xl font-semibold leading-7 text-[#1d2320]">
+      <h3 className="mt-4 text-xl font-semibold leading-7 text-black">
         {blog.title}
       </h3>
-      <p className="mt-2 text-sm leading-6 text-[#66736b]">{blog.excerpt}</p>
-      <div className="mt-4 max-h-[420px] overflow-auto rounded-md border border-[#e6e0d4] bg-white p-4 font-mono text-xs leading-5 text-[#324039]">
+      <p className="mt-2 text-sm leading-6 text-black">{blog.excerpt}</p>
+      <div className="mt-4 max-h-[420px] overflow-auto rounded-md border border-black bg-white p-4 font-mono text-xs leading-5 text-black">
         <pre className="whitespace-pre-wrap">{blog.mdx}</pre>
       </div>
     </aside>

@@ -7,7 +7,7 @@ export const demoProduct: ProductProfile = {
   audience: "small teams who want to plan work without getting buried",
   description:
     "ClearPath helps small teams turn messy ideas into a clean weekly plan. It keeps the next step obvious, gives every task an owner, and makes progress easy to spot.",
-  colors: ["#2563EB", "#14B8A6", "#F97316"],
+  colors: ["#000000", "#ffffff"],
   siteLinks: [
     {
       title: "Weekly planning",

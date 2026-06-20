@@ -30,7 +30,7 @@ JSON shape:
   "niche": "short niche phrase",
   "audience": "who this is for",
   "competitors": "comma-separated competitors if clearly mentioned",
-  "colors": ["#2563EB"]
+  "colors": ["#000000"]
 }
 
 Website:

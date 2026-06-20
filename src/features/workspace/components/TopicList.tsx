@@ -13,7 +13,7 @@ export const TopicList = ({ topics, writeBlog }: TopicListProps) => {
   }
 
   return (
-    <div className="mt-4 divide-y divide-[#e6e0d4] overflow-hidden rounded-md border border-[#e6e0d4]">
+    <div className="mt-4 divide-y divide-black overflow-hidden rounded-md border border-black">
       {topics.map((topic) => (
         <TopicRow key={topic.id} topic={topic} writeBlog={writeBlog} />
       ))}

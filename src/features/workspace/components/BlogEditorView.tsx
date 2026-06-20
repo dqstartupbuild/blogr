@@ -13,7 +13,7 @@ export const BlogEditorView = ({ blogId }: BlogEditorViewProps) => {
   const editor = useBlogEditor(blogId);
 
   return (
-    <div className="min-h-screen bg-[#f7f5ef] text-[#1d2320]">
+    <div className="min-h-screen bg-white text-black">
       <BlogEditorHeader
         blogId={blogId}
         isSaving={editor.isSaving}

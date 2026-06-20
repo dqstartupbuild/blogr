@@ -12,7 +12,7 @@ export const TopicRow = ({ topic, writeBlog }: TopicRowProps) => {
   return (
     <article className="grid gap-3 bg-white p-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
       <div className="min-w-0">
-        <p className="truncate text-sm font-semibold text-[#1d2320]">
+        <p className="truncate text-sm font-semibold text-black">
           {topic.keyword}
         </p>
         <div className="mt-2">

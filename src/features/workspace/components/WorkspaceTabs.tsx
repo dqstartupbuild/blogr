@@ -15,8 +15,8 @@ export const WorkspaceTabs = ({ mode, setMode }: WorkspaceTabsProps) => {
       <Link
         className={`inline-flex h-10 items-center gap-2 rounded-md border px-4 text-sm font-medium ${
           mode === "topics"
-            ? "border-[#1d2320] bg-[#1d2320] text-white"
-            : "border-[#ded8ca] bg-[#fffdf8] text-[#324039]"
+            ? "border-black bg-black text-white"
+            : "border-black bg-white text-black"
         }`}
         href="/"
         onClick={() => setMode("topics")}
@@ -27,8 +27,8 @@ export const WorkspaceTabs = ({ mode, setMode }: WorkspaceTabsProps) => {
       <Link
         className={`inline-flex h-10 items-center gap-2 rounded-md border px-4 text-sm font-medium ${
           mode === "blogs"
-            ? "border-[#1d2320] bg-[#1d2320] text-white"
-            : "border-[#ded8ca] bg-[#fffdf8] text-[#324039]"
+            ? "border-black bg-black text-white"
+            : "border-black bg-white text-black"
         }`}
         href="/blogs"
         onClick={() => setMode("blogs")}
