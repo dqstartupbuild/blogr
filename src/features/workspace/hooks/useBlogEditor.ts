@@ -5,7 +5,12 @@ import { isLiveWorkspaceEnabled } from "@/config/isLiveWorkspaceEnabled";
 import { demoBlogs } from "../constants/demoBlogs";
 import type { BlogEditorState } from "../types/BlogEditorState";
 
-export const useBlogEditor = (blogId: string) => {
+type UseBlogEditorOptions = {
+  blogId: string;
+  forceDemo: boolean;
+};
+
+export const useBlogEditor = ({ blogId, forceDemo }: UseBlogEditorOptions) => {
   const fallbackBlog = useMemo(
     () => demoBlogs.find((blog) => blog.id === blogId) || demoBlogs[0],
     [blogId],
@@ -19,7 +24,7 @@ export const useBlogEditor = (blogId: string) => {
   const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
-    if (!isLiveWorkspaceEnabled()) {
+    if (forceDemo || !isLiveWorkspaceEnabled()) {
       return;
     }
 
@@ -43,7 +48,7 @@ export const useBlogEditor = (blogId: string) => {
     return () => {
       isMounted = false;
     };
-  }, [blogId]);
+  }, [blogId, forceDemo]);
 
   const updateField = (field: keyof BlogEditorState, value: string) => {
     setState((current) => ({
@@ -57,7 +62,7 @@ export const useBlogEditor = (blogId: string) => {
     setMessage("");
 
     try {
-      if (!isLiveWorkspaceEnabled()) {
+      if (forceDemo || !isLiveWorkspaceEnabled()) {
         setMessage("Saved in preview.");
         return;
       }

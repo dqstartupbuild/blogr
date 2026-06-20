@@ -1,3 +1,4 @@
+import { isAuthDisabledForPreview } from "@/server/auth/isAuthDisabledForPreview";
 import { BlogEditorView } from "./BlogEditorView";
 
 type BlogEditorPageProps = {
@@ -5,5 +6,10 @@ type BlogEditorPageProps = {
 };
 
 export const BlogEditorPage = ({ blogId }: BlogEditorPageProps) => {
-  return <BlogEditorView blogId={blogId} />;
+  return (
+    <BlogEditorView
+      blogId={blogId}
+      forceDemo={isAuthDisabledForPreview()}
+    />
+  );
 };

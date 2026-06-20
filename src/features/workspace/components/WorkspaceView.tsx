@@ -6,11 +6,15 @@ import { LiveWorkspaceView } from "./LiveWorkspaceView";
 import type { WorkspaceViewMode } from "../types/WorkspaceViewMode";
 
 type WorkspaceViewProps = {
+  forceDemo: boolean;
   initialMode: WorkspaceViewMode;
 };
 
-export const WorkspaceView = ({ initialMode }: WorkspaceViewProps) => {
-  if (isLiveWorkspaceEnabled()) {
+export const WorkspaceView = ({
+  forceDemo,
+  initialMode,
+}: WorkspaceViewProps) => {
+  if (!forceDemo && isLiveWorkspaceEnabled()) {
     return <LiveWorkspaceView initialMode={initialMode} />;
   }
 

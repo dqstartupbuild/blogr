@@ -8,7 +8,7 @@ The first screen is the usable workspace, not a landing page. It stays simple: p
 
 ## How It Works
 
-Without Clerk and Convex keys, `DemoWorkspaceView` shows local demo data so the layout can be checked immediately.
+Without Clerk and Convex keys, `DemoWorkspaceView` shows local demo data so the layout can be checked immediately. `AUTH_DISABLED_FOR_PREVIEW=true` also forces demo mode so preview branches can be opened without waiting on Clerk or Convex auth.
 
 With Clerk and Convex keys, `LiveWorkspaceView` waits for Clerk and Convex auth before touching Convex queries. Signed-out users see a simple sign-in state. Users who are signed in to Clerk but not connected to Convex see a simple connection message instead of a page crash. Signed-in users with a valid Convex token get Convex queries and mutations:
 
@@ -22,6 +22,7 @@ The user can scan a product site, save topics, start writing, browse generated b
 ## Relevant Code
 
 - `src/features/workspace/components/WorkspaceView.tsx`
+- `src/features/workspace/components/WorkspacePage.tsx`
 - `src/features/workspace/components/DemoWorkspaceView.tsx`
 - `src/features/workspace/components/LiveWorkspaceView.tsx`
 - `src/features/workspace/components/LiveWorkspaceContent.tsx`

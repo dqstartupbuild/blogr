@@ -7,10 +7,11 @@ import { useBlogEditor } from "../hooks/useBlogEditor";
 
 type BlogEditorViewProps = {
   blogId: string;
+  forceDemo: boolean;
 };
 
-export const BlogEditorView = ({ blogId }: BlogEditorViewProps) => {
-  const editor = useBlogEditor(blogId);
+export const BlogEditorView = ({ blogId, forceDemo }: BlogEditorViewProps) => {
+  const editor = useBlogEditor({ blogId, forceDemo });
 
   return (
     <div className="min-h-screen bg-white text-black">
