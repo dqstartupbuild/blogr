@@ -1,4 +1,5 @@
 import { PenLine } from "lucide-react";
+import { AuthActions } from "@/features/auth/components/AuthActions";
 
 export const WorkspaceHeader = () => {
   return (
@@ -13,6 +14,7 @@ export const WorkspaceHeader = () => {
             <p className="text-sm text-[#66736b]">Long posts, clean exports.</p>
           </div>
         </div>
+        <AuthActions />
       </div>
     </header>
   );
