@@ -1,18 +1,18 @@
 import { fetchQuery } from "convex/nextjs";
 import { getConvexAuthToken } from "../auth/getConvexAuthToken";
-import { getBlogForRouteQuery } from "../convex/references/getBlogForRouteQuery";
-import { getBlogQuery } from "../convex/references/getBlogQuery";
+import { getBlogForRouteQuery } from "./references/getBlogForRouteQuery";
+import { getBlogQuery } from "./references/getBlogQuery";
 import type { Id } from "../../../convex/_generated/dataModel";
 
-type FetchDownloadBlogOptions = {
+type FetchRouteBlogOptions = {
   blogId: Id<"blogs">;
   userId: string;
 };
 
-export const fetchDownloadBlog = async ({
+export const fetchRouteBlog = async ({
   blogId,
   userId,
-}: FetchDownloadBlogOptions) => {
+}: FetchRouteBlogOptions) => {
   try {
     const token = await getConvexAuthToken();
 

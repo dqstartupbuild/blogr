@@ -26,7 +26,7 @@ user id and asks Convex for that blog only when `blog.userId` matches.
 ## Relevant Code
 
 - `src/app/api/blogs/[blogId]/download/route.ts`
-- `src/server/download/fetchDownloadBlog.ts`
+- `src/server/convex/fetchRouteBlog.ts`
 - `src/server/download/buildBlogZip.ts`
 - `src/server/download/collectBlogImageUrls.ts`
 - `src/server/download/downloadBlogImages.ts`
@@ -38,6 +38,7 @@ user id and asks Convex for that blog only when `blog.userId` matches.
 
 ```text
 src/app/api/blogs/[blogId]/download/
+src/server/convex/fetchRouteBlog.ts
 src/server/download/
 convex/blogs/getBlogForRoute.ts
 ```

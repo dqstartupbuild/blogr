@@ -12,6 +12,11 @@ The editor tries to load the live blog through `GET /api/blogs/[blogId]`. If liv
 
 Saving calls `PATCH /api/blogs/[blogId]`, which updates the Convex blog through `updateBlogContent`.
 
+The load and save routes first try the normal Clerk-to-Convex token path. If
+that token is not available in a preview deployment, the route uses the Clerk
+user id it already authenticated and asks Convex to load or update only a blog
+owned by that user.
+
 ## Relevant Code
 
 - `src/app/blogs/[blogId]/page.tsx`
@@ -20,7 +25,10 @@ Saving calls `PATCH /api/blogs/[blogId]`, which updates the Convex blog through 
 - `src/features/workspace/components/BlogMdxTextarea.tsx`
 - `src/features/workspace/hooks/useBlogEditor.ts`
 - `src/app/api/blogs/[blogId]/route.ts`
+- `src/server/convex/fetchRouteBlog.ts`
+- `src/server/convex/updateRouteBlogContent.ts`
 - `convex/blogs/updateBlogContent.ts`
+- `convex/blogs/updateBlogContentForRoute.ts`
 
 ## Use Cases
 

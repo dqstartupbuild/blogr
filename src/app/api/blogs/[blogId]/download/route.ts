@@ -2,9 +2,9 @@ import { NextResponse } from "next/server";
 import { mapConvexBlog } from "@/features/workspace/mappers/mapConvexBlog";
 import { requireRouteUserId } from "@/server/auth/requireRouteUserId";
 import { castBlogId } from "@/server/convex/castBlogId";
+import { fetchRouteBlog } from "@/server/convex/fetchRouteBlog";
 import { hasConvexUrl } from "@/server/convex/hasConvexUrl";
 import { buildBlogZip } from "@/server/download/buildBlogZip";
-import { fetchDownloadBlog } from "@/server/download/fetchDownloadBlog";
 import { safeFilename } from "@/server/download/safeFilename";
 import { getErrorStatus } from "@/server/http/getErrorStatus";
 import { getPublicErrorMessage } from "@/server/http/getPublicErrorMessage";
@@ -23,7 +23,7 @@ export async function GET(_request: Request, context: BlogDownloadRouteContext) 
 
     const { blogId: rawBlogId } = await context.params;
     const blogId = castBlogId(rawBlogId);
-    const blog = await fetchDownloadBlog({ blogId, userId });
+    const blog = await fetchRouteBlog({ blogId, userId });
 
     if (!blog) {
       return NextResponse.json({ error: "Blog not found." }, { status: 404 });

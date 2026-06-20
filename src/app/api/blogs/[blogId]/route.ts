@@ -1,11 +1,9 @@
-import { fetchMutation, fetchQuery } from "convex/nextjs";
 import { NextResponse } from "next/server";
-import { getConvexAuthToken } from "@/server/auth/getConvexAuthToken";
 import { requireRouteUserId } from "@/server/auth/requireRouteUserId";
 import { castBlogId } from "@/server/convex/castBlogId";
-import { getBlogQuery } from "@/server/convex/references/getBlogQuery";
-import { updateBlogContentMutation } from "@/server/convex/references/updateBlogContentMutation";
+import { fetchRouteBlog } from "@/server/convex/fetchRouteBlog";
 import { hasConvexUrl } from "@/server/convex/hasConvexUrl";
+import { updateRouteBlogContent } from "@/server/convex/updateRouteBlogContent";
 import { getErrorStatus } from "@/server/http/getErrorStatus";
 import { getPublicErrorMessage } from "@/server/http/getPublicErrorMessage";
 import { blogUpdateRequestSchema } from "./schema";
@@ -16,16 +14,15 @@ type BlogRouteContext = {
 
 export async function GET(_request: Request, context: BlogRouteContext) {
   try {
-    await requireRouteUserId();
+    const userId = await requireRouteUserId();
 
     if (!hasConvexUrl()) {
       throw new Error("Connect Convex before loading live blogs.");
     }
 
-    const token = await getConvexAuthToken();
     const { blogId: rawBlogId } = await context.params;
     const blogId = castBlogId(rawBlogId);
-    const blog = await fetchQuery(getBlogQuery, { blogId }, { token });
+    const blog = await fetchRouteBlog({ blogId, userId });
 
     if (!blog) {
       return NextResponse.json({ error: "Blog not found." }, { status: 404 });
@@ -42,28 +39,24 @@ export async function GET(_request: Request, context: BlogRouteContext) {
 
 export async function PATCH(request: Request, context: BlogRouteContext) {
   try {
-    await requireRouteUserId();
+    const userId = await requireRouteUserId();
 
     if (!hasConvexUrl()) {
       throw new Error("Connect Convex before saving live blogs.");
     }
 
-    const token = await getConvexAuthToken();
     const { blogId: rawBlogId } = await context.params;
     const blogId = castBlogId(rawBlogId);
     const body = await request.json();
     const input = blogUpdateRequestSchema.parse(body);
 
-    await fetchMutation(
-      updateBlogContentMutation,
-      {
-        blogId,
-        excerpt: input.excerpt,
-        mdx: input.mdx,
-        title: input.title,
-      },
-      { token },
-    );
+    await updateRouteBlogContent({
+      blogId,
+      excerpt: input.excerpt,
+      mdx: input.mdx,
+      title: input.title,
+      userId,
+    });
 
     return NextResponse.json({ saved: true });
   } catch (error) {
