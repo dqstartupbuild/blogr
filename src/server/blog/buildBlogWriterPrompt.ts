@@ -21,13 +21,13 @@ export const buildBlogWriterPrompt = ({
   youtubeVideos,
 }: BuildBlogWriterPromptOptions) => {
   return `
-Return only JSON with this shape:
-{
-  "title": "human blog title",
-  "slug": "url-safe-slug",
-  "excerpt": "short plain-English summary",
-  "mdx": "full MDX blog post"
-}
+Return exactly this XML shape with no markdown fence and no extra text:
+<title>human blog title</title>
+<slug>url-safe-slug</slug>
+<excerpt>short plain-English summary</excerpt>
+<mdx>
+full MDX blog post
+</mdx>
 
 Write a longform blog post for the keyword: "${keyword}".
 
@@ -37,6 +37,9 @@ Voice:
 - Avoid jargon unless the topic truly needs it.
 - Explain every idea like the reader is smart but busy.
 - The post should feel complete, not thin.
+- Do not write like a textbook, brochure, or AI assistant.
+- Make it clear enough for a beginner.
+- Use technical detail only when the keyword truly needs technical detail.
 
 Product context:
 ${JSON.stringify(product, null, 2)}
@@ -62,6 +65,8 @@ MDX rules:
 - Add image markdown after the intro and throughout the post when image URLs are available.
 - Cite sources as normal markdown links inside relevant sections.
 - Include 3 to 5 internal links naturally, not as a list unless it truly fits.
+- Write one complete MDX file, not an outline and not separate files.
+- Aim for 1,800 to 3,000 words when the topic can support it.
 - Finish with a simple next step related to the product.
 `.trim();
 };
