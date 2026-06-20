@@ -1,7 +1,9 @@
 "use client";
 
-import { WorkspaceContent } from "./WorkspaceContent";
-import { useLiveWorkspace } from "../hooks/useLiveWorkspace";
+import { useAuth } from "@clerk/nextjs";
+import { LiveWorkspaceContent } from "./LiveWorkspaceContent";
+import { LiveWorkspaceLoadingView } from "./LiveWorkspaceLoadingView";
+import { SignedOutWorkspaceView } from "./SignedOutWorkspaceView";
 import type { WorkspaceViewMode } from "../types/WorkspaceViewMode";
 
 type LiveWorkspaceViewProps = {
@@ -9,7 +11,15 @@ type LiveWorkspaceViewProps = {
 };
 
 export const LiveWorkspaceView = ({ initialMode }: LiveWorkspaceViewProps) => {
-  const workspace = useLiveWorkspace(initialMode);
+  const { isLoaded, isSignedIn } = useAuth();
 
-  return <WorkspaceContent {...workspace} />;
+  if (!isLoaded) {
+    return <LiveWorkspaceLoadingView initialMode={initialMode} />;
+  }
+
+  if (!isSignedIn) {
+    return <SignedOutWorkspaceView initialMode={initialMode} />;
+  }
+
+  return <LiveWorkspaceContent initialMode={initialMode} />;
 };
