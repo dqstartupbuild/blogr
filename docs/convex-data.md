@@ -16,6 +16,8 @@ The schema lives in `convex/schema.ts`.
 
 Convex functions call `requireUserId`, which checks Convex auth identity before reading or writing user data.
 
+When `AUTH_DISABLED_FOR_PREVIEW=true` is set on the Convex deployment, signed-out preview traffic uses `preview-user`. This keeps branch previews usable without weakening normal Clerk-backed auth.
+
 ## Local Generated API Shim
 
 This repo includes a small `convex/_generated` shim because no Convex deployment was configured during setup.
@@ -31,6 +33,7 @@ Convex will replace the shim with the normal generated files.
 ## Relevant Code
 
 - `convex/schema.ts`
+- `convex/identity/getPreviewUserId.ts`
 - `convex/identity/requireUserId.ts`
 - `convex/products/*`
 - `convex/topics/*`

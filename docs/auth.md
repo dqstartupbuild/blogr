@@ -12,6 +12,8 @@ The workspace can still be viewed without keys because it falls back to demo dat
 
 Every API route also calls `requireRouteUserId`, so route protection does not depend only on proxy behavior.
 
+Preview deployments can be opened without signing in when `AUTH_DISABLED_FOR_PREVIEW=true` is set in both Vercel and Convex. Vercel lets API routes use `preview-user`; Convex lets client queries and mutations use the same preview user when no Clerk identity is present.
+
 The app has Clerk sign-in and sign-up routes:
 
 - `/sign-in`
@@ -26,6 +28,8 @@ The app has Clerk sign-in and sign-up routes:
 - `src/features/auth/components/AuthActions.tsx`
 - `src/server/auth/requireRouteUserId.ts`
 - `src/server/auth/getConvexAuthToken.ts`
+- `convex/identity/getPreviewUserId.ts`
+- `convex/identity/requireUserId.ts`
 
 ## Source References
 

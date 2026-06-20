@@ -12,6 +12,7 @@ import type * as blogs_getBlog from "../blogs/getBlog.js";
 import type * as blogs_listBlogs from "../blogs/listBlogs.js";
 import type * as blogs_updateBlogContent from "../blogs/updateBlogContent.js";
 import type * as blogs_upsertGeneratedBlog from "../blogs/upsertGeneratedBlog.js";
+import type * as identity_getPreviewUserId from "../identity/getPreviewUserId.js";
 import type * as identity_requireUserId from "../identity/requireUserId.js";
 import type * as products_getCurrentProduct from "../products/getCurrentProduct.js";
 import type * as products_saveProductScan from "../products/saveProductScan.js";
@@ -32,6 +33,7 @@ declare const fullApi: ApiFromModules<{
   "blogs/listBlogs": typeof blogs_listBlogs;
   "blogs/updateBlogContent": typeof blogs_updateBlogContent;
   "blogs/upsertGeneratedBlog": typeof blogs_upsertGeneratedBlog;
+  "identity/getPreviewUserId": typeof identity_getPreviewUserId;
   "identity/requireUserId": typeof identity_requireUserId;
   "products/getCurrentProduct": typeof products_getCurrentProduct;
   "products/saveProductScan": typeof products_saveProductScan;
