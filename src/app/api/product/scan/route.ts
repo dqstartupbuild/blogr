@@ -1,12 +1,7 @@
-import { fetchMutation } from "convex/nextjs";
 import { NextResponse } from "next/server";
-import { getConvexAuthToken } from "@/server/auth/getConvexAuthToken";
 import { requireRouteUserId } from "@/server/auth/requireRouteUserId";
-import { hasConvexUrl } from "@/server/convex/hasConvexUrl";
-import { saveProductScanMutation } from "@/server/convex/references/saveProductScanMutation";
 import { getErrorStatus } from "@/server/http/getErrorStatus";
 import { getPublicErrorMessage } from "@/server/http/getPublicErrorMessage";
-import { createInitialProductScan } from "@/server/product/createInitialProductScan";
 import { scanProductWebsite } from "@/server/product/scanProductWebsite";
 import { productScanRequestSchema } from "./schema";
 
@@ -18,27 +13,13 @@ export async function POST(request: Request) {
 
     const body = await request.json();
     const input = productScanRequestSchema.parse(body);
-    const token = hasConvexUrl() ? await getConvexAuthToken() : undefined;
-
-    if (hasConvexUrl()) {
-      const initialProduct = createInitialProductScan({
-        nicheHint: input.niche,
-        websiteUrl: input.websiteUrl,
-      });
-
-      await fetchMutation(saveProductScanMutation, initialProduct, { token });
-    }
 
     const product = await scanProductWebsite({
       nicheHint: input.niche,
       websiteUrl: input.websiteUrl,
     });
 
-    if (hasConvexUrl()) {
-      await fetchMutation(saveProductScanMutation, product, { token });
-    }
-
-    return NextResponse.json({ product, saved: hasConvexUrl() });
+    return NextResponse.json({ product });
   } catch (error) {
     return NextResponse.json(
       { error: getPublicErrorMessage(error) },

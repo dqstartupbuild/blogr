@@ -6,6 +6,8 @@ import { createTopicMutation } from "@/server/convex/references/createTopicMutat
 import { getCurrentProductQuery } from "@/server/convex/references/getCurrentProductQuery";
 import { listBlogsQuery } from "@/server/convex/references/listBlogsQuery";
 import { listTopicsQuery } from "@/server/convex/references/listTopicsQuery";
+import { saveProductScanMutation } from "@/server/convex/references/saveProductScanMutation";
+import { buildInitialProductScanProduct } from "../mappers/buildInitialProductScanProduct";
 import { mapConvexBlog } from "../mappers/mapConvexBlog";
 import { mapConvexProduct } from "../mappers/mapConvexProduct";
 import { mapConvexTopic } from "../mappers/mapConvexTopic";
@@ -27,6 +29,7 @@ export const useLiveWorkspace = (initialMode: WorkspaceViewMode) => {
   const topicResults = useQuery(listTopicsQuery);
   const blogResults = useQuery(listBlogsQuery);
   const createTopic = useMutation(createTopicMutation);
+  const saveProductScan = useMutation(saveProductScanMutation);
   const product = scannedProduct || mapConvexProduct(productResult);
   const topics = useMemo(
     () => (topicResults || []).map(mapConvexTopic),
@@ -45,8 +48,19 @@ export const useLiveWorkspace = (initialMode: WorkspaceViewMode) => {
   const scanProduct = async (websiteUrl: string, niche: string) => {
     setIsScanningProduct(true);
     setProductScanMessage("Scanning your site.");
+    let savedInitialProduct = false;
 
     try {
+      const initialProduct = buildInitialProductScanProduct({
+        niche,
+        websiteUrl,
+      });
+
+      await saveProductScan(initialProduct);
+      savedInitialProduct = true;
+      setScannedProduct(mapProductScanResult(initialProduct));
+      setProductScanMessage("Saved your site. Scanning for details.");
+
       const response = await fetch("/api/product/scan", {
         body: JSON.stringify({ niche, websiteUrl }),
         headers: {
@@ -61,17 +75,17 @@ export const useLiveWorkspace = (initialMode: WorkspaceViewMode) => {
       }
 
       if (data.product) {
+        await saveProductScan(data.product);
         setScannedProduct(mapProductScanResult(data.product));
       }
 
-      setProductScanMessage(
-        data.saved
-          ? "Saved your product details."
-          : "Scanned your site, but it was not saved yet.",
-      );
+      setProductScanMessage("Saved your product details.");
     } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "Could not scan that site yet.";
+
       setProductScanMessage(
-        error instanceof Error ? error.message : "Could not scan that site yet.",
+        savedInitialProduct ? `${message} We still saved your site.` : message,
       );
     } finally {
       setIsScanningProduct(false);

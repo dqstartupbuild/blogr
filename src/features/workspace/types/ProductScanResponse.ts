@@ -1,7 +1,6 @@
-import type { ProductProfile } from "./ProductProfile";
+import type { ProductScanProduct } from "./ProductScanProduct";
 
 export type ProductScanResponse = {
   error?: string;
-  product?: ProductProfile;
-  saved?: boolean;
+  product?: ProductScanProduct;
 };
