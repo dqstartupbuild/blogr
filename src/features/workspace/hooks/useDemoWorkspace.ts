@@ -12,6 +12,8 @@ import type { WorkspaceViewMode } from "../types/WorkspaceViewMode";
 export const useDemoWorkspace = (initialMode: WorkspaceViewMode) => {
   const [mode, setMode] = useState<WorkspaceViewMode>(initialMode);
   const [product, setProduct] = useState<ProductProfile>(demoProduct);
+  const [productScanMessage, setProductScanMessage] = useState("");
+  const [isScanningProduct, setIsScanningProduct] = useState(false);
   const [topics, setTopics] = useState<TopicItem[]>(demoTopics);
   const [blogs, setBlogs] = useState<BlogItem[]>(demoBlogs);
   const [selectedBlogId, setSelectedBlogId] = useState(demoBlogs[0]?.id ?? "");
@@ -22,11 +24,14 @@ export const useDemoWorkspace = (initialMode: WorkspaceViewMode) => {
   );
 
   const scanProduct = (websiteUrl: string, niche: string) => {
+    setIsScanningProduct(true);
     setProduct((current) => ({
       ...current,
       websiteUrl,
       niche,
     }));
+    setProductScanMessage("Saved in preview.");
+    setIsScanningProduct(false);
   };
 
   const addTopic = (keyword: string) => {
@@ -80,6 +85,10 @@ export const useDemoWorkspace = (initialMode: WorkspaceViewMode) => {
     mode,
     setMode,
     product,
+    productScanState: {
+      isScanning: isScanningProduct,
+      message: productScanMessage,
+    },
     topics,
     blogs,
     selectedBlog,

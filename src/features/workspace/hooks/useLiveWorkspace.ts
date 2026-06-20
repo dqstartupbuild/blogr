@@ -9,17 +9,25 @@ import { listTopicsQuery } from "@/server/convex/references/listTopicsQuery";
 import { mapConvexBlog } from "../mappers/mapConvexBlog";
 import { mapConvexProduct } from "../mappers/mapConvexProduct";
 import { mapConvexTopic } from "../mappers/mapConvexTopic";
+import { mapProductScanResult } from "../mappers/mapProductScanResult";
 import type { BlogItem } from "../types/BlogItem";
+import type { ProductProfile } from "../types/ProductProfile";
+import type { ProductScanResponse } from "../types/ProductScanResponse";
 import type { WorkspaceViewMode } from "../types/WorkspaceViewMode";
 
 export const useLiveWorkspace = (initialMode: WorkspaceViewMode) => {
   const [mode, setMode] = useState<WorkspaceViewMode>(initialMode);
   const [selectedBlogId, setSelectedBlogId] = useState("");
+  const [scannedProduct, setScannedProduct] = useState<ProductProfile | null>(
+    null,
+  );
+  const [productScanMessage, setProductScanMessage] = useState("");
+  const [isScanningProduct, setIsScanningProduct] = useState(false);
   const productResult = useQuery(getCurrentProductQuery);
   const topicResults = useQuery(listTopicsQuery);
   const blogResults = useQuery(listBlogsQuery);
   const createTopic = useMutation(createTopicMutation);
-  const product = mapConvexProduct(productResult);
+  const product = scannedProduct || mapConvexProduct(productResult);
   const topics = useMemo(
     () => (topicResults || []).map(mapConvexTopic),
     [topicResults],
@@ -35,13 +43,39 @@ export const useLiveWorkspace = (initialMode: WorkspaceViewMode) => {
   );
 
   const scanProduct = async (websiteUrl: string, niche: string) => {
-    await fetch("/api/product/scan", {
-      body: JSON.stringify({ niche, websiteUrl }),
-      headers: {
-        "Content-Type": "application/json",
-      },
-      method: "POST",
-    });
+    setIsScanningProduct(true);
+    setProductScanMessage("Scanning your site.");
+
+    try {
+      const response = await fetch("/api/product/scan", {
+        body: JSON.stringify({ niche, websiteUrl }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+        method: "POST",
+      });
+      const data = (await response.json().catch(() => ({}))) as ProductScanResponse;
+
+      if (!response.ok) {
+        throw new Error(data.error || "Could not scan that site yet.");
+      }
+
+      if (data.product) {
+        setScannedProduct(mapProductScanResult(data.product));
+      }
+
+      setProductScanMessage(
+        data.saved
+          ? "Saved your product details."
+          : "Scanned your site, but it was not saved yet.",
+      );
+    } catch (error) {
+      setProductScanMessage(
+        error instanceof Error ? error.message : "Could not scan that site yet.",
+      );
+    } finally {
+      setIsScanningProduct(false);
+    }
   };
 
   const addTopic = async (keyword: string) => {
@@ -69,6 +103,10 @@ export const useLiveWorkspace = (initialMode: WorkspaceViewMode) => {
     blogs,
     mode,
     product,
+    productScanState: {
+      isScanning: isScanningProduct,
+      message: productScanMessage,
+    },
     scanProduct,
     selectedBlog,
     selectedBlogId: activeSelectedBlogId,

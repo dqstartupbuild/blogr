@@ -15,10 +15,16 @@ This gives the writer enough context to understand the product and place interna
 5. It asks the configured Replicate writer model to turn the scraped context into a simple product profile.
 6. It saves the result through `saveProductScan` when Convex is configured.
 
+The route allows a longer runtime because Firecrawl plus AI extraction can take
+more than a quick request. The workspace shows scan progress, success, and any
+server error so failed scans are visible.
+
 ## Relevant Code
 
 - `src/app/api/product/scan/route.ts`
 - `src/app/api/product/scan/schema.ts`
+- `src/features/workspace/components/ProductSetupPanel.tsx`
+- `src/features/workspace/hooks/useLiveWorkspace.ts`
 - `src/server/product/scanProductWebsite.ts`
 - `src/server/product/extractProductProfile.ts`
 - `src/server/firecrawl/*`

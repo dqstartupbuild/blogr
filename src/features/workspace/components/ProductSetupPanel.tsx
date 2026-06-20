@@ -6,14 +6,17 @@ import { PrimaryButton } from "./PrimaryButton";
 import { SectionTitle } from "./SectionTitle";
 import { TextField } from "./TextField";
 import type { ProductProfile } from "../types/ProductProfile";
+import type { ProductScanState } from "../types/ProductScanState";
 
 type ProductSetupPanelProps = {
   product: ProductProfile;
+  productScanState: ProductScanState;
   scanProduct: (websiteUrl: string, niche: string) => void;
 };
 
 export const ProductSetupPanel = ({
   product,
+  productScanState,
   scanProduct,
 }: ProductSetupPanelProps) => {
   const [websiteUrl, setWebsiteUrl] = useState(product.websiteUrl);
@@ -44,12 +47,17 @@ export const ProductSetupPanel = ({
           value={niche}
         />
         <div className="flex items-end">
-          <PrimaryButton type="submit">
+          <PrimaryButton disabled={productScanState.isScanning} type="submit">
             <Globe2 size={16} aria-hidden="true" />
-            Scan site
+            {productScanState.isScanning ? "Scanning" : "Scan site"}
           </PrimaryButton>
         </div>
       </form>
+      {productScanState.message ? (
+        <p className="mt-3 text-sm font-medium text-black" aria-live="polite">
+          {productScanState.message}
+        </p>
+      ) : null}
       <div className="mt-4 grid gap-3 text-sm text-black lg:grid-cols-[minmax(0,1fr)_220px]">
         <p>{product.description}</p>
         <div className="flex flex-wrap gap-2">

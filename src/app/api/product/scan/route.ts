@@ -9,7 +9,7 @@ import { getPublicErrorMessage } from "@/server/http/getPublicErrorMessage";
 import { scanProductWebsite } from "@/server/product/scanProductWebsite";
 import { productScanRequestSchema } from "./schema";
 
-export const maxDuration = 60;
+export const maxDuration = 300;
 
 export async function POST(request: Request) {
   try {
