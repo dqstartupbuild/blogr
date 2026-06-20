@@ -1,4 +1,5 @@
 import { demoProduct } from "../constants/demoProduct";
+import { emptyProduct } from "../constants/emptyProduct";
 import type { ProductProfile } from "../types/ProductProfile";
 
 type ConvexProductLike = Partial<ProductProfile> | null | undefined;
@@ -6,10 +7,14 @@ type ConvexProductLike = Partial<ProductProfile> | null | undefined;
 export const mapConvexProduct = (
   product: ConvexProductLike,
 ): ProductProfile => {
+  if (!product) {
+    return emptyProduct;
+  }
+
   return {
-    ...demoProduct,
-    ...(product || {}),
+    ...emptyProduct,
+    ...product,
     colors: product?.colors || demoProduct.colors,
-    siteLinks: product?.siteLinks || demoProduct.siteLinks,
+    siteLinks: product?.siteLinks || emptyProduct.siteLinks,
   };
 };

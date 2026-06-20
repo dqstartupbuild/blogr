@@ -19,6 +19,9 @@ The route allows a longer runtime because Firecrawl plus AI extraction can take
 more than a quick request. The workspace shows scan progress, success, and any
 server error so failed scans are visible.
 
+Live workspaces start with empty product inputs. Demo mode uses example product
+copy only when Clerk and Convex are not configured.
+
 ## Relevant Code
 
 - `src/app/api/product/scan/route.ts`
