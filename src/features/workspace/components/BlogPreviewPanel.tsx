@@ -1,6 +1,7 @@
 import Image from "next/image";
 import { Edit3 } from "lucide-react";
 import { BlogZipButton } from "./BlogZipButton";
+import { MarkdownPreview } from "./MarkdownPreview";
 import { SecondaryAnchor } from "./SecondaryAnchor";
 import { SectionTitle } from "./SectionTitle";
 import type { BlogItem } from "../types/BlogItem";
@@ -41,8 +42,8 @@ export const BlogPreviewPanel = ({ blog }: BlogPreviewPanelProps) => {
         {blog.title}
       </h3>
       <p className="mt-2 text-sm leading-6 text-black">{blog.excerpt}</p>
-      <div className="mt-4 max-h-[420px] overflow-auto rounded-md border border-black bg-white p-4 font-mono text-xs leading-5 text-black">
-        <pre className="whitespace-pre-wrap">{blog.mdx}</pre>
+      <div className="mt-4 max-h-[420px] overflow-auto rounded-md border border-black bg-white p-4">
+        <MarkdownPreview mdx={blog.mdx} />
       </div>
     </aside>
   );

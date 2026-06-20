@@ -2,7 +2,7 @@
 
 ## What It Does
 
-Users can open a generated blog and edit the title, summary, and MDX.
+Users can open a generated blog and edit the title, summary, and MDX. The preview renders the MDX as readable blog content.
 
 ## How It Works
 
@@ -14,6 +14,8 @@ After auth is ready, the editor loads the live blog through the Convex client wi
 
 Saving uses the Convex client mutation `updateBlogContent`, so it follows the same browser auth path as the main workspace.
 
+The right-side preview uses `MarkdownPreview`, so headings, links, lists, quotes, images, tables, and code blocks render like a blog instead of plain markdown text.
+
 ## Relevant Code
 
 - `src/app/blogs/[blogId]/page.tsx`
@@ -23,7 +25,9 @@ Saving uses the Convex client mutation `updateBlogContent`, so it follows the sa
 - `src/features/workspace/components/SignedOutBlogEditorView.tsx`
 - `src/features/workspace/components/BlogEditorConnectionIssueView.tsx`
 - `src/features/workspace/components/BlogEditorFields.tsx`
+- `src/features/workspace/components/BlogEditorPreview.tsx`
 - `src/features/workspace/components/BlogMdxTextarea.tsx`
+- `src/features/workspace/components/MarkdownPreview.tsx`
 - `src/features/workspace/components/BlogZipButton.tsx`
 - `src/features/workspace/hooks/useBlogEditor.ts`
 - `convex/blogs/updateBlogContent.ts`
@@ -40,6 +44,7 @@ Saving uses the Convex client mutation `updateBlogContent`, so it follows the sa
 src/app/blogs/[blogId]/
 src/app/api/blogs/[blogId]/
 src/features/workspace/components/BlogEditor*
+src/features/workspace/components/MarkdownPreview.tsx
 src/features/workspace/components/LiveBlogEditorView.tsx
 src/features/workspace/components/SignedOutBlogEditorView.tsx
 src/features/workspace/hooks/useBlogEditor.ts

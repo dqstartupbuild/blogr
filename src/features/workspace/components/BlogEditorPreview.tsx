@@ -1,3 +1,4 @@
+import { MarkdownPreview } from "./MarkdownPreview";
 import type { BlogEditorState } from "../types/BlogEditorState";
 
 type BlogEditorPreviewProps = {
@@ -12,8 +13,8 @@ export const BlogEditorPreview = ({ state }: BlogEditorPreviewProps) => {
         {state.title}
       </h3>
       <p className="mt-2 text-sm leading-6 text-black">{state.excerpt}</p>
-      <div className="mt-4 max-h-[620px] overflow-auto rounded-md border border-black bg-white p-4 font-mono text-xs leading-5 text-black">
-        <pre className="whitespace-pre-wrap">{state.mdx}</pre>
+      <div className="mt-4 max-h-[620px] overflow-auto rounded-md border border-black bg-white p-4">
+        <MarkdownPreview mdx={state.mdx} />
       </div>
     </aside>
   );
