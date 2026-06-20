@@ -2,6 +2,7 @@ import { fetchMutation, fetchQuery } from "convex/nextjs";
 import { NextResponse } from "next/server";
 import { getConvexAuthToken } from "@/server/auth/getConvexAuthToken";
 import { requireRouteUserId } from "@/server/auth/requireRouteUserId";
+import { castBlogId } from "@/server/convex/castBlogId";
 import { getBlogQuery } from "@/server/convex/references/getBlogQuery";
 import { updateBlogContentMutation } from "@/server/convex/references/updateBlogContentMutation";
 import { hasConvexUrl } from "@/server/convex/hasConvexUrl";
@@ -22,7 +23,8 @@ export async function GET(_request: Request, context: BlogRouteContext) {
     }
 
     const token = await getConvexAuthToken();
-    const { blogId } = await context.params;
+    const { blogId: rawBlogId } = await context.params;
+    const blogId = castBlogId(rawBlogId);
     const blog = await fetchQuery(getBlogQuery, { blogId }, { token });
 
     if (!blog) {
@@ -47,7 +49,8 @@ export async function PATCH(request: Request, context: BlogRouteContext) {
     }
 
     const token = await getConvexAuthToken();
-    const { blogId } = await context.params;
+    const { blogId: rawBlogId } = await context.params;
+    const blogId = castBlogId(rawBlogId);
     const body = await request.json();
     const input = blogUpdateRequestSchema.parse(body);
 

@@ -4,6 +4,7 @@ import { getConvexAuthToken } from "@/server/auth/getConvexAuthToken";
 import { requireRouteUserId } from "@/server/auth/requireRouteUserId";
 import { generateBlogForKeyword } from "@/server/blog/generateBlogForKeyword";
 import type { StoredProduct } from "@/server/blog/types/StoredProduct";
+import { castTopicId } from "@/server/convex/castTopicId";
 import { getCurrentProductQuery } from "@/server/convex/references/getCurrentProductQuery";
 import { getTopicQuery } from "@/server/convex/references/getTopicQuery";
 import { updateTopicStatusMutation } from "@/server/convex/references/updateTopicStatusMutation";
@@ -16,7 +17,7 @@ import { blogGenerateRequestSchema } from "./schema";
 export const maxDuration = 300;
 
 export async function POST(request: Request) {
-  let topicId = "";
+  let topicId: ReturnType<typeof castTopicId> | null = null;
 
   try {
     await requireRouteUserId();
@@ -28,7 +29,7 @@ export async function POST(request: Request) {
     const token = await getConvexAuthToken();
     const body = await request.json();
     const input = blogGenerateRequestSchema.parse(body);
-    topicId = input.topicId;
+    topicId = castTopicId(input.topicId);
 
     await fetchMutation(
       updateTopicStatusMutation,
