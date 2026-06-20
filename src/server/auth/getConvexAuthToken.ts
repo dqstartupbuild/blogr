@@ -7,5 +7,5 @@ export const getConvexAuthToken = async () => {
   }
 
   const authState = await auth();
-  return (await authState.getToken()) ?? undefined;
+  return (await authState.getToken({ template: "convex" })) ?? undefined;
 };
