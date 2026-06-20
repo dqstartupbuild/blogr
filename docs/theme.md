@@ -13,9 +13,14 @@ Only these colors are allowed in the app theme:
 
 UI backgrounds are white, text and borders are black, primary actions are black with white text, and secondary actions are white with black text.
 
-## Images
+## Blog Images
 
-Generated image prompts ask for pure black and pure white only. Demo content does not show colorful preview images.
+The app UI stays black and white. Generated blog image prompts are different:
+they use the scanned product context, audience, niche, and brand colors so the
+images feel tied to the user's product instead of generic.
+
+The prompts ask for realistic editorial images with no readable text, fake UI
+text, captions, watermarks, random symbols, or unrelated objects.
 
 ## Relevant Code
 
@@ -23,3 +28,5 @@ Generated image prompts ask for pure black and pure white only. Demo content doe
 - `src/features/workspace/components/*`
 - `src/features/auth/components/*`
 - `src/server/blog/buildImagePrompts.ts`
+- `src/server/blog/buildBlogImagePrompt.ts`
+- `src/server/blog/buildProductVisualContext.ts`

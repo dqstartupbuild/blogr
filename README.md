@@ -45,6 +45,7 @@ This will replace the local `convex/_generated` shim with the fully typed genera
 - [Product website ingestion](docs/product-website-ingestion.md)
 - [Topic workspace](docs/topic-workspace.md)
 - [Blog generation workflow](docs/blog-generation-workflow.md)
+- [Blog generation reliability](docs/blog-generation-reliability.md)
 - [Blog editor](docs/blog-editor.md)
 - [Zip export](docs/zip-export.md)
 - [Auth](docs/auth.md)
