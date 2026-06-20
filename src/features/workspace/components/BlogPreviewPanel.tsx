@@ -1,6 +1,6 @@
 import Image from "next/image";
 import { Download, Edit3 } from "lucide-react";
-import { SecondaryButton } from "./SecondaryButton";
+import { SecondaryAnchor } from "./SecondaryAnchor";
 import { SectionTitle } from "./SectionTitle";
 import type { BlogItem } from "../types/BlogItem";
 
@@ -22,14 +22,14 @@ export const BlogPreviewPanel = ({ blog }: BlogPreviewPanelProps) => {
       <SectionTitle
         action={
           <div className="flex gap-2">
-            <SecondaryButton type="button">
+            <SecondaryAnchor href={`/blogs/${blog.id}`}>
               <Edit3 size={16} aria-hidden="true" />
               Edit
-            </SecondaryButton>
-            <SecondaryButton type="button">
+            </SecondaryAnchor>
+            <SecondaryAnchor href={`/api/blogs/${blog.id}/download`}>
               <Download size={16} aria-hidden="true" />
               Zip
-            </SecondaryButton>
+            </SecondaryAnchor>
           </div>
         }
         title="Preview"

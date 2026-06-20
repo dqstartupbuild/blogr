@@ -1,5 +1,11 @@
 import type { LinkItem } from "./LinkItem";
 
+type BlogImageItem = {
+  alt: string;
+  prompt: string;
+  url: string;
+};
+
 export type BlogItem = {
   id: string;
   keyword: string;
@@ -9,6 +15,7 @@ export type BlogItem = {
   status: "draft" | "ready" | "failed";
   mdx: string;
   featureImageUrl?: string;
+  images: BlogImageItem[];
   updatedAt: number;
   internalLinks: LinkItem[];
   youtubeVideos: LinkItem[];

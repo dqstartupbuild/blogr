@@ -12,6 +12,7 @@ export const demoBlogs: BlogItem[] = [
     updatedAt: Date.now() - 1000 * 60 * 45,
     featureImageUrl:
       "https://images.unsplash.com/photo-1552664730-d307ca884978?auto=format&fit=crop&w=1400&q=80",
+    images: [],
     internalLinks: [
       {
         title: "Team dashboard",

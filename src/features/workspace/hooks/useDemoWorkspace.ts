@@ -57,6 +57,7 @@ export const useDemoWorkspace = (initialMode: WorkspaceViewMode) => {
       excerpt: `A clear, friendly draft about ${topic.keyword}.`,
       status: "ready",
       mdx: `# ${title}\n\nThis draft is ready for the live AI workflow. Add your keys, scan your site, and the app will replace this with the full researched post.`,
+      images: [],
       updatedAt: Date.now(),
       internalLinks: product.siteLinks.slice(0, 2),
       youtubeVideos: [],
