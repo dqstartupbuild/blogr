@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { isLiveWorkspaceEnabled } from "@/config/isLiveWorkspaceEnabled";
 import { demoBlogs } from "../constants/demoBlogs";
 import type { BlogEditorState } from "../types/BlogEditorState";
 
@@ -18,6 +19,10 @@ export const useBlogEditor = (blogId: string) => {
   const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
+    if (!isLiveWorkspaceEnabled()) {
+      return;
+    }
+
     let isMounted = true;
 
     fetch(`/api/blogs/${blogId}`)
@@ -52,6 +57,11 @@ export const useBlogEditor = (blogId: string) => {
     setMessage("");
 
     try {
+      if (!isLiveWorkspaceEnabled()) {
+        setMessage("Saved in preview.");
+        return;
+      }
+
       const response = await fetch(`/api/blogs/${blogId}`, {
         body: JSON.stringify(state),
         headers: {
