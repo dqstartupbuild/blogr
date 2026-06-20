@@ -1,5 +1,5 @@
-import { runReplicateImage } from "../replicate/runReplicateImage";
 import { buildImagePrompts } from "./buildImagePrompts";
+import { tryGenerateBlogImage } from "./tryGenerateBlogImage";
 import type { BlogImage } from "./types/BlogImage";
 import type { StoredProduct } from "./types/StoredProduct";
 
@@ -18,12 +18,7 @@ export const generateBlogImages = async ({
     return [];
   }
 
-  const images = await Promise.all(
-    prompts.map(async (image) => ({
-      ...image,
-      url: await runReplicateImage(image.prompt),
-    })),
-  );
+  const images = await Promise.all(prompts.map(tryGenerateBlogImage));
 
-  return images.filter((image) => image.url);
+  return images.filter((image): image is BlogImage => Boolean(image));
 };

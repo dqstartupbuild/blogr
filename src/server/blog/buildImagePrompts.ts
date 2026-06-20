@@ -1,3 +1,4 @@
+import { buildBlogImagePrompt } from "./buildBlogImagePrompt";
 import type { StoredProduct } from "./types/StoredProduct";
 
 type BuildImagePromptsOptions = {
@@ -9,24 +10,46 @@ export const buildImagePrompts = ({
   keyword,
   product,
 }: BuildImagePromptsOptions) => {
-  const context = `${product.name}, ${product.niche}, ${product.audience}`;
-
   return [
     {
       alt: `${keyword} feature image`,
-      prompt: `A clean editorial feature image for a long blog post about "${keyword}". Product context: ${context}. Use only pure black (#000000) and pure white (#ffffff). No gray, no color, no text in the image.`,
+      prompt: buildBlogImagePrompt({
+        imageJob: "Feature image for the top of the post",
+        keyword,
+        product,
+        scene:
+          "the reader facing the main situation behind the keyword, with the product category quietly shaping the setting",
+      }),
     },
     {
       alt: `${keyword} planning example`,
-      prompt: `A simple scene showing the main idea behind "${keyword}" in a relatable work setting. Product context: ${context}. Use only pure black (#000000) and pure white (#ffffff). No visible words.`,
+      prompt: buildBlogImagePrompt({
+        imageJob: "In-post image showing the common problem",
+        keyword,
+        product,
+        scene:
+          "a simple work moment where the reader can see the problem the keyword is trying to solve",
+      }),
     },
     {
       alt: `${keyword} step by step`,
-      prompt: `A clear visual metaphor for making progress one step at a time while learning "${keyword}". Product context: ${context}. Use only pure black (#000000) and pure white (#ffffff). No text, no logo.`,
+      prompt: buildBlogImagePrompt({
+        imageJob: "In-post image showing the practical process",
+        keyword,
+        product,
+        scene:
+          "a realistic step-by-step moment with a person organizing the next action in a beginner-friendly way",
+      }),
     },
     {
       alt: `${keyword} outcome`,
-      prompt: `A calm, human image showing the better outcome after applying advice about "${keyword}". Product context: ${context}. Use only pure black (#000000) and pure white (#ffffff). No text in image.`,
+      prompt: buildBlogImagePrompt({
+        imageJob: "In-post image showing the better outcome",
+        keyword,
+        product,
+        scene:
+          "the reader after making progress, with a calmer and clearer version of the same product-related situation",
+      }),
     },
   ];
 };
