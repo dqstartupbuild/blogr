@@ -39,6 +39,13 @@ Convex will replace the shim with the normal generated files.
 - `convex/topics/*`
 - `convex/blogs/*`
 - `convex/_generated/*`
+
+## Download Query
+
+`getBlogForRoute` is used by the download API route as a fallback when the
+server cannot mint Clerk's Convex token. The API route authenticates the Clerk
+user first, then the Convex query returns the blog only when the passed user id
+matches the blog owner.
 - `src/server/convex/references/*`
 
 ## Source References

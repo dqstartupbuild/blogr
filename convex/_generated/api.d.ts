@@ -9,6 +9,7 @@
  */
 
 import type * as blogs_getBlog from "../blogs/getBlog.js";
+import type * as blogs_getBlogForRoute from "../blogs/getBlogForRoute.js";
 import type * as blogs_listBlogs from "../blogs/listBlogs.js";
 import type * as blogs_updateBlogContent from "../blogs/updateBlogContent.js";
 import type * as blogs_upsertGeneratedBlog from "../blogs/upsertGeneratedBlog.js";
@@ -30,6 +31,7 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   "blogs/getBlog": typeof blogs_getBlog;
+  "blogs/getBlogForRoute": typeof blogs_getBlogForRoute;
   "blogs/listBlogs": typeof blogs_listBlogs;
   "blogs/updateBlogContent": typeof blogs_updateBlogContent;
   "blogs/upsertGeneratedBlog": typeof blogs_upsertGeneratedBlog;

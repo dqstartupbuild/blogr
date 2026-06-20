@@ -12,6 +12,10 @@ The download route loads the blog from Convex, collects feature and inline image
 
 If an image cannot be fetched, the original remote URL stays in the MDX.
 
+The route first tries the normal Clerk-to-Convex token read. If Clerk cannot
+mint the Convex server token, the route uses the already authenticated Clerk
+user id and asks Convex for that blog only when `blog.userId` matches.
+
 ## Zip Contents
 
 - `{slug}.mdx`
@@ -22,6 +26,7 @@ If an image cannot be fetched, the original remote URL stays in the MDX.
 ## Relevant Code
 
 - `src/app/api/blogs/[blogId]/download/route.ts`
+- `src/server/download/fetchDownloadBlog.ts`
 - `src/server/download/buildBlogZip.ts`
 - `src/server/download/collectBlogImageUrls.ts`
 - `src/server/download/downloadBlogImages.ts`
@@ -34,4 +39,5 @@ If an image cannot be fetched, the original remote URL stays in the MDX.
 ```text
 src/app/api/blogs/[blogId]/download/
 src/server/download/
+convex/blogs/getBlogForRoute.ts
 ```
