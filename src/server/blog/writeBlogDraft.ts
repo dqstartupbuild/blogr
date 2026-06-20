@@ -1,6 +1,7 @@
 import { runReplicateText } from "../replicate/runReplicateText";
 import { buildBlogWriterPrompt } from "./buildBlogWriterPrompt";
 import { createFallbackMdx } from "./createFallbackMdx";
+import { normalizeBlogMdxImages } from "./normalizeBlogMdxImages";
 import { parseWriterDraft } from "./parseWriterDraft";
 import { slugify } from "./slugify";
 import type { BlogImage } from "./types/BlogImage";
@@ -40,12 +41,12 @@ export const writeBlogDraft = async ({
     maxTokens: 12000,
     prompt,
     systemPrompt:
-      "You are a longform blog writer. You write plainly, with warmth, proof, useful examples, and no filler. Return JSON only.",
+      "You are a longform blog writer. You write plainly, with warmth, proof, useful examples, and no filler. Return XML only.",
   });
   const draft = parseWriterDraft(text);
   const title = draft.title || `A Simple Guide to ${keyword}`;
   const slug = draft.slug ? slugify(draft.slug) : slugify(title);
-  const mdx =
+  const rawMdx =
     draft.mdx ||
     createFallbackMdx({
       images,
@@ -55,6 +56,10 @@ export const writeBlogDraft = async ({
       title,
       youtubeVideos,
     });
+  const mdx = normalizeBlogMdxImages({
+    images,
+    mdx: rawMdx,
+  });
 
   return {
     excerpt: draft.excerpt || `A clear guide to ${keyword}.`,

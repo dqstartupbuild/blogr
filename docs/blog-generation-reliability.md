@@ -13,6 +13,7 @@ If research search is unavailable, the app still writes from the saved product p
 3. `normalizeReplicateImageUrl` reads normal URLs and Replicate file outputs.
 4. `buildBlogWriterPrompt` asks Claude Sonnet 4.6 for simple XML so long MDX does not need escaped JSON newlines.
 5. `parseWriterDraft` tries XML first, JSON second, and raw MDX last.
+6. `normalizeBlogMdxImages` removes repeated markdown image URLs and inserts unused supporting images near section headings.
 
 ## Use Cases
 
@@ -20,6 +21,8 @@ If research search is unavailable, the app still writes from the saved product p
 - The writer returns valid MDX but not valid JSON.
 - Firecrawl Search is down or missing during a local preview.
 - One image prompt fails while the other images succeed.
+- The writer repeats the feature image in several sections.
+- The writer forgets to place one of the supporting images.
 
 ## Relevant Code
 
@@ -29,6 +32,9 @@ If research search is unavailable, the app still writes from the saved product p
 - `src/server/replicate/normalizeReplicateImageUrl.ts`
 - `src/server/replicate/getReplicateFileOutputUrl.ts`
 - `src/server/blog/buildBlogWriterPrompt.ts`
+- `src/server/blog/normalizeBlogMdxImages.ts`
+- `src/server/blog/removeDuplicateMarkdownImages.ts`
+- `src/server/blog/insertMissingSupportingImages.ts`
 - `src/server/blog/parseWriterDraft.ts`
 - `src/server/blog/parseWriterXmlDraft.ts`
 - `src/server/blog/parseWriterJsonDraft.ts`

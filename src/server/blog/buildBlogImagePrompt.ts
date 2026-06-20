@@ -32,6 +32,7 @@ Direction:
 - Keep one clear focal point.
 - Use a clean editorial style with natural light and realistic details.
 - Use the product's brand colors as small accents when colors are provided.
+- Keep the visual style consistent with the other blog images, but make this image clearly distinct from the feature image.
 - Do not include readable text, fake UI text, charts with words, captions, watermarks, random symbols, or unrelated objects.
 - Do not make a vague metaphor; make the scene clearly connect to the topic.
 `.trim();

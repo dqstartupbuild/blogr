@@ -58,6 +58,12 @@ ${JSON.stringify(images, null, 2)}
 
 MDX rules:
 - Include frontmatter with title, description, targetKeyword, featureImage, and image alt text when available.
+- Put the feature image URL in frontmatter as featureImage.
+- Use the feature image as a markdown image at most once.
+- Use each supporting image as a markdown image at most once.
+- Never repeat the same image URL in the MDX body.
+- Place supporting images near sections that match their alt text and purpose.
+- If only one image is available, use it once and do not repeat it.
 - Use one H1.
 - Include a direct answer near the top.
 - Use short paragraphs.

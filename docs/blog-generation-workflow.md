@@ -14,9 +14,10 @@ It researches the topic, chooses internal links from the scanned product site, f
 4. Firecrawl Search collects source pages.
 5. Internal links are scored against the keyword.
 6. YouTube videos are found through the YouTube API when `YOUTUBE_API_KEY` exists, otherwise a YouTube search link is used.
-7. Replicate image generation creates a feature image and supporting images when `REPLICATE_API_TOKEN` exists.
+7. Replicate image generation creates one feature image and several supporting images when `REPLICATE_API_TOKEN` exists.
 8. Replicate writer generation returns blog metadata and MDX in a simple XML shape.
-9. The workspace saves the blog through `upsertGeneratedBlog`, which marks the topic as written.
+9. The MDX image cleanup removes repeated image URLs and inserts any unused supporting images near section headings.
+10. The workspace saves the blog through `upsertGeneratedBlog`, which marks the topic as written.
 
 If research search is unavailable, the writer still uses the saved product
 profile and internal links. If an image fails, the blog still finishes with the
@@ -34,6 +35,9 @@ as failed with a short error.
 - `src/server/blog/generateBlogImages.ts`
 - `src/server/blog/tryGenerateBlogImage.ts`
 - `src/server/blog/writeBlogDraft.ts`
+- `src/server/blog/normalizeBlogMdxImages.ts`
+- `src/server/blog/removeDuplicateMarkdownImages.ts`
+- `src/server/blog/insertMissingSupportingImages.ts`
 - `src/server/blog/parseWriterDraft.ts`
 - `convex/blogs/upsertGeneratedBlog.ts`
 - `convex/topics/updateTopicStatus.ts`
@@ -51,6 +55,10 @@ The MDX prompt asks for frontmatter, one H1, a direct answer, short paragraphs, 
 
 The parser still accepts JSON, fenced JSON, and raw MDX so a slightly different
 model response does not break the whole job.
+
+The image cleanup step enforces one use per image URL. It keeps the feature
+image from being repeated and places missing supporting images by the next
+available section heading.
 
 ## Source References
 

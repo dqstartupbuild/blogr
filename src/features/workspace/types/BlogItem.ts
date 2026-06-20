@@ -3,6 +3,7 @@ import type { LinkItem } from "./LinkItem";
 type BlogImageItem = {
   alt: string;
   prompt: string;
+  role?: "feature" | "supporting";
   url: string;
 };
 

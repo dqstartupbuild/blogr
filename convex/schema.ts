@@ -10,6 +10,7 @@ const linkValidator = v.object({
 const imageValidator = v.object({
   alt: v.string(),
   prompt: v.string(),
+  role: v.optional(v.union(v.literal("feature"), v.literal("supporting"))),
   url: v.string(),
 });
 
