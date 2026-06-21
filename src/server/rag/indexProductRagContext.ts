@@ -1,4 +1,5 @@
 import { fetchAction } from "convex/nextjs";
+import { getOptionalConvexAuthToken } from "../auth/getOptionalConvexAuthToken";
 import { castProductId } from "../convex/castProductId";
 import { hasConvexUrl } from "../convex/hasConvexUrl";
 import { indexProductContextAction } from "../convex/references/indexProductContextAction";
@@ -19,19 +20,25 @@ export const indexProductRagContext = async ({
     return;
   }
 
-  await fetchAction(
-    indexProductContextAction,
-    {
-      audience: product.audience,
-      competitors: product.competitors,
-      description: product.description,
-      name: product.name,
-      niche: product.niche,
-      productId: castProductId(productId),
-      rawContext: product.rawContext,
-      siteLinks: product.siteLinks,
-      websiteUrl: product.websiteUrl,
-    },
-    { token },
-  ).catch(() => undefined);
+  try {
+    const authToken = token ?? (await getOptionalConvexAuthToken());
+
+    await fetchAction(
+      indexProductContextAction,
+      {
+        audience: product.audience,
+        competitors: product.competitors,
+        description: product.description,
+        name: product.name,
+        niche: product.niche,
+        productId: castProductId(productId),
+        rawContext: product.rawContext,
+        siteLinks: product.siteLinks,
+        websiteUrl: product.websiteUrl,
+      },
+      { token: authToken },
+    );
+  } catch {
+    return;
+  }
 };

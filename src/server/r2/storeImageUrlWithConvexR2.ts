@@ -1,5 +1,5 @@
 import { fetchAction } from "convex/nextjs";
-import { getConvexAuthToken } from "../auth/getConvexAuthToken";
+import { getOptionalConvexAuthToken } from "../auth/getOptionalConvexAuthToken";
 import { hasConvexUrl } from "../convex/hasConvexUrl";
 import { storeImageFromUrlAction } from "../convex/references/storeImageFromUrlAction";
 import type { R2ImageCategory } from "./types/R2ImageCategory";
@@ -22,9 +22,9 @@ export const storeImageUrlWithConvexR2 = async ({
     return null;
   }
 
-  const authToken = token ?? (await getConvexAuthToken());
-
   try {
+    const authToken = token ?? (await getOptionalConvexAuthToken());
+
     return await fetchAction(
       storeImageFromUrlAction,
       {

@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server";
-import { getConvexAuthToken } from "@/server/auth/getConvexAuthToken";
 import { requireRouteUserId } from "@/server/auth/requireRouteUserId";
 import { generateBlogForKeyword } from "@/server/blog/generateBlogForKeyword";
 import { getErrorStatus } from "@/server/http/getErrorStatus";
@@ -14,12 +13,7 @@ export async function POST(request: Request) {
 
     const body = await request.json();
     const input = blogGenerateRequestSchema.parse(body);
-    const token = await getConvexAuthToken();
-
-    const blog = await generateBlogForKeyword({
-      ...input,
-      convexAuthToken: token,
-    });
+    const blog = await generateBlogForKeyword(input);
 
     return NextResponse.json({ blog });
   } catch (error) {

@@ -22,6 +22,11 @@
 - Use `@/*` imports for `src/*` paths when that matches nearby code.
 - Do not edit `convex/_generated/**` directly.
 
+## Auth and Convex Token Rules
+- API routes should call `requireRouteUserId` for route protection, but should not request Clerk's Convex JWT before doing slow or primary non-Convex work.
+- Only request a Convex auth token at the point where a required Convex server call is made. If the Convex call is optional enhancement work, such as R2 image copying or RAG indexing/search, use `getOptionalConvexAuthToken` inside that helper and let the main route continue when token minting or the Convex action fails.
+- Do not make scanning, writing, research, or other core generation flows fail just because an optional server-side Convex action cannot get a token.
+
 ## Project Map
 - App routes and layouts: `src/app/`
 - Server helpers: `src/server/<domain>/`
