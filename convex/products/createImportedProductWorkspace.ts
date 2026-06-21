@@ -1,4 +1,5 @@
 import type { MutationCtx } from "../_generated/server";
+import { defaultBlogGenerationSettings } from "./defaultBlogGenerationSettings";
 
 export const createImportedProductWorkspace = async (
   ctx: MutationCtx,
@@ -18,6 +19,7 @@ export const createImportedProductWorkspace = async (
     assets: [],
     productImages: [],
     siteLinks: [],
+    blogGenerationSettings: defaultBlogGenerationSettings,
     rawContext: "",
     scannedAt: now,
     createdAt: now,

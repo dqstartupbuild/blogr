@@ -9,6 +9,7 @@ import { listBlogsQuery } from "@/server/convex/references/listBlogsQuery";
 import { listTopicsQuery } from "@/server/convex/references/listTopicsQuery";
 import { saveProductScanMutation } from "@/server/convex/references/saveProductScanMutation";
 import { updateTopicStatusMutation } from "@/server/convex/references/updateTopicStatusMutation";
+import { updateBlogGenerationSettingsMutation } from "@/server/convex/references/updateBlogGenerationSettingsMutation";
 import { upsertGeneratedBlogMutation } from "@/server/convex/references/upsertGeneratedBlogMutation";
 import { castTopicId } from "@/server/convex/castTopicId";
 import { buildInitialProductScanProduct } from "../mappers/buildInitialProductScanProduct";
@@ -16,7 +17,9 @@ import { mapConvexBlog } from "../mappers/mapConvexBlog";
 import { mapConvexProduct } from "../mappers/mapConvexProduct";
 import { mapConvexTopic } from "../mappers/mapConvexTopic";
 import { mapProductScanResult } from "../mappers/mapProductScanResult";
+import { normalizeBlogGenerationSettings } from "../utils/normalizeBlogGenerationSettings";
 import type { BlogGenerateResponse } from "../types/BlogGenerateResponse";
+import type { BlogGenerationSettings } from "../types/BlogGenerationSettings";
 import type { BlogItem } from "../types/BlogItem";
 import type { ProductProfile } from "../types/ProductProfile";
 import type { ProductScanResponse } from "../types/ProductScanResponse";
@@ -35,6 +38,9 @@ export const useLiveWorkspace = (
   } | null>(null);
   const [productScanMessage, setProductScanMessage] = useState("");
   const [isScanningProduct, setIsScanningProduct] = useState(false);
+  const [settingsStatusMessage, setSettingsStatusMessage] = useState("");
+  const [isSavingBlogGenerationSettings, setIsSavingBlogGenerationSettings] =
+    useState(false);
   const activeProductId = workspaceSwitcher.activeWorkspaceId;
   const convexProductId = activeProductId
     ? castProductId(activeProductId)
@@ -53,11 +59,17 @@ export const useLiveWorkspace = (
   );
   const createTopic = useMutation(createTopicMutation);
   const saveProductScan = useMutation(saveProductScanMutation);
+  const updateBlogGenerationSettings = useMutation(
+    updateBlogGenerationSettingsMutation,
+  );
   const updateTopicStatus = useMutation(updateTopicStatusMutation);
   const upsertGeneratedBlog = useMutation(upsertGeneratedBlogMutation);
   const visibleScannedProduct =
     scannedProduct?.productId === activeProductId ? scannedProduct.product : null;
   const product = visibleScannedProduct || mapConvexProduct(productResult);
+  const blogGenerationSettings = normalizeBlogGenerationSettings(
+    productResult?.blogGenerationSettings,
+  );
   const topics = useMemo(
     () => (topicResults || []).map(mapConvexTopic),
     [topicResults],
@@ -145,6 +157,32 @@ export const useLiveWorkspace = (
     });
   };
 
+  const saveBlogGenerationSettings = async (
+    settings: BlogGenerationSettings,
+  ) => {
+    if (!convexProductId) {
+      setSettingsStatusMessage("Choose a workspace first.");
+      return;
+    }
+
+    setIsSavingBlogGenerationSettings(true);
+    setSettingsStatusMessage("");
+
+    try {
+      await updateBlogGenerationSettings({
+        productId: convexProductId,
+        settings,
+      });
+      setSettingsStatusMessage("Settings saved.");
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "Could not save settings.";
+      setSettingsStatusMessage(message);
+    } finally {
+      setIsSavingBlogGenerationSettings(false);
+    }
+  };
+
   const writeBlog = async (topicId: string) => {
     const topic = topics.find((item) => item.id === topicId);
 
@@ -215,16 +253,20 @@ export const useLiveWorkspace = (
 
   return {
     addTopic,
+    blogGenerationSettings,
     blogs,
+    isSavingBlogGenerationSettings,
     mode,
     product,
     productScanState: {
       isScanning: isScanningProduct,
       message: productScanMessage,
     },
+    saveBlogGenerationSettings,
     scanProduct,
     selectedBlog,
     selectedBlogId: activeSelectedBlogId,
+    settingsStatusMessage,
     setMode,
     setSelectedBlogId,
     topics,

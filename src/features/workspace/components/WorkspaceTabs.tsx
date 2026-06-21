@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { FileText, ListChecks } from "lucide-react";
+import { FileText, ListChecks, Settings2 } from "lucide-react";
 import type { WorkspaceViewMode } from "../types/WorkspaceViewMode";
 
 type WorkspaceTabsProps = {
@@ -35,6 +35,18 @@ export const WorkspaceTabs = ({ mode, setMode }: WorkspaceTabsProps) => {
       >
         <FileText size={16} aria-hidden="true" />
         Blogs
+      </Link>
+      <Link
+        className={`inline-flex h-10 items-center gap-2 rounded-md border px-4 text-sm font-medium ${
+          mode === "settings"
+            ? "border-black bg-black text-white"
+            : "border-black bg-white text-black"
+        }`}
+        href="/settings"
+        onClick={() => setMode("settings")}
+      >
+        <Settings2 size={16} aria-hidden="true" />
+        Settings
       </Link>
     </nav>
   );

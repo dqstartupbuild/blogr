@@ -1,5 +1,6 @@
 import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
+import { blogGenerationSettingsValidator } from "./products/blogGenerationSettingsValidator";
 
 const linkValidator = v.object({
   title: v.string(),
@@ -26,6 +27,7 @@ export default defineSchema({
     assets: v.array(v.string()),
     productImages: v.array(v.string()),
     siteLinks: v.array(linkValidator),
+    blogGenerationSettings: v.optional(blogGenerationSettingsValidator),
     rawContext: v.string(),
     scannedAt: v.number(),
     createdAt: v.number(),

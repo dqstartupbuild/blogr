@@ -1,4 +1,5 @@
 import type { LinkItem } from "@/features/workspace/types/LinkItem";
+import type { BlogGenerationSettings } from "@/features/workspace/types/BlogGenerationSettings";
 
 export type StoredProduct = {
   websiteUrl: string;
@@ -6,6 +7,7 @@ export type StoredProduct = {
   description: string;
   niche: string;
   audience: string;
+  blogGenerationSettings?: BlogGenerationSettings;
   competitors: string;
   colors: string[];
   assets: string[];

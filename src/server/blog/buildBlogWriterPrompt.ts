@@ -1,6 +1,8 @@
 import type { BlogImage } from "./types/BlogImage";
 import type { ResearchSource } from "./types/ResearchSource";
 import type { StoredProduct } from "./types/StoredProduct";
+import { buildBlogGenerationSettingsPrompt } from "./buildBlogGenerationSettingsPrompt";
+import type { BlogGenerationSettings } from "@/features/workspace/types/BlogGenerationSettings";
 import type { LinkItem } from "@/features/workspace/types/LinkItem";
 
 type BuildBlogWriterPromptOptions = {
@@ -8,6 +10,7 @@ type BuildBlogWriterPromptOptions = {
   internalLinks: LinkItem[];
   keyword: string;
   product: StoredProduct;
+  settings: BlogGenerationSettings;
   sources: ResearchSource[];
   youtubeVideos: LinkItem[];
 };
@@ -17,6 +20,7 @@ export const buildBlogWriterPrompt = ({
   internalLinks,
   keyword,
   product,
+  settings,
   sources,
   youtubeVideos,
 }: BuildBlogWriterPromptOptions) => {
@@ -44,6 +48,8 @@ Voice:
 Product context:
 ${JSON.stringify(product, null, 2)}
 
+${buildBlogGenerationSettingsPrompt(settings)}
+
 Research sources to use and cite:
 ${JSON.stringify(sources, null, 2)}
 
@@ -70,9 +76,8 @@ MDX rules:
 - Use practical examples.
 - Add image markdown after the intro and throughout the post when image URLs are available.
 - Cite sources as normal markdown links inside relevant sections.
-- Include 3 to 5 internal links naturally, not as a list unless it truly fits.
+- Include the provided internal links naturally, not as a list unless it truly fits.
 - Write one complete MDX file, not an outline and not separate files.
 - Aim for 1,800 to 3,000 words when the topic can support it.
-- Finish with a simple next step related to the product.
 `.trim();
 };

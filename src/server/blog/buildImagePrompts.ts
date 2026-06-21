@@ -1,55 +1,27 @@
 import { buildBlogImagePrompt } from "./buildBlogImagePrompt";
+import { buildImagePromptPlans } from "./buildImagePromptPlans";
+import type { BlogGenerationSettings } from "@/features/workspace/types/BlogGenerationSettings";
 import type { StoredProduct } from "./types/StoredProduct";
 
 type BuildImagePromptsOptions = {
   keyword: string;
   product: StoredProduct;
+  settings: BlogGenerationSettings;
 };
 
 export const buildImagePrompts = ({
   keyword,
   product,
+  settings,
 }: BuildImagePromptsOptions) => {
-  return [
-    {
-      alt: `${keyword} feature image`,
-      prompt: buildBlogImagePrompt({
-        imageJob: "Feature image for the top of the post",
-        keyword,
-        product,
-        scene:
-          "a polished editorial hero scene that shows the main situation behind the keyword and feels tied to the product category",
-      }),
-    },
-    {
-      alt: `${keyword} simple infographic`,
-      prompt: buildBlogImagePrompt({
-        imageJob: "Supporting image for an early section",
-        keyword,
-        product,
-        scene:
-          "a clean infographic-style visual with simple shapes, arrows, and icons that explain the core idea without any readable words",
-      }),
-    },
-    {
-      alt: `${keyword} step by step`,
-      prompt: buildBlogImagePrompt({
-        imageJob: "Supporting image for a practical how-to section",
-        keyword,
-        product,
-        scene:
-          "a realistic step-by-step work moment with a person organizing the next action in a beginner-friendly way",
-      }),
-    },
-    {
-      alt: `${keyword} outcome`,
-      prompt: buildBlogImagePrompt({
-        imageJob: "Supporting image for a later outcome section",
-        keyword,
-        product,
-        scene:
-          "the reader after making progress, with a calmer and clearer version of the same product-related situation",
-      }),
-    },
-  ];
+  return buildImagePromptPlans(settings).map((plan, index) => ({
+    alt: index === 0 ? `${keyword} feature image` : `${keyword} image ${index}`,
+    prompt: buildBlogImagePrompt({
+      imageJob: plan.imageJob,
+      keyword,
+      product,
+      scene: plan.scene,
+      settings,
+    }),
+  }));
 };

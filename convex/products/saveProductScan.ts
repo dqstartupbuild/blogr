@@ -2,6 +2,7 @@ import { v } from "convex/values";
 import { mutation } from "../_generated/server";
 import { requireUserId } from "../identity/requireUserId";
 import { saveWorkspaceSelection } from "../workspaceSelections/saveWorkspaceSelection";
+import { defaultBlogGenerationSettings } from "./defaultBlogGenerationSettings";
 
 const linkValidator = v.object({
   title: v.string(),
@@ -54,6 +55,7 @@ export const saveProductScan = mutation({
     const nextProductId = await ctx.db.insert("products", {
       ...productDetails,
       userId,
+      blogGenerationSettings: defaultBlogGenerationSettings,
       scannedAt: now,
       createdAt: now,
       updatedAt: now,

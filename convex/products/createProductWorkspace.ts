@@ -2,6 +2,7 @@ import { v } from "convex/values";
 import { mutation } from "../_generated/server";
 import { requireUserId } from "../identity/requireUserId";
 import { saveWorkspaceSelection } from "../workspaceSelections/saveWorkspaceSelection";
+import { defaultBlogGenerationSettings } from "./defaultBlogGenerationSettings";
 
 export const createProductWorkspace = mutation({
   args: {
@@ -27,6 +28,7 @@ export const createProductWorkspace = mutation({
       assets: [],
       productImages: [],
       siteLinks: [],
+      blogGenerationSettings: defaultBlogGenerationSettings,
       rawContext: "",
       scannedAt: now,
       createdAt: now,

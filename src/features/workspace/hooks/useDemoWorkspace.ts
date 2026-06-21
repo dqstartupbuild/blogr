@@ -5,9 +5,11 @@ import { demoBlogs } from "../constants/demoBlogs";
 import { demoProduct } from "../constants/demoProduct";
 import { demoProductWorkspace } from "../constants/demoProductWorkspace";
 import { demoTopics } from "../constants/demoTopics";
+import { defaultBlogGenerationSettings } from "../constants/defaultBlogGenerationSettings";
 import { emptyProduct } from "../constants/emptyProduct";
 import { buildProductWorkspaceName } from "../mappers/buildProductWorkspaceName";
 import type { BlogItem } from "../types/BlogItem";
+import type { BlogGenerationSettings } from "../types/BlogGenerationSettings";
 import type { CreateProductWorkspaceInput } from "../types/CreateProductWorkspaceInput";
 import type { ProductProfile } from "../types/ProductProfile";
 import type { ProductWorkspace } from "../types/ProductWorkspace";
@@ -39,8 +41,16 @@ export const useDemoWorkspace = (initialMode: WorkspaceViewMode) => {
   >({
     [demoProductWorkspace.id]: demoBlogs,
   });
+  const [settingsByWorkspace, setSettingsByWorkspace] = useState<
+    Record<string, BlogGenerationSettings>
+  >({
+    [demoProductWorkspace.id]: defaultBlogGenerationSettings,
+  });
+  const [settingsStatusMessage, setSettingsStatusMessage] = useState("");
   const [selectedBlogId, setSelectedBlogId] = useState(demoBlogs[0]?.id ?? "");
   const product = productsByWorkspace[activeWorkspaceId] || emptyProduct;
+  const blogGenerationSettings =
+    settingsByWorkspace[activeWorkspaceId] || defaultBlogGenerationSettings;
   const topics = useMemo(
     () => topicsByWorkspace[activeWorkspaceId] || [],
     [activeWorkspaceId, topicsByWorkspace],
@@ -123,7 +133,10 @@ export const useDemoWorkspace = (initialMode: WorkspaceViewMode) => {
       mdx: `# ${title}\n\nThis draft is ready for the live AI workflow. Add your keys, scan your site, and the app will replace this with the full researched post.`,
       images: [],
       updatedAt: Date.now(),
-      internalLinks: product.siteLinks.slice(0, 2),
+      internalLinks: product.siteLinks.slice(
+        0,
+        blogGenerationSettings.internalLinksPerArticle,
+      ),
       youtubeVideos: [],
       sources: [],
     };
@@ -142,6 +155,14 @@ export const useDemoWorkspace = (initialMode: WorkspaceViewMode) => {
     setMode("blogs");
   };
 
+  const saveBlogGenerationSettings = (settings: BlogGenerationSettings) => {
+    setSettingsByWorkspace((current) => ({
+      ...current,
+      [activeWorkspaceId]: settings,
+    }));
+    setSettingsStatusMessage("Settings saved in preview.");
+  };
+
   const selectWorkspace = async (workspaceId: string) => {
     if (!workspaces.some((workspace) => workspace.id === workspaceId)) {
       return;
@@ -149,6 +170,7 @@ export const useDemoWorkspace = (initialMode: WorkspaceViewMode) => {
 
     setActiveWorkspaceId(workspaceId);
     setSelectedBlogId("");
+    setSettingsStatusMessage("");
   };
 
   const createWorkspace = async (input: CreateProductWorkspaceInput) => {
@@ -184,8 +206,13 @@ export const useDemoWorkspace = (initialMode: WorkspaceViewMode) => {
       ...current,
       [workspaceId]: [],
     }));
+    setSettingsByWorkspace((current) => ({
+      ...current,
+      [workspaceId]: defaultBlogGenerationSettings,
+    }));
     setActiveWorkspaceId(workspaceId);
     setSelectedBlogId("");
+    setSettingsStatusMessage("");
 
     return workspaceId;
   };
@@ -193,6 +220,8 @@ export const useDemoWorkspace = (initialMode: WorkspaceViewMode) => {
   return {
     mode,
     setMode,
+    blogGenerationSettings,
+    isSavingBlogGenerationSettings: false,
     product,
     productScanState: {
       isScanning: isScanningProduct,
@@ -202,9 +231,11 @@ export const useDemoWorkspace = (initialMode: WorkspaceViewMode) => {
     blogs,
     selectedBlog,
     selectedBlogId,
+    settingsStatusMessage,
     setSelectedBlogId,
     scanProduct,
     addTopic,
+    saveBlogGenerationSettings,
     workspaceSwitcher: {
       activeWorkspace,
       activeWorkspaceId,

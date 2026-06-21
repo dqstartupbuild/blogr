@@ -4,8 +4,10 @@ import { BlogPreviewPanel } from "./BlogPreviewPanel";
 import { BlogsPanel } from "./BlogsPanel";
 import { ProductSetupPanel } from "./ProductSetupPanel";
 import { TopicsPanel } from "./TopicsPanel";
+import { WorkspaceSettingsPanel } from "./WorkspaceSettingsPanel";
 import { WorkspaceShell } from "./WorkspaceShell";
 import type { BlogItem } from "../types/BlogItem";
+import type { BlogGenerationSettings } from "../types/BlogGenerationSettings";
 import type { ProductProfile } from "../types/ProductProfile";
 import type { ProductScanState } from "../types/ProductScanState";
 import type { TopicItem } from "../types/TopicItem";
@@ -14,13 +16,19 @@ import type { WorkspaceViewMode } from "../types/WorkspaceViewMode";
 
 type WorkspaceContentProps = {
   addTopic: (keyword: string) => void | Promise<void>;
+  blogGenerationSettings: BlogGenerationSettings;
   blogs: BlogItem[];
+  isSavingBlogGenerationSettings: boolean;
   mode: WorkspaceViewMode;
   product: ProductProfile;
   productScanState: ProductScanState;
+  saveBlogGenerationSettings: (
+    settings: BlogGenerationSettings,
+  ) => void | Promise<void>;
   scanProduct: (websiteUrl: string, niche: string) => void | Promise<void>;
   selectedBlog?: BlogItem;
   selectedBlogId: string;
+  settingsStatusMessage: string;
   setMode: (mode: WorkspaceViewMode) => void;
   setSelectedBlogId: (blogId: string) => void;
   topics: TopicItem[];
@@ -30,13 +38,17 @@ type WorkspaceContentProps = {
 
 export const WorkspaceContent = ({
   addTopic,
+  blogGenerationSettings,
   blogs,
+  isSavingBlogGenerationSettings,
   mode,
   product,
   productScanState,
+  saveBlogGenerationSettings,
   scanProduct,
   selectedBlog,
   selectedBlogId,
+  settingsStatusMessage,
   setMode,
   setSelectedBlogId,
   topics,
@@ -63,13 +75,25 @@ export const WorkspaceContent = ({
               topics={topics}
               writeBlog={writeBlog}
             />
-          ) : (
+          ) : null}
+          {mode === "blogs" ? (
             <BlogsPanel
               blogs={blogs}
               selectedBlogId={selectedBlogId}
               setSelectedBlogId={setSelectedBlogId}
             />
-          )}
+          ) : null}
+          {mode === "settings" ? (
+            <WorkspaceSettingsPanel
+              isSaving={isSavingBlogGenerationSettings}
+              key={`${workspaceSwitcher.activeWorkspaceId}:${JSON.stringify(
+                blogGenerationSettings,
+              )}`}
+              saveSettings={saveBlogGenerationSettings}
+              settings={blogGenerationSettings}
+              statusMessage={settingsStatusMessage}
+            />
+          ) : null}
         </main>
         <BlogPreviewPanel blog={selectedBlog} />
       </div>

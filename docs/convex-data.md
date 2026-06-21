@@ -2,7 +2,7 @@
 
 ## What It Does
 
-Convex stores product workspaces, active workspace selections, saved topics, and generated blogs.
+Convex stores product workspaces, blog generation settings, active workspace selections, saved topics, and generated blogs.
 
 ## Tables
 
@@ -13,7 +13,7 @@ Convex stores product workspaces, active workspace selections, saved topics, and
 
 The schema lives in `convex/schema.ts`.
 
-`products` are the workspace records. `workspaceSelections` stores one active product workspace per user. New topic and blog records include `productId`, and list queries use product-scoped indexes so one workspace does not read another workspace's records.
+`products` are the workspace records. Each product can include `blogGenerationSettings`, which stores the article style, writing rules, internal link count, image choices, and article extras for that workspace. `workspaceSelections` stores one active product workspace per user. New topic and blog records include `productId`, and list queries use product-scoped indexes so one workspace does not read another workspace's records.
 
 Rows created before product workspaces can be backfilled with:
 

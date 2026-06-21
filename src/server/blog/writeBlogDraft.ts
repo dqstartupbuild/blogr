@@ -8,6 +8,7 @@ import type { BlogImage } from "./types/BlogImage";
 import type { GeneratedBlog } from "./types/GeneratedBlog";
 import type { ResearchSource } from "./types/ResearchSource";
 import type { StoredProduct } from "./types/StoredProduct";
+import type { BlogGenerationSettings } from "@/features/workspace/types/BlogGenerationSettings";
 import type { LinkItem } from "@/features/workspace/types/LinkItem";
 
 type WriteBlogDraftOptions = {
@@ -15,6 +16,7 @@ type WriteBlogDraftOptions = {
   internalLinks: LinkItem[];
   keyword: string;
   product: StoredProduct;
+  settings: BlogGenerationSettings;
   sources: ResearchSource[];
   sourceLinks: LinkItem[];
   youtubeVideos: LinkItem[];
@@ -25,6 +27,7 @@ export const writeBlogDraft = async ({
   internalLinks,
   keyword,
   product,
+  settings,
   sources,
   sourceLinks,
   youtubeVideos,
@@ -34,6 +37,7 @@ export const writeBlogDraft = async ({
     internalLinks,
     keyword,
     product,
+    settings,
     sources,
     youtubeVideos,
   });
@@ -52,6 +56,8 @@ export const writeBlogDraft = async ({
       images,
       internalLinks,
       keyword,
+      product,
+      settings,
       sources: sourceLinks,
       title,
       youtubeVideos,
