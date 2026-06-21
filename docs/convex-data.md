@@ -21,8 +21,6 @@ The Convex RAG component stores scanned product context in a namespace based on 
 
 `workspaceSelections` stores one active product workspace per user. New topic and blog records include `productId`, and list queries use product-scoped indexes so one workspace does not read another workspace's records.
 
-Topic and blog list queries tolerate a stale workspace ID from the browser by falling back to the user's current saved workspace. Mutations still verify the requested workspace before writing.
-
 Rows created before product workspaces can be backfilled with:
 
 ```bash

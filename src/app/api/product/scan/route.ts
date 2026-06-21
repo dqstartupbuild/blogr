@@ -3,10 +3,8 @@ import { getConvexAuthToken } from "@/server/auth/getConvexAuthToken";
 import { requireRouteUserId } from "@/server/auth/requireRouteUserId";
 import { getErrorStatus } from "@/server/http/getErrorStatus";
 import { getPublicErrorMessage } from "@/server/http/getPublicErrorMessage";
-import { createPartialProductScanResult } from "@/server/product/createPartialProductScanResult";
 import { scanProductWebsite } from "@/server/product/scanProductWebsite";
 import { storeProductScanImages } from "@/server/product/storeProductScanImages";
-import type { ProductScanResult } from "@/server/product/types/ProductScanResult";
 import { indexProductRagContext } from "@/server/rag/indexProductRagContext";
 import { productScanRequestSchema } from "./schema";
 
@@ -20,34 +18,19 @@ export async function POST(request: Request) {
     const input = productScanRequestSchema.parse(body);
 
     const token = await getConvexAuthToken();
-    let storedProduct: ProductScanResult;
-
-    try {
-      const product = await scanProductWebsite({
-        nicheHint: input.niche,
-        websiteUrl: input.websiteUrl,
-      });
-
-      storedProduct = await storeProductScanImages({
-        product,
-        token,
-      });
-      await indexProductRagContext({
-        product: storedProduct,
-        productId: input.productId,
-        token,
-      });
-    } catch {
-      storedProduct = createPartialProductScanResult({
-        nicheHint: input.niche,
-        websiteUrl: input.websiteUrl,
-      });
-
-      return NextResponse.json({
-        product: storedProduct,
-        warning: "We saved your site, but could not scan the details yet.",
-      });
-    }
+    const product = await scanProductWebsite({
+      nicheHint: input.niche,
+      websiteUrl: input.websiteUrl,
+    });
+    const storedProduct = await storeProductScanImages({
+      product,
+      token,
+    });
+    await indexProductRagContext({
+      product: storedProduct,
+      productId: input.productId,
+      token,
+    });
 
     return NextResponse.json({ product: storedProduct });
   } catch (error) {

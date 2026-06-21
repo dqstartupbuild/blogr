@@ -19,9 +19,8 @@ This gives the writer enough context to understand the product and place interna
 9. The workspace saves the finished product profile and R2 image keys through the signed-in Convex client.
 
 The route allows a longer runtime because Firecrawl plus AI extraction can take
-more than a quick request. The workspace shows scan progress and success. If the
-scanner cannot run, the route returns the basic saved site profile with a short
-warning instead of failing the whole request.
+more than a quick request. The workspace shows scan progress, success, and any
+server error so failed scans are visible.
 
 The browser saves a basic product record before the slow scan starts. If the
 slow scan times out after Firecrawl or Replicate runs, the workspace still keeps

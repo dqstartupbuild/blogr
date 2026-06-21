@@ -25,7 +25,6 @@ import type * as products_getProductForRag from "../products/getProductForRag.js
 import type * as products_getProductWorkspaces from "../products/getProductWorkspaces.js";
 import type * as products_refreshProductImageUrls from "../products/refreshProductImageUrls.js";
 import type * as products_resolveActiveProductId from "../products/resolveActiveProductId.js";
-import type * as products_resolveReadableProductId from "../products/resolveReadableProductId.js";
 import type * as products_saveProductScan from "../products/saveProductScan.js";
 import type * as products_setActiveProductWorkspace from "../products/setActiveProductWorkspace.js";
 import type * as products_updateBlogGenerationSettings from "../products/updateBlogGenerationSettings.js";
@@ -73,7 +72,6 @@ declare const fullApi: ApiFromModules<{
   "products/getProductWorkspaces": typeof products_getProductWorkspaces;
   "products/refreshProductImageUrls": typeof products_refreshProductImageUrls;
   "products/resolveActiveProductId": typeof products_resolveActiveProductId;
-  "products/resolveReadableProductId": typeof products_resolveReadableProductId;
   "products/saveProductScan": typeof products_saveProductScan;
   "products/setActiveProductWorkspace": typeof products_setActiveProductWorkspace;
   "products/updateBlogGenerationSettings": typeof products_updateBlogGenerationSettings;
