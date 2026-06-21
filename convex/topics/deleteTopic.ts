@@ -15,7 +15,7 @@ export const deleteTopic = mutation({
       throw new Error("Topic not found.");
     }
 
-    if (args.productId && topic.productId !== args.productId) {
+    if (args.productId && topic.productId && topic.productId !== args.productId) {
       throw new Error("Topic not found in this workspace.");
     }
 

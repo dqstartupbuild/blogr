@@ -23,6 +23,16 @@ The switcher is shared by the main dashboard and live blog editor. If a user swi
 
 Demo mode mirrors the same behavior with local state so the workspace flow can be checked without Clerk and Convex keys.
 
+## Existing Content
+
+Content created before product workspaces does not have a `productId`. Run the backfill mutation once for each user that has legacy content. It attaches old topics and blogs to the user's active product workspace. If the user has no product workspace yet, it creates an `Imported workspace`.
+
+```bash
+npx convex run migrations/backfillProductWorkspaceIds:backfillProductWorkspaceIds '{}' --identity '{"subject":"USER_ID"}'
+```
+
+Use the Clerk subject stored in existing `userId` fields for `USER_ID`.
+
 ## Relevant Code
 
 - `convex/schema.ts`
@@ -30,6 +40,7 @@ Demo mode mirrors the same behavior with local state so the workspace flow can b
 - `convex/products/getProductWorkspaces.ts`
 - `convex/products/setActiveProductWorkspace.ts`
 - `convex/products/saveProductScan.ts`
+- `convex/migrations/backfillProductWorkspaceIds.ts`
 - `convex/workspaceSelections/saveWorkspaceSelection.ts`
 - `convex/topics/createTopic.ts`
 - `convex/topics/listTopics.ts`

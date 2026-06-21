@@ -46,7 +46,11 @@ export const upsertGeneratedBlog = mutation({
     if (args.topicId) {
       const topic = await ctx.db.get(args.topicId);
 
-      if (!topic || topic.userId !== userId || topic.productId !== args.productId) {
+      if (
+        !topic ||
+        topic.userId !== userId ||
+        (topic.productId && topic.productId !== args.productId)
+      ) {
         throw new Error("Topic not found in this workspace.");
       }
     }
@@ -61,7 +65,7 @@ export const upsertGeneratedBlog = mutation({
     if (
       existing &&
       existing.userId === userId &&
-      existing.productId === args.productId
+      (!existing.productId || existing.productId === args.productId)
     ) {
       await ctx.db.patch(existing._id, {
         ...args,
@@ -70,6 +74,7 @@ export const upsertGeneratedBlog = mutation({
 
       if (args.topicId) {
         await ctx.db.patch(args.topicId, {
+          productId: args.productId,
           status: args.status === "failed" ? "failed" : "written",
           blogId: existing._id,
           updatedAt: now,
@@ -88,6 +93,7 @@ export const upsertGeneratedBlog = mutation({
 
     if (args.topicId) {
       await ctx.db.patch(args.topicId, {
+        productId: args.productId,
         status: args.status === "failed" ? "failed" : "written",
         blogId,
         updatedAt: now,

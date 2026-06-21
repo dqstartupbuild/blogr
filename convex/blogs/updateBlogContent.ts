@@ -18,11 +18,12 @@ export const updateBlogContent = mutation({
       throw new Error("Blog not found.");
     }
 
-    if (args.productId && blog.productId !== args.productId) {
+    if (args.productId && blog.productId && blog.productId !== args.productId) {
       throw new Error("Blog not found in this workspace.");
     }
 
     await ctx.db.patch(args.blogId, {
+      productId: blog.productId || args.productId,
       title: args.title.trim(),
       excerpt: args.excerpt.trim(),
       mdx: args.mdx,

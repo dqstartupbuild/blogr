@@ -15,7 +15,7 @@ export const getTopic = query({
       return null;
     }
 
-    if (args.productId && topic.productId !== args.productId) {
+    if (args.productId && topic.productId && topic.productId !== args.productId) {
       return null;
     }
 

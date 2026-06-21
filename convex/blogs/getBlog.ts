@@ -15,7 +15,7 @@ export const getBlog = query({
       return null;
     }
 
-    if (args.productId && blog.productId !== args.productId) {
+    if (args.productId && blog.productId && blog.productId !== args.productId) {
       return null;
     }
 

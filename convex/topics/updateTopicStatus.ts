@@ -23,11 +23,12 @@ export const updateTopicStatus = mutation({
       throw new Error("Topic not found.");
     }
 
-    if (args.productId && topic.productId !== args.productId) {
+    if (args.productId && topic.productId && topic.productId !== args.productId) {
       throw new Error("Topic not found in this workspace.");
     }
 
     await ctx.db.patch(args.topicId, {
+      productId: topic.productId || args.productId,
       status: args.status,
       blogId: args.blogId,
       lastError: args.lastError,

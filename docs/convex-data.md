@@ -15,6 +15,12 @@ The schema lives in `convex/schema.ts`.
 
 `products` are the workspace records. `workspaceSelections` stores one active product workspace per user. New topic and blog records include `productId`, and list queries use product-scoped indexes so one workspace does not read another workspace's records.
 
+Rows created before product workspaces can be backfilled with:
+
+```bash
+npx convex run migrations/backfillProductWorkspaceIds:backfillProductWorkspaceIds '{}' --identity '{"subject":"USER_ID"}'
+```
+
 ## Auth
 
 Convex functions call `requireUserId`, which checks Convex auth identity before reading or writing user data.
@@ -39,6 +45,7 @@ Convex will replace the shim with the normal generated files.
 - `convex/identity/getPreviewUserId.ts`
 - `convex/identity/requireUserId.ts`
 - `convex/products/*`
+- `convex/migrations/*`
 - `convex/workspaceSelections/*`
 - `convex/topics/*`
 - `convex/blogs/*`
