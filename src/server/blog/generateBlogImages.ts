@@ -21,7 +21,11 @@ export const generateBlogImages = async ({
     return [];
   }
 
-  const images = await Promise.all(prompts.map(tryGenerateBlogImage));
+  const images: Array<BlogImage | null> = [];
+
+  for (const prompt of prompts) {
+    images.push(await tryGenerateBlogImage(prompt));
+  }
 
   return images.filter((image): image is BlogImage => Boolean(image));
 };

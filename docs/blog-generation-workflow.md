@@ -15,10 +15,10 @@ It researches the topic, applies the active workspace settings, retrieves produc
 5. The workflow searches the active product workspace's RAG namespace for context that matches the keyword.
 6. Internal links are scored against the keyword, then limited by the workspace setting.
 7. YouTube videos are found only when the workspace setting is on. The YouTube Data API is used when `YOUTUBE_API_KEY` exists. Otherwise the workflow searches YouTube video pages through Firecrawl when `FIRECRAWL_API_KEY` exists.
-8. Replicate image generation creates the number of images chosen in settings when `REPLICATE_API_TOKEN` exists.
-9. The generated image URLs are downloaded into R2 through the Convex R2 component.
+8. Replicate image generation creates the number of images chosen in settings when `REPLICATE_API_TOKEN` exists. Multiple images are generated one after another so every requested image gets its own model run.
+9. The generated image URLs are downloaded into R2 through the Convex R2 component with a fresh optional Convex auth token at storage time.
 10. Replicate writer generation uses the article style, writing rules, retrieved product context, toggles, and R2 image URLs before returning blog metadata and MDX in a simple XML shape.
-11. The MDX image cleanup removes repeated image URLs and inserts any unused supporting images near section headings.
+11. The MDX cleanup removes repeated image URLs, inserts any unused supporting images near section headings, and adds found YouTube videos when the writer did not include them.
 12. The workspace saves the blog and image R2 keys through `upsertGeneratedBlog`, which marks the topic as written.
 
 If research search is unavailable, the writer still uses the saved product
@@ -38,6 +38,7 @@ as failed with a short error.
 - `src/server/blog/findYoutubeVideos.ts`
 - `src/server/blog/findYoutubeVideosWithApi.ts`
 - `src/server/blog/findYoutubeVideosWithFirecrawl.ts`
+- `src/server/blog/insertMissingYoutubeVideos.ts`
 - `src/server/blog/generateBlogImages.ts`
 - `src/server/blog/storeGeneratedBlogImages.ts`
 - `src/server/blog/buildImagePromptPlans.ts`
@@ -64,6 +65,8 @@ The writer is asked for XML with:
 - `<mdx>`
 
 The MDX prompt asks for frontmatter, one H1, a direct answer, short paragraphs, useful examples, cited sources, natural internal links, YouTube links only when helpful, and images placed throughout. Workspace settings can add a table of contents, change article voice, allow first-person writing, add or remove a call-to-action, and allow similar product comparisons.
+
+When YouTube videos are found but missing from the writer's MDX, the cleanup step appends a short helpful videos section so the setting has a visible result.
 
 The writer receives only the generated article image list as usable article images. Product scan assets and screenshots are removed from the product context sent to the writer so the image count setting controls article image use.
 

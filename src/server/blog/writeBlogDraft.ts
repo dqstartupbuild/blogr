@@ -1,6 +1,7 @@
 import { runReplicateText } from "../replicate/runReplicateText";
 import { buildBlogWriterPrompt } from "./buildBlogWriterPrompt";
 import { createFallbackMdx } from "./createFallbackMdx";
+import { insertMissingYoutubeVideos } from "./insertMissingYoutubeVideos";
 import { normalizeBlogMdxImages } from "./normalizeBlogMdxImages";
 import { parseWriterDraft } from "./parseWriterDraft";
 import { slugify } from "./slugify";
@@ -65,9 +66,13 @@ export const writeBlogDraft = async ({
       title,
       youtubeVideos,
     });
-  const mdx = normalizeBlogMdxImages({
+  const imageMdx = normalizeBlogMdxImages({
     images,
     mdx: rawMdx,
+  });
+  const mdx = insertMissingYoutubeVideos({
+    mdx: imageMdx,
+    youtubeVideos,
   });
 
   return {

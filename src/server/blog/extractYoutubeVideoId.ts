@@ -3,9 +3,19 @@ export const extractYoutubeVideoId = (url: string) => {
     const parsedUrl = new URL(url);
     const host = parsedUrl.hostname.replace(/^www\./i, "");
 
-    if (host === "youtube.com" || host === "m.youtube.com") {
+    if (
+      host === "youtube.com" ||
+      host === "m.youtube.com" ||
+      host === "music.youtube.com" ||
+      host === "youtube-nocookie.com"
+    ) {
       const videoId = parsedUrl.searchParams.get("v");
-      return videoId || "";
+      if (videoId) return videoId;
+
+      const [, pathVideoId] =
+        parsedUrl.pathname.match(/^\/(?:shorts|embed|live)\/([^/?#]+)/) || [];
+
+      return pathVideoId || "";
     }
 
     if (host === "youtu.be") {
