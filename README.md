@@ -24,10 +24,12 @@ Without keys, the workspace shows a local demo layout. With Clerk and Convex pub
 - `NEXT_PUBLIC_CONVEX_URL`
 - `REPLICATE_API_TOKEN`
 - `REPLICATE_WRITER_MODEL`
+- `REPLICATE_IMAGE_PLANNER_MODEL`
 - `REPLICATE_IMAGE_MODEL`
 - `OPENAI_API_KEY` for Convex RAG embeddings
 - `FIRECRAWL_API_KEY`
 - `YOUTUBE_API_KEY` optional
+- `EXA_API_KEY` optional video search fallback
 
 Set `AUTH_DISABLED_FOR_PREVIEW=true` only for local preview work. Keep it false in production.
 
@@ -57,6 +59,7 @@ npx convex env set R2_BUCKET <bucket>
 - [Product website ingestion](docs/product-website-ingestion.md)
 - [Topic workspace](docs/topic-workspace.md)
 - [Blog generation workflow](docs/blog-generation-workflow.md)
+- [Article image planning agent](docs/article-image-planning-agent.md)
 - [RAG product context](docs/rag-product-context.md)
 - [Blog generation reliability](docs/blog-generation-reliability.md)
 - [Blog editor](docs/blog-editor.md)

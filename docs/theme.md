@@ -19,18 +19,19 @@ The app UI stays black and white. Generated blog image prompts are different:
 they use the scanned product context, audience, niche, and brand colors so the
 images feel tied to the user's product instead of generic.
 
-The image set has one feature image plus supporting images for the body. A
-supporting image can be a simple infographic-style visual, a process image, or
-an outcome image. The prompts ask for realistic editorial images with no
-readable text, fake UI text, captions, watermarks, random symbols, or unrelated
-objects.
+The image set has one feature image plus supporting images for the body. The
+article is written first, then an image-planning reviewer chooses useful
+sections and writes section-specific prompts. The prompts ask for realistic
+editorial images with no readable text, fake UI text, captions, watermarks,
+random symbols, or unrelated objects unless the chosen image style explicitly
+allows text.
 
 ## Relevant Code
 
 - `src/app/globals.css`
 - `src/features/workspace/components/*`
 - `src/features/auth/components/*`
-- `src/server/blog/buildImagePrompts.ts`
-- `src/server/blog/buildBlogImagePrompt.ts`
+- `src/server/blog/planBlogImagePrompts.ts`
+- `src/server/blog/buildImagePlannerPrompt.ts`
 - `src/server/blog/buildProductVisualContext.ts`
 - `src/server/blog/normalizeBlogMdxImages.ts`

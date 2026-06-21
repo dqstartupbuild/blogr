@@ -21,10 +21,10 @@ The blog generation workflow applies settings before research, link choice, vide
 - Article style controls the main voice used in the writer prompt.
 - Global article settings add the user's own writing rules without changing the required XML response shape.
 - Internal links controls how many sitemap links can be selected for each article.
-- Image style changes the image prompt direction sent to Replicate.
-- Images per article controls how many image prompts are created. Each requested image runs as its own Replicate image job. If no images are requested, the writer is told not to add image markdown or pull product scan images into the article.
+- Image style changes the image prompt direction used by the image-planning reviewer.
+- Images per article controls how many image prompts are created after the article is written. Each requested image runs as its own Replicate image job. If no images are requested, the writer is told not to add image markdown or pull product scan images into the article.
 - Table of contents asks the writer to add a short section list.
-- YouTube video controls whether the workflow looks for videos. With `YOUTUBE_API_KEY`, the app uses the YouTube Data API. Without it, the app searches YouTube video pages through Firecrawl when `FIRECRAWL_API_KEY` is available. Found videos are added to the article when the writer does not include them. AI alone is not used to invent video URLs.
+- YouTube video controls whether the workflow looks for videos. With `YOUTUBE_API_KEY`, the app uses the YouTube Data API. Without it, the app searches YouTube video pages through Exa when `EXA_API_KEY` is available, then Firecrawl when `FIRECRAWL_API_KEY` is available. Found videos are added to the article when the writer does not include them. AI alone is not used to invent video URLs.
 - Call-to-action controls whether the writer ends with a product next step.
 - Include infographics guides supporting images toward data-style visuals when useful.
 - Mention similar products and tools allows natural comparison sections.
@@ -51,8 +51,10 @@ The blog generation workflow applies settings before research, link choice, vide
 - `src/server/blog/generateBlogForKeyword.ts`
 - `src/server/blog/buildBlogGenerationSettingsPrompt.ts`
 - `src/server/blog/buildBlogWriterProductContext.ts`
-- `src/server/blog/buildImagePromptPlans.ts`
+- `src/server/blog/planBlogImagePrompts.ts`
+- `src/server/blog/buildImagePlannerPrompt.ts`
 - `src/server/blog/findYoutubeVideosWithApi.ts`
+- `src/server/blog/findYoutubeVideosWithExa.ts`
 - `src/server/blog/findYoutubeVideosWithFirecrawl.ts`
 
 ## Use Cases

@@ -1,0 +1,4 @@
+export type BlogImagePrompt = {
+  alt: string;
+  prompt: string;
+};

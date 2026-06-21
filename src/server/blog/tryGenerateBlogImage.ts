@@ -1,7 +1,6 @@
 import { runReplicateImage } from "../replicate/runReplicateImage";
 import type { BlogImage } from "./types/BlogImage";
-
-type BlogImagePrompt = Omit<BlogImage, "url">;
+import type { BlogImagePrompt } from "./types/BlogImagePrompt";
 
 export const tryGenerateBlogImage = async (
   image: BlogImagePrompt,

@@ -9,11 +9,13 @@ If research search is unavailable, the app still writes from the saved product p
 ## How It Works
 
 1. `runBlogResearch` tries Firecrawl Search and returns an empty source list if search is unavailable.
-2. `generateBlogImages` asks for each image separately and keeps any image that returns a usable URL.
-3. `normalizeReplicateImageUrl` reads normal URLs and Replicate file outputs.
-4. `buildBlogWriterPrompt` asks Claude Sonnet 4.6 for simple XML so long MDX does not need escaped JSON newlines.
-5. `parseWriterDraft` tries XML first, JSON second, and raw MDX last.
-6. `normalizeBlogMdxImages` removes repeated markdown image URLs and inserts unused supporting images near section headings.
+2. `writeBlogDraft` writes the article before images are generated.
+3. `planBlogImagePrompts` asks the image-planning reviewer to choose article sections and write image prompts. If that model fails, it falls back to the article headings.
+4. `generateBlogImages` asks for each image separately and keeps any image that returns a usable URL.
+5. `normalizeReplicateImageUrl` reads normal URLs and Replicate file outputs.
+6. `buildBlogWriterPrompt` asks Claude Sonnet 4.6 for simple XML so long MDX does not need escaped JSON newlines.
+7. `parseWriterDraft` tries XML first, JSON second, and raw MDX last.
+8. `normalizeBlogMdxImages` removes repeated markdown image URLs and inserts unused supporting images near section headings.
 
 ## Use Cases
 
@@ -23,10 +25,12 @@ If research search is unavailable, the app still writes from the saved product p
 - One image prompt fails while the other images succeed.
 - The writer repeats the feature image in several sections.
 - The writer forgets to place one of the supporting images.
+- The image-planning reviewer fails and the app falls back to article-heading prompts.
 
 ## Relevant Code
 
 - `src/server/blog/runBlogResearch.ts`
+- `src/server/blog/planBlogImagePrompts.ts`
 - `src/server/blog/generateBlogImages.ts`
 - `src/server/blog/tryGenerateBlogImage.ts`
 - `src/server/replicate/normalizeReplicateImageUrl.ts`

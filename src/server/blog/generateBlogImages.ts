@@ -1,22 +1,14 @@
-import { buildImagePrompts } from "./buildImagePrompts";
 import { tryGenerateBlogImage } from "./tryGenerateBlogImage";
-import type { BlogGenerationSettings } from "@/features/workspace/types/BlogGenerationSettings";
+import type { BlogImagePrompt } from "./types/BlogImagePrompt";
 import type { BlogImage } from "./types/BlogImage";
-import type { StoredProduct } from "./types/StoredProduct";
 
 type GenerateBlogImagesOptions = {
-  keyword: string;
-  product: StoredProduct;
-  settings: BlogGenerationSettings;
+  prompts: BlogImagePrompt[];
 };
 
 export const generateBlogImages = async ({
-  keyword,
-  product,
-  settings,
+  prompts,
 }: GenerateBlogImagesOptions): Promise<BlogImage[]> => {
-  const prompts = buildImagePrompts({ keyword, product, settings });
-
   if (!process.env.REPLICATE_API_TOKEN) {
     return [];
   }

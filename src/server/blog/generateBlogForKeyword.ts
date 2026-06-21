@@ -1,7 +1,9 @@
 import { buildSourceLinks } from "./buildSourceLinks";
 import { chooseInternalLinks } from "./chooseInternalLinks";
+import { applyBlogImagesToMdx } from "./applyBlogImagesToMdx";
 import { findYoutubeVideos } from "./findYoutubeVideos";
 import { generateBlogImages } from "./generateBlogImages";
+import { planBlogImagePrompts } from "./planBlogImagePrompts";
 import { runBlogResearch } from "./runBlogResearch";
 import { storeGeneratedBlogImages } from "./storeGeneratedBlogImages";
 import { writeBlogDraft } from "./writeBlogDraft";
@@ -31,10 +33,9 @@ export const generateBlogForKeyword = async ({
   const settings = normalizeBlogGenerationSettings(
     blogGenerationSettings || product.blogGenerationSettings,
   );
-  const [sources, youtubeVideos, images, productRagContext] = await Promise.all([
+  const [sources, youtubeVideos, productRagContext] = await Promise.all([
     runBlogResearch(keyword),
     settings.youtubeVideo ? findYoutubeVideos(keyword) : Promise.resolve([]),
-    generateBlogImages({ keyword, product, settings }),
     searchProductRagContext({
       productId,
       query: keyword,
@@ -47,14 +48,8 @@ export const generateBlogForKeyword = async ({
     limit: settings.internalLinksPerArticle,
   });
   const sourceLinks = buildSourceLinks(sources);
-  const storedImages = await storeGeneratedBlogImages({
-    images,
-    token: convexAuthToken,
-    userId,
-  });
-
-  return await writeBlogDraft({
-    images: storedImages,
+  const textBlog = await writeBlogDraft({
+    images: [],
     internalLinks,
     keyword,
     product,
@@ -64,4 +59,30 @@ export const generateBlogForKeyword = async ({
     sources,
     youtubeVideos,
   });
+  const imagePrompts = await planBlogImagePrompts({
+    keyword,
+    mdx: textBlog.mdx,
+    product,
+    settings,
+    title: textBlog.title,
+  });
+  const images = await generateBlogImages({
+    prompts: imagePrompts,
+  });
+  const storedImages = await storeGeneratedBlogImages({
+    images,
+    token: convexAuthToken,
+    userId,
+  });
+  const mdx = applyBlogImagesToMdx({
+    images: storedImages,
+    mdx: textBlog.mdx,
+  });
+
+  return {
+    ...textBlog,
+    featureImageUrl: storedImages[0]?.url,
+    images: storedImages,
+    mdx,
+  };
 };
