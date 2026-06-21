@@ -14,13 +14,17 @@ import type * as blogs_updateBlogContent from "../blogs/updateBlogContent.js";
 import type * as blogs_upsertGeneratedBlog from "../blogs/upsertGeneratedBlog.js";
 import type * as identity_getPreviewUserId from "../identity/getPreviewUserId.js";
 import type * as identity_requireUserId from "../identity/requireUserId.js";
+import type * as products_createProductWorkspace from "../products/createProductWorkspace.js";
 import type * as products_getCurrentProduct from "../products/getCurrentProduct.js";
+import type * as products_getProductWorkspaces from "../products/getProductWorkspaces.js";
 import type * as products_saveProductScan from "../products/saveProductScan.js";
+import type * as products_setActiveProductWorkspace from "../products/setActiveProductWorkspace.js";
 import type * as topics_createTopic from "../topics/createTopic.js";
 import type * as topics_deleteTopic from "../topics/deleteTopic.js";
 import type * as topics_getTopic from "../topics/getTopic.js";
 import type * as topics_listTopics from "../topics/listTopics.js";
 import type * as topics_updateTopicStatus from "../topics/updateTopicStatus.js";
+import type * as workspaceSelections_saveWorkspaceSelection from "../workspaceSelections/saveWorkspaceSelection.js";
 
 import type {
   ApiFromModules,
@@ -35,13 +39,17 @@ declare const fullApi: ApiFromModules<{
   "blogs/upsertGeneratedBlog": typeof blogs_upsertGeneratedBlog;
   "identity/getPreviewUserId": typeof identity_getPreviewUserId;
   "identity/requireUserId": typeof identity_requireUserId;
+  "products/createProductWorkspace": typeof products_createProductWorkspace;
   "products/getCurrentProduct": typeof products_getCurrentProduct;
+  "products/getProductWorkspaces": typeof products_getProductWorkspaces;
   "products/saveProductScan": typeof products_saveProductScan;
+  "products/setActiveProductWorkspace": typeof products_setActiveProductWorkspace;
   "topics/createTopic": typeof topics_createTopic;
   "topics/deleteTopic": typeof topics_deleteTopic;
   "topics/getTopic": typeof topics_getTopic;
   "topics/listTopics": typeof topics_listTopics;
   "topics/updateTopicStatus": typeof topics_updateTopicStatus;
+  "workspaceSelections/saveWorkspaceSelection": typeof workspaceSelections_saveWorkspaceSelection;
 }>;
 
 /**

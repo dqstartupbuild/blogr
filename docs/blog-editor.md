@@ -10,9 +10,11 @@ The editor route is `/blogs/[blogId]`.
 
 The editor waits for Clerk and Convex auth before it asks Convex for a blog. That keeps direct editor visits from firing `getBlog` before the browser has a valid workspace token.
 
-After auth is ready, the editor loads the live blog through the Convex client with `getBlog`. If live mode is not available, it falls back to demo content for layout preview.
+After auth is ready, the editor loads the active product workspace and then loads the live blog through the Convex client with `getBlog`. The query includes the active product ID, so a blog from another workspace is not edited by mistake. If live mode is not available, it falls back to demo content for layout preview.
 
-Saving uses the Convex client mutation `updateBlogContent`, so it follows the same browser auth path as the main workspace.
+Saving uses the Convex client mutation `updateBlogContent`, so it follows the same browser auth path as the main workspace. The save call includes the active product ID.
+
+The live editor header includes the workspace switcher. If a user switches workspaces while editing, the app returns to `/blogs` so the new workspace can show its own saved posts.
 
 The right-side preview uses `MarkdownPreview`, so headings, links, lists, quotes, images, tables, and code blocks render like a blog instead of plain markdown text.
 
@@ -20,7 +22,9 @@ The right-side preview uses `MarkdownPreview`, so headings, links, lists, quotes
 
 - `src/app/blogs/[blogId]/page.tsx`
 - `src/features/workspace/components/LiveBlogEditorView.tsx`
+- `src/features/workspace/components/LiveBlogEditorContent.tsx`
 - `src/features/workspace/components/BlogEditorView.tsx`
+- `src/features/workspace/components/WorkspaceSwitcher.tsx`
 - `src/features/workspace/components/BlogEditorLoadingView.tsx`
 - `src/features/workspace/components/SignedOutBlogEditorView.tsx`
 - `src/features/workspace/components/BlogEditorConnectionIssueView.tsx`
@@ -30,6 +34,7 @@ The right-side preview uses `MarkdownPreview`, so headings, links, lists, quotes
 - `src/features/workspace/components/MarkdownPreview.tsx`
 - `src/features/workspace/components/BlogZipButton.tsx`
 - `src/features/workspace/hooks/useBlogEditor.ts`
+- `src/features/workspace/hooks/useLiveWorkspaceSwitcher.ts`
 - `convex/blogs/updateBlogContent.ts`
 
 ## Use Cases

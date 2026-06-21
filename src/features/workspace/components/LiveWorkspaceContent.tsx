@@ -2,6 +2,7 @@
 
 import { WorkspaceContent } from "./WorkspaceContent";
 import { useLiveWorkspace } from "../hooks/useLiveWorkspace";
+import { useLiveWorkspaceSwitcher } from "../hooks/useLiveWorkspaceSwitcher";
 import type { WorkspaceViewMode } from "../types/WorkspaceViewMode";
 
 type LiveWorkspaceContentProps = {
@@ -11,7 +12,8 @@ type LiveWorkspaceContentProps = {
 export const LiveWorkspaceContent = ({
   initialMode,
 }: LiveWorkspaceContentProps) => {
-  const workspace = useLiveWorkspace(initialMode);
+  const workspaceSwitcher = useLiveWorkspaceSwitcher();
+  const workspace = useLiveWorkspace(initialMode, workspaceSwitcher);
 
   return <WorkspaceContent {...workspace} />;
 };

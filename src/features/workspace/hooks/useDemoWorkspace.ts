@@ -3,20 +3,55 @@
 import { useMemo, useState } from "react";
 import { demoBlogs } from "../constants/demoBlogs";
 import { demoProduct } from "../constants/demoProduct";
+import { demoProductWorkspace } from "../constants/demoProductWorkspace";
 import { demoTopics } from "../constants/demoTopics";
+import { emptyProduct } from "../constants/emptyProduct";
+import { buildProductWorkspaceName } from "../mappers/buildProductWorkspaceName";
 import type { BlogItem } from "../types/BlogItem";
+import type { CreateProductWorkspaceInput } from "../types/CreateProductWorkspaceInput";
 import type { ProductProfile } from "../types/ProductProfile";
+import type { ProductWorkspace } from "../types/ProductWorkspace";
 import type { TopicItem } from "../types/TopicItem";
 import type { WorkspaceViewMode } from "../types/WorkspaceViewMode";
 
 export const useDemoWorkspace = (initialMode: WorkspaceViewMode) => {
   const [mode, setMode] = useState<WorkspaceViewMode>(initialMode);
-  const [product, setProduct] = useState<ProductProfile>(demoProduct);
+  const [activeWorkspaceId, setActiveWorkspaceId] = useState(
+    demoProductWorkspace.id,
+  );
+  const [workspaces, setWorkspaces] = useState<ProductWorkspace[]>([
+    demoProductWorkspace,
+  ]);
+  const [productsByWorkspace, setProductsByWorkspace] = useState<
+    Record<string, ProductProfile>
+  >({
+    [demoProductWorkspace.id]: demoProduct,
+  });
   const [productScanMessage, setProductScanMessage] = useState("");
   const [isScanningProduct, setIsScanningProduct] = useState(false);
-  const [topics, setTopics] = useState<TopicItem[]>(demoTopics);
-  const [blogs, setBlogs] = useState<BlogItem[]>(demoBlogs);
+  const [topicsByWorkspace, setTopicsByWorkspace] = useState<
+    Record<string, TopicItem[]>
+  >({
+    [demoProductWorkspace.id]: demoTopics,
+  });
+  const [blogsByWorkspace, setBlogsByWorkspace] = useState<
+    Record<string, BlogItem[]>
+  >({
+    [demoProductWorkspace.id]: demoBlogs,
+  });
   const [selectedBlogId, setSelectedBlogId] = useState(demoBlogs[0]?.id ?? "");
+  const product = productsByWorkspace[activeWorkspaceId] || emptyProduct;
+  const topics = useMemo(
+    () => topicsByWorkspace[activeWorkspaceId] || [],
+    [activeWorkspaceId, topicsByWorkspace],
+  );
+  const blogs = useMemo(
+    () => blogsByWorkspace[activeWorkspaceId] || [],
+    [activeWorkspaceId, blogsByWorkspace],
+  );
+  const activeWorkspace = workspaces.find(
+    (workspace) => workspace.id === activeWorkspaceId,
+  );
 
   const selectedBlog = useMemo(
     () => blogs.find((blog) => blog.id === selectedBlogId) ?? blogs[0],
@@ -25,11 +60,32 @@ export const useDemoWorkspace = (initialMode: WorkspaceViewMode) => {
 
   const scanProduct = (websiteUrl: string, niche: string) => {
     setIsScanningProduct(true);
-    setProduct((current) => ({
-      ...current,
-      websiteUrl,
-      niche,
-    }));
+    setProductsByWorkspace((current) => {
+      const nextProduct = {
+        ...(current[activeWorkspaceId] || emptyProduct),
+        websiteUrl,
+        niche,
+      };
+
+      setWorkspaces((workspaceItems) =>
+        workspaceItems.map((workspace) =>
+          workspace.id === activeWorkspaceId
+            ? {
+                ...workspace,
+                name: buildProductWorkspaceName(nextProduct),
+                niche,
+                updatedAt: Date.now(),
+                websiteUrl,
+              }
+            : workspace,
+        ),
+      );
+
+      return {
+        ...current,
+        [activeWorkspaceId]: nextProduct,
+      };
+    });
     setProductScanMessage("Saved in preview.");
     setIsScanningProduct(false);
   };
@@ -38,14 +94,17 @@ export const useDemoWorkspace = (initialMode: WorkspaceViewMode) => {
     const trimmed = keyword.trim();
     if (!trimmed) return;
 
-    setTopics((current) => [
-      {
-        id: `topic-${Date.now()}`,
-        keyword: trimmed,
-        status: "saved",
-      },
+    setTopicsByWorkspace((current) => ({
       ...current,
-    ]);
+      [activeWorkspaceId]: [
+        {
+          id: `topic-${Date.now()}`,
+          keyword: trimmed,
+          status: "saved",
+        },
+        ...(current[activeWorkspaceId] || []),
+      ],
+    }));
   };
 
   const writeBlog = (topicId: string) => {
@@ -69,16 +128,66 @@ export const useDemoWorkspace = (initialMode: WorkspaceViewMode) => {
       sources: [],
     };
 
-    setBlogs((current) => [nextBlog, ...current]);
-    setTopics((current) =>
-      current.map((item) =>
-        item.id === topicId
-          ? { ...item, status: "written", blogId }
-          : item,
+    setBlogsByWorkspace((current) => ({
+      ...current,
+      [activeWorkspaceId]: [nextBlog, ...(current[activeWorkspaceId] || [])],
+    }));
+    setTopicsByWorkspace((current) => ({
+      ...current,
+      [activeWorkspaceId]: (current[activeWorkspaceId] || []).map((item) =>
+        item.id === topicId ? { ...item, status: "written", blogId } : item,
       ),
-    );
+    }));
     setSelectedBlogId(blogId);
     setMode("blogs");
+  };
+
+  const selectWorkspace = async (workspaceId: string) => {
+    if (!workspaces.some((workspace) => workspace.id === workspaceId)) {
+      return;
+    }
+
+    setActiveWorkspaceId(workspaceId);
+    setSelectedBlogId("");
+  };
+
+  const createWorkspace = async (input: CreateProductWorkspaceInput) => {
+    const name = input.name.trim() || "New workspace";
+    const websiteUrl = input.websiteUrl?.trim() || "";
+    const niche = input.niche?.trim() || "";
+    const workspaceId = `workspace-${Date.now()}`;
+    const nextProduct: ProductProfile = {
+      ...emptyProduct,
+      name,
+      websiteUrl,
+      niche,
+      description: "Add a site to fill in this workspace.",
+    };
+    const nextWorkspace: ProductWorkspace = {
+      id: workspaceId,
+      name,
+      niche,
+      updatedAt: Date.now(),
+      websiteUrl,
+    };
+
+    setWorkspaces((current) => [nextWorkspace, ...current]);
+    setProductsByWorkspace((current) => ({
+      ...current,
+      [workspaceId]: nextProduct,
+    }));
+    setTopicsByWorkspace((current) => ({
+      ...current,
+      [workspaceId]: [],
+    }));
+    setBlogsByWorkspace((current) => ({
+      ...current,
+      [workspaceId]: [],
+    }));
+    setActiveWorkspaceId(workspaceId);
+    setSelectedBlogId("");
+
+    return workspaceId;
   };
 
   return {
@@ -96,6 +205,14 @@ export const useDemoWorkspace = (initialMode: WorkspaceViewMode) => {
     setSelectedBlogId,
     scanProduct,
     addTopic,
+    workspaceSwitcher: {
+      activeWorkspace,
+      activeWorkspaceId,
+      createWorkspace,
+      isLoadingWorkspaces: false,
+      selectWorkspace,
+      workspaces,
+    },
     writeBlog,
   };
 };

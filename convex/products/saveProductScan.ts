@@ -1,6 +1,7 @@
 import { v } from "convex/values";
 import { mutation } from "../_generated/server";
 import { requireUserId } from "../identity/requireUserId";
+import { saveWorkspaceSelection } from "../workspaceSelections/saveWorkspaceSelection";
 
 const linkValidator = v.object({
   title: v.string(),
@@ -10,6 +11,7 @@ const linkValidator = v.object({
 
 export const saveProductScan = mutation({
   args: {
+    productId: v.optional(v.id("products")),
     websiteUrl: v.string(),
     name: v.string(),
     description: v.string(),
@@ -25,28 +27,40 @@ export const saveProductScan = mutation({
   handler: async (ctx, args) => {
     const userId = await requireUserId(ctx);
     const now = Date.now();
-    const existing = await ctx.db
-      .query("products")
-      .withIndex("by_userId_updatedAt", (q) => q.eq("userId", userId))
-      .order("desc")
-      .first();
+    const { productId, ...productDetails } = args;
+    const existing = productId
+      ? await ctx.db.get(productId)
+      : await ctx.db
+          .query("products")
+          .withIndex("by_userId_updatedAt", (q) => q.eq("userId", userId))
+          .order("desc")
+          .first();
+
+    if (existing && existing.userId !== userId) {
+      throw new Error("Workspace not found.");
+    }
 
     if (existing) {
       await ctx.db.patch(existing._id, {
-        ...args,
+        ...productDetails,
         updatedAt: now,
         scannedAt: now,
       });
+      await saveWorkspaceSelection(ctx, userId, existing._id);
 
       return existing._id;
     }
 
-    return await ctx.db.insert("products", {
-      ...args,
+    const nextProductId = await ctx.db.insert("products", {
+      ...productDetails,
       userId,
       scannedAt: now,
       createdAt: now,
       updatedAt: now,
     });
+
+    await saveWorkspaceSelection(ctx, userId, nextProductId);
+
+    return nextProductId;
   },
 });

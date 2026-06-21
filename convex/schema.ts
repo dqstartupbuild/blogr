@@ -34,8 +34,15 @@ export default defineSchema({
     .index("by_userId", ["userId"])
     .index("by_userId_updatedAt", ["userId", "updatedAt"]),
 
+  workspaceSelections: defineTable({
+    userId: v.string(),
+    productId: v.id("products"),
+    updatedAt: v.number(),
+  }).index("by_userId", ["userId"]),
+
   topics: defineTable({
     userId: v.string(),
+    productId: v.optional(v.id("products")),
     keyword: v.string(),
     notes: v.optional(v.string()),
     status: v.union(
@@ -50,10 +57,16 @@ export default defineSchema({
     updatedAt: v.number(),
   })
     .index("by_userId", ["userId"])
-    .index("by_userId_createdAt", ["userId", "createdAt"]),
+    .index("by_userId_createdAt", ["userId", "createdAt"])
+    .index("by_userId_productId_createdAt", [
+      "userId",
+      "productId",
+      "createdAt",
+    ]),
 
   blogs: defineTable({
     userId: v.string(),
+    productId: v.optional(v.id("products")),
     topicId: v.optional(v.id("topics")),
     keyword: v.string(),
     title: v.string(),
@@ -75,5 +88,10 @@ export default defineSchema({
   })
     .index("by_userId", ["userId"])
     .index("by_userId_updatedAt", ["userId", "updatedAt"])
+    .index("by_userId_productId_updatedAt", [
+      "userId",
+      "productId",
+      "updatedAt",
+    ])
     .index("by_topicId", ["topicId"]),
 });

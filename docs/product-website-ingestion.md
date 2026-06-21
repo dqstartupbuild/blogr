@@ -2,13 +2,13 @@
 
 ## What It Does
 
-The user enters a website and niche. The app scans the site, collects product context, finds internal links, extracts brand assets and colors, and saves the product profile to Convex.
+The user enters a website and niche inside the active workspace. The app scans the site, collects product context, finds internal links, extracts brand assets and colors, and saves the product profile to that workspace in Convex.
 
 This gives the writer enough context to understand the product and place internal links naturally in future blog posts.
 
 ## How It Works
 
-1. The workspace saves the website and niche through Convex right away.
+1. The workspace saves the website and niche to the active product workspace through Convex right away.
 2. `POST /api/product/scan` checks the signed-in user.
 3. `scanProductWebsite` normalizes the URL and calls Firecrawl.
 4. The scanner reads homepage markdown, branding, links, screenshots, sitemap links, and crawl links.
@@ -24,6 +24,10 @@ The browser saves a basic product record before the slow scan starts. If the
 slow scan times out after Firecrawl or Replicate runs, the workspace still keeps
 the site and niche instead of losing everything. This uses the same signed-in
 Convex client path that saves topics.
+
+When multiple product workspaces exist, `saveProductScan` receives the active
+product ID and updates that workspace only. If no product exists yet, the scan
+creates the first product workspace and makes it active.
 
 Live workspaces start with empty product inputs. Demo mode uses example product
 copy only when Clerk and Convex are not configured.

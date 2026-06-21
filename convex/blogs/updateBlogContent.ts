@@ -5,6 +5,7 @@ import { requireUserId } from "../identity/requireUserId";
 export const updateBlogContent = mutation({
   args: {
     blogId: v.id("blogs"),
+    productId: v.optional(v.id("products")),
     title: v.string(),
     excerpt: v.string(),
     mdx: v.string(),
@@ -15,6 +16,10 @@ export const updateBlogContent = mutation({
 
     if (!blog || blog.userId !== userId) {
       throw new Error("Blog not found.");
+    }
+
+    if (args.productId && blog.productId !== args.productId) {
+      throw new Error("Blog not found in this workspace.");
     }
 
     await ctx.db.patch(args.blogId, {

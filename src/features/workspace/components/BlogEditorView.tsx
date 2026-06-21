@@ -5,14 +5,22 @@ import { BlogEditorHeader } from "./BlogEditorHeader";
 import { BlogEditorPreview } from "./BlogEditorPreview";
 import { buildEditorDownloadBlog } from "../mappers/buildEditorDownloadBlog";
 import { useBlogEditor } from "../hooks/useBlogEditor";
+import type { WorkspaceSwitcherState } from "../types/WorkspaceSwitcherState";
 
 type BlogEditorViewProps = {
+  activeWorkspaceId?: string;
   blogId: string;
   forceDemo: boolean;
+  workspaceSwitcher?: WorkspaceSwitcherState;
 };
 
-export const BlogEditorView = ({ blogId, forceDemo }: BlogEditorViewProps) => {
-  const editor = useBlogEditor({ blogId, forceDemo });
+export const BlogEditorView = ({
+  activeWorkspaceId,
+  blogId,
+  forceDemo,
+  workspaceSwitcher,
+}: BlogEditorViewProps) => {
+  const editor = useBlogEditor({ activeWorkspaceId, blogId, forceDemo });
   const downloadBlog = buildEditorDownloadBlog({
     baseBlog: editor.blog,
     blogId,
@@ -26,6 +34,7 @@ export const BlogEditorView = ({ blogId, forceDemo }: BlogEditorViewProps) => {
         isSaving={editor.isSaving}
         message={editor.message}
         saveBlog={editor.saveBlog}
+        workspaceSwitcher={workspaceSwitcher}
       />
       <main className="mx-auto grid w-full max-w-7xl gap-5 px-4 py-5 sm:px-6 lg:grid-cols-[minmax(0,1fr)_420px] lg:px-8">
         <BlogEditorFields state={editor.state} updateField={editor.updateField} />

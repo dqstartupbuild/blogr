@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { useMutation, useQuery } from "convex/react";
+import { castProductId } from "@/server/convex/castProductId";
 import { createTopicMutation } from "@/server/convex/references/createTopicMutation";
 import { getCurrentProductQuery } from "@/server/convex/references/getCurrentProductQuery";
 import { listBlogsQuery } from "@/server/convex/references/listBlogsQuery";
@@ -19,24 +20,44 @@ import type { BlogGenerateResponse } from "../types/BlogGenerateResponse";
 import type { BlogItem } from "../types/BlogItem";
 import type { ProductProfile } from "../types/ProductProfile";
 import type { ProductScanResponse } from "../types/ProductScanResponse";
+import type { WorkspaceSwitcherState } from "../types/WorkspaceSwitcherState";
 import type { WorkspaceViewMode } from "../types/WorkspaceViewMode";
 
-export const useLiveWorkspace = (initialMode: WorkspaceViewMode) => {
+export const useLiveWorkspace = (
+  initialMode: WorkspaceViewMode,
+  workspaceSwitcher: WorkspaceSwitcherState,
+) => {
   const [mode, setMode] = useState<WorkspaceViewMode>(initialMode);
   const [selectedBlogId, setSelectedBlogId] = useState("");
-  const [scannedProduct, setScannedProduct] = useState<ProductProfile | null>(
-    null,
-  );
+  const [scannedProduct, setScannedProduct] = useState<{
+    product: ProductProfile;
+    productId: string;
+  } | null>(null);
   const [productScanMessage, setProductScanMessage] = useState("");
   const [isScanningProduct, setIsScanningProduct] = useState(false);
-  const productResult = useQuery(getCurrentProductQuery);
-  const topicResults = useQuery(listTopicsQuery);
-  const blogResults = useQuery(listBlogsQuery);
+  const activeProductId = workspaceSwitcher.activeWorkspaceId;
+  const convexProductId = activeProductId
+    ? castProductId(activeProductId)
+    : null;
+  const productResult = useQuery(
+    getCurrentProductQuery,
+    activeProductId ? {} : "skip",
+  );
+  const topicResults = useQuery(
+    listTopicsQuery,
+    convexProductId ? { productId: convexProductId } : "skip",
+  );
+  const blogResults = useQuery(
+    listBlogsQuery,
+    convexProductId ? { productId: convexProductId } : "skip",
+  );
   const createTopic = useMutation(createTopicMutation);
   const saveProductScan = useMutation(saveProductScanMutation);
   const updateTopicStatus = useMutation(updateTopicStatusMutation);
   const upsertGeneratedBlog = useMutation(upsertGeneratedBlogMutation);
-  const product = scannedProduct || mapConvexProduct(productResult);
+  const visibleScannedProduct =
+    scannedProduct?.productId === activeProductId ? scannedProduct.product : null;
+  const product = visibleScannedProduct || mapConvexProduct(productResult);
   const topics = useMemo(
     () => (topicResults || []).map(mapConvexTopic),
     [topicResults],
@@ -45,7 +66,8 @@ export const useLiveWorkspace = (initialMode: WorkspaceViewMode) => {
     () => (blogResults || []).map(mapConvexBlog),
     [blogResults],
   );
-  const activeSelectedBlogId = selectedBlogId || blogs[0]?.id || "";
+  const activeSelectedBlogId =
+    blogs.find((blog) => blog.id === selectedBlogId)?.id || blogs[0]?.id || "";
   const selectedBlog = useMemo(
     () => blogs.find((blog) => blog.id === activeSelectedBlogId) ?? blogs[0],
     [blogs, activeSelectedBlogId],
@@ -62,9 +84,15 @@ export const useLiveWorkspace = (initialMode: WorkspaceViewMode) => {
         websiteUrl,
       });
 
-      await saveProductScan(initialProduct);
+      const savedProductId = await saveProductScan({
+        ...initialProduct,
+        productId: convexProductId || undefined,
+      });
       savedInitialProduct = true;
-      setScannedProduct(mapProductScanResult(initialProduct));
+      setScannedProduct({
+        product: mapProductScanResult(initialProduct),
+        productId: savedProductId,
+      });
       setProductScanMessage("Saved your site. Scanning for details.");
 
       const response = await fetch("/api/product/scan", {
@@ -74,15 +102,23 @@ export const useLiveWorkspace = (initialMode: WorkspaceViewMode) => {
         },
         method: "POST",
       });
-      const data = (await response.json().catch(() => ({}))) as ProductScanResponse;
+      const data = (await response
+        .json()
+        .catch(() => ({}))) as ProductScanResponse;
 
       if (!response.ok) {
         throw new Error(data.error || "Could not scan that site yet.");
       }
 
       if (data.product) {
-        await saveProductScan(data.product);
-        setScannedProduct(mapProductScanResult(data.product));
+        const savedProductId = await saveProductScan({
+          ...data.product,
+          productId: convexProductId || undefined,
+        });
+        setScannedProduct({
+          product: mapProductScanResult(data.product),
+          productId: savedProductId,
+        });
       }
 
       setProductScanMessage("Saved your product details.");
@@ -99,7 +135,14 @@ export const useLiveWorkspace = (initialMode: WorkspaceViewMode) => {
   };
 
   const addTopic = async (keyword: string) => {
-    await createTopic({ keyword });
+    if (!convexProductId) {
+      return;
+    }
+
+    await createTopic({
+      keyword,
+      productId: convexProductId,
+    });
   };
 
   const writeBlog = async (topicId: string) => {
@@ -111,16 +154,25 @@ export const useLiveWorkspace = (initialMode: WorkspaceViewMode) => {
 
     const convexTopicId = castTopicId(topicId);
 
+    if (!convexProductId) {
+      return;
+    }
+
     if (!productResult) {
       await updateTopicStatus({
         lastError: "Scan your product website first.",
+        productId: convexProductId || undefined,
         status: "failed",
         topicId: convexTopicId,
       }).catch(() => undefined);
       return;
     }
 
-    await updateTopicStatus({ status: "writing", topicId: convexTopicId });
+    await updateTopicStatus({
+      productId: convexProductId || undefined,
+      status: "writing",
+      topicId: convexTopicId,
+    });
 
     try {
       const response = await fetch("/api/blogs/generate", {
@@ -143,6 +195,7 @@ export const useLiveWorkspace = (initialMode: WorkspaceViewMode) => {
 
       const blogId = await upsertGeneratedBlog({
         ...data.blog,
+        productId: convexProductId,
         topicId: convexTopicId,
       });
 
@@ -153,6 +206,7 @@ export const useLiveWorkspace = (initialMode: WorkspaceViewMode) => {
         error instanceof Error ? error.message : "Could not write that blog yet.";
       await updateTopicStatus({
         lastError: message,
+        productId: convexProductId || undefined,
         status: "failed",
         topicId: convexTopicId,
       }).catch(() => undefined);
@@ -174,6 +228,7 @@ export const useLiveWorkspace = (initialMode: WorkspaceViewMode) => {
     setMode,
     setSelectedBlogId,
     topics,
+    workspaceSwitcher,
     writeBlog,
   };
 };

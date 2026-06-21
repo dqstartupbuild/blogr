@@ -16,6 +16,7 @@ const imageValidator = v.object({
 
 export const upsertGeneratedBlog = mutation({
   args: {
+    productId: v.id("products"),
     topicId: v.optional(v.id("topics")),
     keyword: v.string(),
     title: v.string(),
@@ -36,6 +37,20 @@ export const upsertGeneratedBlog = mutation({
   handler: async (ctx, args) => {
     const userId = await requireUserId(ctx);
     const now = Date.now();
+    const product = await ctx.db.get(args.productId);
+
+    if (!product || product.userId !== userId) {
+      throw new Error("Workspace not found.");
+    }
+
+    if (args.topicId) {
+      const topic = await ctx.db.get(args.topicId);
+
+      if (!topic || topic.userId !== userId || topic.productId !== args.productId) {
+        throw new Error("Topic not found in this workspace.");
+      }
+    }
+
     const existing = args.topicId
       ? await ctx.db
           .query("blogs")
@@ -43,7 +58,11 @@ export const upsertGeneratedBlog = mutation({
           .first()
       : null;
 
-    if (existing && existing.userId === userId) {
+    if (
+      existing &&
+      existing.userId === userId &&
+      existing.productId === args.productId
+    ) {
       await ctx.db.patch(existing._id, {
         ...args,
         updatedAt: now,

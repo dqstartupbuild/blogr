@@ -8,6 +8,8 @@ The first screen is the usable workspace, not a landing page. It stays simple: p
 
 The blog preview renders generated MDX as readable blog content, so users can browse posts without reading raw markdown.
 
+The dashboard is scoped to the active product workspace. Switching workspaces changes which product profile, topics, blogs, and previews are shown.
+
 ## How It Works
 
 Without Clerk and Convex keys, `DemoWorkspaceView` shows local demo data so the layout can be checked immediately. `AUTH_DISABLED_FOR_PREVIEW=true` also forces demo mode so preview branches can be opened without waiting on Clerk or Convex auth.
@@ -18,8 +20,11 @@ With Clerk and Convex keys, `LiveWorkspaceView` waits for Clerk and Convex auth 
 - `createTopic`
 - `listBlogs`
 - `getCurrentProduct`
+- `getProductWorkspaces`
+- `setActiveProductWorkspace`
+- `createProductWorkspace`
 
-The user can scan a product site, save topics, start writing, browse generated blogs, and open the editor.
+The user can create or switch product workspaces, scan a product site, save topics, start writing, browse generated blogs, and open the editor. Topic and blog queries include the active product ID, so each workspace keeps its own records.
 
 ## Relevant Code
 
@@ -32,9 +37,14 @@ The user can scan a product site, save topics, start writing, browse generated b
 - `src/features/workspace/components/SignedOutWorkspaceView.tsx`
 - `src/features/workspace/components/WorkspaceConnectionIssueView.tsx`
 - `src/features/workspace/components/WorkspaceContent.tsx`
+- `src/features/workspace/components/WorkspaceSwitcher.tsx`
 - `src/features/workspace/components/MarkdownPreview.tsx`
+- `src/features/workspace/hooks/useLiveWorkspaceSwitcher.ts`
 - `src/features/workspace/hooks/useDemoWorkspace.ts`
 - `src/features/workspace/hooks/useLiveWorkspace.ts`
+- `convex/products/getProductWorkspaces.ts`
+- `convex/products/setActiveProductWorkspace.ts`
+- `convex/products/createProductWorkspace.ts`
 - `convex/topics/createTopic.ts`
 - `convex/topics/listTopics.ts`
 
@@ -43,6 +53,7 @@ The user can scan a product site, save topics, start writing, browse generated b
 - Save keyword ideas as they come up.
 - Keep topics separate from finished blogs.
 - Revisit the blog list on `/blogs`.
+- Keep each product or client project separate.
 - Check the whole layout before auth keys are available.
 
 ## File Tree
@@ -54,5 +65,7 @@ src/features/workspace/components/
 src/features/workspace/hooks/
 src/features/workspace/mappers/
 src/features/workspace/types/
+convex/products/
+convex/workspaceSelections/
 convex/topics/
 ```

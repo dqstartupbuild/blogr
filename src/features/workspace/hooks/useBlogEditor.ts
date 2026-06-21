@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { useMutation, useQuery } from "convex/react";
 import { isLiveWorkspaceEnabled } from "@/config/isLiveWorkspaceEnabled";
 import { castBlogId } from "@/server/convex/castBlogId";
+import { castProductId } from "@/server/convex/castProductId";
 import { getBlogQuery } from "@/server/convex/references/getBlogQuery";
 import { updateBlogContentMutation } from "@/server/convex/references/updateBlogContentMutation";
 import { demoBlogs } from "../constants/demoBlogs";
@@ -11,20 +12,33 @@ import { mapConvexBlog } from "../mappers/mapConvexBlog";
 import type { BlogEditorState } from "../types/BlogEditorState";
 
 type UseBlogEditorOptions = {
+  activeWorkspaceId?: string;
   blogId: string;
   forceDemo: boolean;
 };
 
-export const useBlogEditor = ({ blogId, forceDemo }: UseBlogEditorOptions) => {
+export const useBlogEditor = ({
+  activeWorkspaceId,
+  blogId,
+  forceDemo,
+}: UseBlogEditorOptions) => {
   const isLive = !forceDemo && isLiveWorkspaceEnabled();
   const convexBlogId = castBlogId(blogId);
+  const convexProductId = activeWorkspaceId
+    ? castProductId(activeWorkspaceId)
+    : null;
   const fallbackBlog = useMemo(
-    () => demoBlogs.find((blog) => blog.id === blogId) || demoBlogs[0],
-    [blogId],
+    () =>
+      forceDemo
+        ? demoBlogs.find((blog) => blog.id === blogId) || demoBlogs[0]
+        : undefined,
+    [blogId, forceDemo],
   );
   const liveBlog = useQuery(
     getBlogQuery,
-    isLive ? { blogId: convexBlogId } : "skip",
+    isLive && convexProductId
+      ? { blogId: convexBlogId, productId: convexProductId }
+      : "skip",
   );
   const updateBlogContent = useMutation(updateBlogContentMutation);
   const liveState = useMemo(
@@ -64,10 +78,16 @@ export const useBlogEditor = ({ blogId, forceDemo }: UseBlogEditorOptions) => {
         return;
       }
 
+      if (!convexProductId) {
+        setMessage("Choose a workspace first.");
+        return;
+      }
+
       await updateBlogContent({
         blogId: convexBlogId,
         excerpt: editorState.excerpt,
         mdx: editorState.mdx,
+        productId: convexProductId || undefined,
         title: editorState.title,
       });
 

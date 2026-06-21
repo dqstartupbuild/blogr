@@ -5,6 +5,7 @@ import { requireUserId } from "../identity/requireUserId";
 export const updateTopicStatus = mutation({
   args: {
     topicId: v.id("topics"),
+    productId: v.optional(v.id("products")),
     status: v.union(
       v.literal("saved"),
       v.literal("writing"),
@@ -20,6 +21,10 @@ export const updateTopicStatus = mutation({
 
     if (!topic || topic.userId !== userId) {
       throw new Error("Topic not found.");
+    }
+
+    if (args.productId && topic.productId !== args.productId) {
+      throw new Error("Topic not found in this workspace.");
     }
 
     await ctx.db.patch(args.topicId, {

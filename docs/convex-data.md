@@ -2,15 +2,18 @@
 
 ## What It Does
 
-Convex stores product profiles, saved topics, and generated blogs.
+Convex stores product workspaces, active workspace selections, saved topics, and generated blogs.
 
 ## Tables
 
 - `products`
+- `workspaceSelections`
 - `topics`
 - `blogs`
 
 The schema lives in `convex/schema.ts`.
+
+`products` are the workspace records. `workspaceSelections` stores one active product workspace per user. New topic and blog records include `productId`, and list queries use product-scoped indexes so one workspace does not read another workspace's records.
 
 ## Auth
 
@@ -36,6 +39,7 @@ Convex will replace the shim with the normal generated files.
 - `convex/identity/getPreviewUserId.ts`
 - `convex/identity/requireUserId.ts`
 - `convex/products/*`
+- `convex/workspaceSelections/*`
 - `convex/topics/*`
 - `convex/blogs/*`
 - `convex/_generated/*`

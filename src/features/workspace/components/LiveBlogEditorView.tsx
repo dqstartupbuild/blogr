@@ -4,7 +4,7 @@ import { useAuth } from "@clerk/nextjs";
 import { useConvexAuth } from "convex/react";
 import { BlogEditorConnectionIssueView } from "./BlogEditorConnectionIssueView";
 import { BlogEditorLoadingView } from "./BlogEditorLoadingView";
-import { BlogEditorView } from "./BlogEditorView";
+import { LiveBlogEditorContent } from "./LiveBlogEditorContent";
 import { SignedOutBlogEditorView } from "./SignedOutBlogEditorView";
 
 type LiveBlogEditorViewProps = {
@@ -27,5 +27,5 @@ export const LiveBlogEditorView = ({ blogId }: LiveBlogEditorViewProps) => {
     return <BlogEditorConnectionIssueView />;
   }
 
-  return <BlogEditorView blogId={blogId} forceDemo={false} />;
+  return <LiveBlogEditorContent blogId={blogId} />;
 };
