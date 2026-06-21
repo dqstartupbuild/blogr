@@ -2,7 +2,7 @@
 
 Blogger is a simple Next.js workspace for turning saved keywords into longform MDX blog posts for a user's niche.
 
-The app uses Clerk for auth, Convex for data, Firecrawl for website and web research, and Replicate for the writer and image models.
+The app uses Clerk for auth, Convex for data, Firecrawl for website and web research, Replicate for the writer and image models, Cloudflare R2 for stored images, and OpenAI embeddings for product context retrieval.
 
 ## Local Setup
 
@@ -25,6 +25,7 @@ Without keys, the workspace shows a local demo layout. With Clerk and Convex pub
 - `REPLICATE_API_TOKEN`
 - `REPLICATE_WRITER_MODEL`
 - `REPLICATE_IMAGE_MODEL`
+- `OPENAI_API_KEY` for Convex RAG embeddings
 - `FIRECRAWL_API_KEY`
 - `YOUTUBE_API_KEY` optional
 
@@ -40,11 +41,23 @@ npx convex dev
 
 This will replace the local `convex/_generated` shim with the fully typed generated API.
 
+Set component credentials on the Convex deployment when using stored images or product context retrieval:
+
+```bash
+npx convex env set OPENAI_API_KEY <openai-api-key>
+npx convex env set R2_TOKEN <token>
+npx convex env set R2_ACCESS_KEY_ID <access-key-id>
+npx convex env set R2_SECRET_ACCESS_KEY <secret-access-key>
+npx convex env set R2_ENDPOINT <endpoint>
+npx convex env set R2_BUCKET <bucket>
+```
+
 ## Feature Docs
 
 - [Product website ingestion](docs/product-website-ingestion.md)
 - [Topic workspace](docs/topic-workspace.md)
 - [Blog generation workflow](docs/blog-generation-workflow.md)
+- [RAG product context](docs/rag-product-context.md)
 - [Blog generation reliability](docs/blog-generation-reliability.md)
 - [Blog editor](docs/blog-editor.md)
 - [Zip export](docs/zip-export.md)

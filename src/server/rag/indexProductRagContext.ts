@@ -1,0 +1,37 @@
+import { fetchAction } from "convex/nextjs";
+import { castProductId } from "../convex/castProductId";
+import { hasConvexUrl } from "../convex/hasConvexUrl";
+import { indexProductContextAction } from "../convex/references/indexProductContextAction";
+import type { ProductScanResult } from "../product/types/ProductScanResult";
+
+type IndexProductRagContextOptions = {
+  product: ProductScanResult;
+  productId?: string;
+  token?: string;
+};
+
+export const indexProductRagContext = async ({
+  product,
+  productId,
+  token,
+}: IndexProductRagContextOptions) => {
+  if (!hasConvexUrl() || !productId) {
+    return;
+  }
+
+  await fetchAction(
+    indexProductContextAction,
+    {
+      audience: product.audience,
+      competitors: product.competitors,
+      description: product.description,
+      name: product.name,
+      niche: product.niche,
+      productId: castProductId(productId),
+      rawContext: product.rawContext,
+      siteLinks: product.siteLinks,
+      websiteUrl: product.websiteUrl,
+    },
+    { token },
+  ).catch(() => undefined);
+};

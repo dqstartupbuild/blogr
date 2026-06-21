@@ -108,7 +108,7 @@ export const useLiveWorkspace = (
       setProductScanMessage("Saved your site. Scanning for details.");
 
       const response = await fetch("/api/product/scan", {
-        body: JSON.stringify({ niche, websiteUrl }),
+        body: JSON.stringify({ niche, productId: savedProductId, websiteUrl }),
         headers: {
           "Content-Type": "application/json",
         },
@@ -218,6 +218,7 @@ export const useLiveWorkspace = (
           blogGenerationSettings,
           keyword: topic.keyword,
           product: productResult,
+          productId: activeProductId,
         }),
         headers: {
           "Content-Type": "application/json",

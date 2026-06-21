@@ -16,6 +16,7 @@ type WriteBlogDraftOptions = {
   internalLinks: LinkItem[];
   keyword: string;
   product: StoredProduct;
+  productRagContext: string;
   settings: BlogGenerationSettings;
   sources: ResearchSource[];
   sourceLinks: LinkItem[];
@@ -27,6 +28,7 @@ export const writeBlogDraft = async ({
   internalLinks,
   keyword,
   product,
+  productRagContext,
   settings,
   sources,
   sourceLinks,
@@ -37,6 +39,7 @@ export const writeBlogDraft = async ({
     internalLinks,
     keyword,
     product,
+    productRagContext,
     settings,
     sources,
     youtubeVideos,

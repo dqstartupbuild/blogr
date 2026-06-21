@@ -3,6 +3,7 @@ import type { ResearchSource } from "./types/ResearchSource";
 import type { StoredProduct } from "./types/StoredProduct";
 import { buildBlogGenerationSettingsPrompt } from "./buildBlogGenerationSettingsPrompt";
 import { buildBlogWriterProductContext } from "./buildBlogWriterProductContext";
+import { buildProductRagContextPrompt } from "./buildProductRagContextPrompt";
 import type { BlogGenerationSettings } from "@/features/workspace/types/BlogGenerationSettings";
 import type { LinkItem } from "@/features/workspace/types/LinkItem";
 
@@ -11,6 +12,7 @@ type BuildBlogWriterPromptOptions = {
   internalLinks: LinkItem[];
   keyword: string;
   product: StoredProduct;
+  productRagContext: string;
   settings: BlogGenerationSettings;
   sources: ResearchSource[];
   youtubeVideos: LinkItem[];
@@ -21,6 +23,7 @@ export const buildBlogWriterPrompt = ({
   internalLinks,
   keyword,
   product,
+  productRagContext,
   settings,
   sources,
   youtubeVideos,
@@ -50,6 +53,8 @@ Product context:
 ${buildBlogWriterProductContext(product)}
 
 ${buildBlogGenerationSettingsPrompt(settings)}
+
+${buildProductRagContextPrompt(productRagContext)}
 
 Research sources to use and cite:
 ${JSON.stringify(sources, null, 2)}

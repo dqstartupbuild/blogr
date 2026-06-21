@@ -2,7 +2,7 @@
 
 ## What It Does
 
-Convex stores product workspaces, blog generation settings, R2 image keys, active workspace selections, saved topics, and generated blogs.
+Convex stores product workspaces, blog generation settings, R2 image keys, active workspace selections, saved topics, generated blogs, and component-managed product context embeddings.
 
 ## Tables
 
@@ -16,6 +16,8 @@ The schema lives in `convex/schema.ts`.
 `products` are the workspace records. Each product can include `blogGenerationSettings`, which stores the article style, writing rules, internal link count, image choices, and article extras for that workspace. Product scan images store R2 object keys in `assetKeys` and `productImageKeys`.
 
 Generated blog images can include an `r2Key` beside the served image URL. Blog and product queries use those keys to return fresh signed URLs from the Convex R2 component.
+
+The Convex RAG component stores scanned product context in a namespace based on the product workspace ID. Rescanning a product replaces the existing product context entry for that namespace, so future blog generation searches the latest scanned website context.
 
 `workspaceSelections` stores one active product workspace per user. New topic and blog records include `productId`, and list queries use product-scoped indexes so one workspace does not read another workspace's records.
 
@@ -50,6 +52,7 @@ Convex will replace the shim with the normal generated files.
 - `convex/identity/requireUserId.ts`
 - `convex/products/*`
 - `convex/r2/*`
+- `convex/rag/*`
 - `convex/migrations/*`
 - `convex/workspaceSelections/*`
 - `convex/topics/*`

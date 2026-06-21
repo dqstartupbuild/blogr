@@ -7,6 +7,7 @@ import { storeGeneratedBlogImages } from "./storeGeneratedBlogImages";
 import { writeBlogDraft } from "./writeBlogDraft";
 import { normalizeBlogGenerationSettings } from "@/features/workspace/utils/normalizeBlogGenerationSettings";
 import type { BlogGenerationSettings } from "@/features/workspace/types/BlogGenerationSettings";
+import { searchProductRagContext } from "../rag/searchProductRagContext";
 import type { GeneratedBlog } from "./types/GeneratedBlog";
 import type { StoredProduct } from "./types/StoredProduct";
 
@@ -15,6 +16,7 @@ type GenerateBlogForKeywordOptions = {
   convexAuthToken?: string;
   keyword: string;
   product: StoredProduct;
+  productId?: string;
 };
 
 export const generateBlogForKeyword = async ({
@@ -22,14 +24,20 @@ export const generateBlogForKeyword = async ({
   convexAuthToken,
   keyword,
   product,
+  productId,
 }: GenerateBlogForKeywordOptions): Promise<GeneratedBlog> => {
   const settings = normalizeBlogGenerationSettings(
     blogGenerationSettings || product.blogGenerationSettings,
   );
-  const [sources, youtubeVideos, images] = await Promise.all([
+  const [sources, youtubeVideos, images, productRagContext] = await Promise.all([
     runBlogResearch(keyword),
     settings.youtubeVideo ? findYoutubeVideos(keyword) : Promise.resolve([]),
     generateBlogImages({ keyword, product, settings }),
+    searchProductRagContext({
+      productId,
+      query: keyword,
+      token: convexAuthToken,
+    }),
   ]);
   const internalLinks = chooseInternalLinks({
     keyword,
@@ -47,6 +55,7 @@ export const generateBlogForKeyword = async ({
     internalLinks,
     keyword,
     product,
+    productRagContext,
     settings,
     sourceLinks,
     sources,

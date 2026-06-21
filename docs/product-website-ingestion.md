@@ -2,7 +2,7 @@
 
 ## What It Does
 
-The user enters a website and niche inside the active workspace. The app scans the site, collects product context, finds internal links, extracts brand assets and colors, copies scanned images into R2, and saves the product profile to that workspace in Convex.
+The user enters a website and niche inside the active workspace. The app scans the site, collects product context, finds internal links, extracts brand assets and colors, copies scanned images into R2, indexes the scanned context for retrieval, and saves the product profile to that workspace in Convex.
 
 This gives the writer enough context to understand the product and place internal links naturally in future blog posts.
 
@@ -15,7 +15,8 @@ This gives the writer enough context to understand the product and place interna
 5. It picks detail pages like pricing, features, product, docs, about, and use-case pages.
 6. It asks the configured Replicate writer model to turn the scraped context into a simple product profile.
 7. The scan route downloads logo/Open Graph assets and product screenshots into R2 through the Convex R2 component.
-8. The workspace saves the finished product profile and R2 image keys through the signed-in Convex client.
+8. The scan route indexes the product profile, internal links, and raw scanned context in the Convex RAG component under the active product workspace.
+9. The workspace saves the finished product profile and R2 image keys through the signed-in Convex client.
 
 The route allows a longer runtime because Firecrawl plus AI extraction can take
 more than a quick request. The workspace shows scan progress, success, and any
@@ -44,8 +45,11 @@ copy only when Clerk and Convex are not configured.
 - `src/server/product/storeProductScanImages.ts`
 - `src/server/product/extractProductProfile.ts`
 - `src/server/r2/storeImageUrlWithConvexR2.ts`
+- `src/server/rag/indexProductRagContext.ts`
 - `src/server/firecrawl/*`
 - `src/server/replicate/runReplicateText.ts`
+- `convex/rag/indexProductContext.ts`
+- `convex/rag/buildProductRagText.ts`
 - `convex/products/saveProductScan.ts`
 - `convex/products/getCurrentProduct.ts`
 
@@ -63,6 +67,7 @@ copy only when Clerk and Convex are not configured.
 - R2 keys for copied scan images
 - Internal site links
 - Raw page context for writing
+- RAG chunks for future product-specific retrieval
 
 ## Source References
 
@@ -76,8 +81,10 @@ copy only when Clerk and Convex are not configured.
 src/app/api/product/scan/
 src/server/product/
 src/server/r2/
+src/server/rag/
 src/server/firecrawl/
 src/server/replicate/
 convex/r2/
+convex/rag/
 convex/products/
 ```

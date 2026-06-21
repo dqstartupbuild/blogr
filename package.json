@@ -9,8 +9,11 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@ai-sdk/openai": "^3.0.73",
     "@clerk/nextjs": "^7.5.7",
     "@convex-dev/r2": "^0.10.2",
+    "@convex-dev/rag": "^0.7.5",
+    "ai": "^6.0.208",
     "convex": "^1.41.0",
     "jszip": "^3.10.1",
     "lucide-react": "^1.21.0",

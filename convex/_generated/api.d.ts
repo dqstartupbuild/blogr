@@ -21,6 +21,7 @@ import type * as products_createImportedProductWorkspace from "../products/creat
 import type * as products_createProductWorkspace from "../products/createProductWorkspace.js";
 import type * as products_defaultBlogGenerationSettings from "../products/defaultBlogGenerationSettings.js";
 import type * as products_getCurrentProduct from "../products/getCurrentProduct.js";
+import type * as products_getProductForRag from "../products/getProductForRag.js";
 import type * as products_getProductWorkspaces from "../products/getProductWorkspaces.js";
 import type * as products_refreshProductImageUrls from "../products/refreshProductImageUrls.js";
 import type * as products_resolveActiveProductId from "../products/resolveActiveProductId.js";
@@ -34,6 +35,12 @@ import type * as r2_getR2ImageUrl from "../r2/getR2ImageUrl.js";
 import type * as r2_getR2ImageUrls from "../r2/getR2ImageUrls.js";
 import type * as r2_sanitizeR2KeyPart from "../r2/sanitizeR2KeyPart.js";
 import type * as r2_storeImageFromUrl from "../r2/storeImageFromUrl.js";
+import type * as rag_buildProductRagNamespace from "../rag/buildProductRagNamespace.js";
+import type * as rag_buildProductRagText from "../rag/buildProductRagText.js";
+import type * as rag_client from "../rag/client.js";
+import type * as rag_indexProductContext from "../rag/indexProductContext.js";
+import type * as rag_productRagKey from "../rag/productRagKey.js";
+import type * as rag_searchProductContext from "../rag/searchProductContext.js";
 import type * as topics_createTopic from "../topics/createTopic.js";
 import type * as topics_deleteTopic from "../topics/deleteTopic.js";
 import type * as topics_getTopic from "../topics/getTopic.js";
@@ -61,6 +68,7 @@ declare const fullApi: ApiFromModules<{
   "products/createProductWorkspace": typeof products_createProductWorkspace;
   "products/defaultBlogGenerationSettings": typeof products_defaultBlogGenerationSettings;
   "products/getCurrentProduct": typeof products_getCurrentProduct;
+  "products/getProductForRag": typeof products_getProductForRag;
   "products/getProductWorkspaces": typeof products_getProductWorkspaces;
   "products/refreshProductImageUrls": typeof products_refreshProductImageUrls;
   "products/resolveActiveProductId": typeof products_resolveActiveProductId;
@@ -74,6 +82,12 @@ declare const fullApi: ApiFromModules<{
   "r2/getR2ImageUrls": typeof r2_getR2ImageUrls;
   "r2/sanitizeR2KeyPart": typeof r2_sanitizeR2KeyPart;
   "r2/storeImageFromUrl": typeof r2_storeImageFromUrl;
+  "rag/buildProductRagNamespace": typeof rag_buildProductRagNamespace;
+  "rag/buildProductRagText": typeof rag_buildProductRagText;
+  "rag/client": typeof rag_client;
+  "rag/indexProductContext": typeof rag_indexProductContext;
+  "rag/productRagKey": typeof rag_productRagKey;
+  "rag/searchProductContext": typeof rag_searchProductContext;
   "topics/createTopic": typeof topics_createTopic;
   "topics/deleteTopic": typeof topics_deleteTopic;
   "topics/getTopic": typeof topics_getTopic;
@@ -110,4 +124,5 @@ export declare const internal: FilterApi<
 
 export declare const components: {
   r2: import("@convex-dev/r2/_generated/component.js").ComponentApi<"r2">;
+  rag: import("@convex-dev/rag/_generated/component.js").ComponentApi<"rag">;
 };
