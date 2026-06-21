@@ -133,7 +133,7 @@ export const useLiveWorkspace = (
         });
       }
 
-      setProductScanMessage("Saved your product details.");
+      setProductScanMessage(data.warning || "Saved your product details.");
     } catch (error) {
       const message =
         error instanceof Error ? error.message : "Could not scan that site yet.";

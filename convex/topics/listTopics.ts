@@ -1,7 +1,7 @@
 import { v } from "convex/values";
 import { query } from "../_generated/server";
 import { requireUserId } from "../identity/requireUserId";
-import { resolveActiveProductId } from "../products/resolveActiveProductId";
+import { resolveReadableProductId } from "../products/resolveReadableProductId";
 
 export const listTopics = query({
   args: {
@@ -9,7 +9,7 @@ export const listTopics = query({
   },
   handler: async (ctx, args) => {
     const userId = await requireUserId(ctx);
-    const productId = await resolveActiveProductId(ctx, userId, args.productId);
+    const productId = await resolveReadableProductId(ctx, userId, args.productId);
 
     if (!productId) {
       return await ctx.db
