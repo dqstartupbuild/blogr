@@ -19,7 +19,7 @@ It researches the topic, applies the active workspace settings, retrieves produc
 9. The image-planning reviewer uses `REPLICATE_IMAGE_PLANNER_MODEL`, defaulting to `openai/gpt-5-mini`, to pick the sections that need visuals and write section-specific image prompts.
 10. Replicate image generation creates the number of images chosen in settings when `REPLICATE_API_TOKEN` exists. Multiple images are generated one after another so every requested image gets its own model run.
 11. The generated image URLs are downloaded into R2. The route uses the Convex R2 action when a Convex token is available, and otherwise writes directly to the same R2 bucket with the signed-in user's ID.
-12. The MDX cleanup updates the feature image, inserts generated images near section headings, and adds found YouTube videos when the writer did not include them.
+12. The MDX cleanup updates the feature image, inserts generated images near section headings, converts YouTube markdown links into playable iframe embeds, and adds found YouTube videos when the writer did not include them.
 13. The workspace saves the blog and image R2 keys through `upsertGeneratedBlog`, which marks the topic as written.
 
 If research search is unavailable, the writer still uses the saved product
@@ -41,6 +41,8 @@ as failed with a short error.
 - `src/server/blog/findYoutubeVideosWithExa.ts`
 - `src/server/blog/findYoutubeVideosWithFirecrawl.ts`
 - `src/server/blog/insertMissingYoutubeVideos.ts`
+- `src/server/blog/normalizeYoutubeLinksInMdx.ts`
+- `src/server/blog/buildYoutubeEmbedMdx.ts`
 - `src/server/blog/planBlogImagePrompts.ts`
 - `src/server/blog/buildImagePlannerPrompt.ts`
 - `src/server/blog/generateBlogImages.ts`
@@ -68,11 +70,11 @@ The writer is asked for XML with:
 - `<excerpt>`
 - `<mdx>`
 
-The MDX prompt asks for frontmatter, one H1, a direct answer, short paragraphs, useful examples, cited sources, natural internal links, and YouTube links only when helpful. Workspace settings can add a table of contents, change article voice, allow first-person writing, add or remove a call-to-action, and allow similar product comparisons.
+The MDX prompt asks for frontmatter, one H1, a direct answer, short paragraphs, useful examples, cited sources, natural internal links, and playable YouTube embeds only when helpful. Workspace settings can add a table of contents, change article voice, allow first-person writing, add or remove a call-to-action, and allow similar product comparisons.
 
 Images are planned after the article is written. The image-planning reviewer reads the finished MDX, chooses the best sections for visuals, and writes image prompts grounded in those sections instead of using generic brand-related scenes.
 
-When YouTube videos are found but missing from the writer's MDX, the cleanup step appends a short helpful videos section so the setting has a visible result.
+When YouTube videos are found but missing from the writer's MDX, the cleanup step appends a short helpful videos section with iframe embeds so the setting has a visible playable result.
 
 Product scan assets and screenshots are removed from the product context sent to the writer so the image count setting controls article image use.
 

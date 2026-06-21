@@ -3,6 +3,7 @@ import { buildBlogWriterPrompt } from "./buildBlogWriterPrompt";
 import { createFallbackMdx } from "./createFallbackMdx";
 import { insertMissingYoutubeVideos } from "./insertMissingYoutubeVideos";
 import { normalizeBlogMdxImages } from "./normalizeBlogMdxImages";
+import { normalizeYoutubeLinksInMdx } from "./normalizeYoutubeLinksInMdx";
 import { parseWriterDraft } from "./parseWriterDraft";
 import { slugify } from "./slugify";
 import type { BlogImage } from "./types/BlogImage";
@@ -70,8 +71,10 @@ export const writeBlogDraft = async ({
     images,
     mdx: rawMdx,
   });
+  const videoMdx =
+    youtubeVideos.length > 0 ? normalizeYoutubeLinksInMdx(imageMdx) : imageMdx;
   const mdx = insertMissingYoutubeVideos({
-    mdx: imageMdx,
+    mdx: videoMdx,
     youtubeVideos,
   });
 

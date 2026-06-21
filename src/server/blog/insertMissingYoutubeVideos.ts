@@ -1,5 +1,6 @@
 import type { LinkItem } from "@/features/workspace/types/LinkItem";
-import { buildMarkdownLink } from "./buildMarkdownLink";
+import { buildYoutubeEmbedMdx } from "./buildYoutubeEmbedMdx";
+import { mdxIncludesYoutubeVideo } from "./mdxIncludesYoutubeVideo";
 
 type InsertMissingYoutubeVideosOptions = {
   mdx: string;
@@ -10,16 +11,23 @@ export const insertMissingYoutubeVideos = ({
   mdx,
   youtubeVideos,
 }: InsertMissingYoutubeVideosOptions) => {
-  const missingVideos = youtubeVideos.filter((video) => !mdx.includes(video.url));
+  const missingVideos = youtubeVideos.filter(
+    (video) => !mdxIncludesYoutubeVideo(mdx, video.url),
+  );
 
   if (missingVideos.length === 0) {
     return mdx;
   }
 
-  const videoLinks = missingVideos
+  const videoEmbeds = missingVideos
     .slice(0, 3)
-    .map((video) => `- ${buildMarkdownLink(video)}`)
-    .join("\n");
+    .map(buildYoutubeEmbedMdx)
+    .filter(Boolean)
+    .join("\n\n");
 
-  return `${mdx.trimEnd()}\n\n## Helpful Videos\n\n${videoLinks}\n`;
+  if (!videoEmbeds) {
+    return mdx;
+  }
+
+  return `${mdx.trimEnd()}\n\n## Helpful Videos\n\n${videoEmbeds}\n`;
 };

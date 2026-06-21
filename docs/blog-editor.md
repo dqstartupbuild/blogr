@@ -16,7 +16,7 @@ Saving uses the Convex client mutation `updateBlogContent`, so it follows the sa
 
 The live editor header includes the workspace switcher. If a user switches workspaces while editing, the app returns to `/blogs` so the new workspace can show its own saved posts.
 
-The right-side preview uses `MarkdownPreview`, so headings, links, lists, quotes, images, tables, and code blocks render like a blog instead of plain markdown text.
+The right-side preview uses `MarkdownPreview`, so headings, links, lists, quotes, images, YouTube videos, tables, and code blocks render like a blog instead of plain markdown text.
 
 ## Relevant Code
 

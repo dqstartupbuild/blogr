@@ -85,6 +85,8 @@ MDX rules:
 - Use practical examples.
 - Add image markdown after the intro and throughout the post when image URLs are available.
 - Cite sources as normal markdown links inside relevant sections.
+- When YouTube videos are provided and useful, render them as playable iframe embeds, not as plain links.
+- Use YouTube embed URLs in this shape: https://www.youtube.com/embed/{videoId}.
 - Include the provided internal links naturally, not as a list unless it truly fits.
 - Write one complete MDX file, not an outline and not separate files.
 - Aim for 1,800 to 3,000 words when the topic can support it.

@@ -1,6 +1,8 @@
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import { markdownPreviewComponents } from "./markdownPreviewComponents";
 import styles from "./MarkdownPreview.module.css";
+import { replaceYoutubeIframesWithMarkdownLinks } from "../utils/replaceYoutubeIframesWithMarkdownLinks";
 import { stripMdxFrontmatter } from "../utils/stripMdxFrontmatter";
 
 type MarkdownPreviewProps = {
@@ -8,7 +10,9 @@ type MarkdownPreviewProps = {
 };
 
 export const MarkdownPreview = ({ mdx }: MarkdownPreviewProps) => {
-  const markdown = stripMdxFrontmatter(mdx).trim();
+  const markdown = replaceYoutubeIframesWithMarkdownLinks(
+    stripMdxFrontmatter(mdx),
+  ).trim();
 
   if (!markdown) {
     return <p className="text-sm leading-6 text-black">Nothing to preview yet.</p>;
@@ -16,7 +20,12 @@ export const MarkdownPreview = ({ mdx }: MarkdownPreviewProps) => {
 
   return (
     <div className={styles.markdownPreview}>
-      <ReactMarkdown remarkPlugins={[remarkGfm]}>{markdown}</ReactMarkdown>
+      <ReactMarkdown
+        components={markdownPreviewComponents}
+        remarkPlugins={[remarkGfm]}
+      >
+        {markdown}
+      </ReactMarkdown>
     </div>
   );
 };

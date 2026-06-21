@@ -2,6 +2,7 @@ import type { BlogImage } from "./types/BlogImage";
 import type { StoredProduct } from "./types/StoredProduct";
 import type { BlogGenerationSettings } from "@/features/workspace/types/BlogGenerationSettings";
 import type { LinkItem } from "@/features/workspace/types/LinkItem";
+import { buildYoutubeEmbedMdx } from "./buildYoutubeEmbedMdx";
 
 type CreateFallbackMdxOptions = {
   images: BlogImage[];
@@ -35,8 +36,9 @@ export const createFallbackMdx = ({
     .join("\n");
   const videos = youtubeVideos
     .slice(0, 2)
-    .map((video) => `- [${video.title}](${video.url})`)
-    .join("\n");
+    .map(buildYoutubeEmbedMdx)
+    .filter(Boolean)
+    .join("\n\n");
   const usefulLinks = links ? `## Useful Links\n\n${links}` : "";
   const helpfulVideos = videos ? `## Helpful Videos\n\n${videos}` : "";
   const sourceSection = citations ? `## Sources\n\n${citations}` : "";
