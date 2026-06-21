@@ -4,11 +4,13 @@ import type { ProductScanResult } from "./types/ProductScanResult";
 type StoreProductScanImagesOptions = {
   product: ProductScanResult;
   token?: string;
+  userId?: string;
 };
 
 export const storeProductScanImages = async ({
   product,
   token,
+  userId,
 }: StoreProductScanImagesOptions): Promise<ProductScanResult> => {
   const [assets, productImages] = await Promise.all([
     storeProductScanImageUrls({
@@ -16,12 +18,14 @@ export const storeProductScanImages = async ({
       filenamePrefix: product.name || "asset",
       token,
       urls: product.assets,
+      userId,
     }),
     storeProductScanImageUrls({
       category: "product-images",
       filenamePrefix: product.name || "product-image",
       token,
       urls: product.productImages,
+      userId,
     }),
   ]);
 

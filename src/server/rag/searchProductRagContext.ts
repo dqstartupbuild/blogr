@@ -1,5 +1,6 @@
 import { fetchAction } from "convex/nextjs";
 import { getOptionalConvexAuthToken } from "../auth/getOptionalConvexAuthToken";
+import { isAuthDisabledForPreview } from "../auth/isAuthDisabledForPreview";
 import { castProductId } from "../convex/castProductId";
 import { hasConvexUrl } from "../convex/hasConvexUrl";
 import { searchProductContextAction } from "../convex/references/searchProductContextAction";
@@ -21,6 +22,11 @@ export const searchProductRagContext = async ({
 
   try {
     const authToken = token ?? (await getOptionalConvexAuthToken());
+
+    if (!authToken && !isAuthDisabledForPreview()) {
+      return "";
+    }
+
     const result = await fetchAction(
       searchProductContextAction,
       {

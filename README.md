@@ -41,7 +41,7 @@ npx convex dev
 
 This will replace the local `convex/_generated` shim with the fully typed generated API.
 
-Set component credentials on the Convex deployment when using stored images or product context retrieval:
+Set component credentials on the Convex deployment when using stored images or product context retrieval. The same R2 credentials also need to exist on the Vercel/Next.js deployment so long-running routes can store generated images directly when Convex auth is unavailable:
 
 ```bash
 npx convex env set OPENAI_API_KEY <openai-api-key>

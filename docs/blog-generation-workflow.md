@@ -16,7 +16,7 @@ It researches the topic, applies the active workspace settings, retrieves produc
 6. Internal links are scored against the keyword, then limited by the workspace setting.
 7. YouTube videos are found only when the workspace setting is on. The YouTube Data API is used when `YOUTUBE_API_KEY` exists. Otherwise the workflow searches YouTube video pages through Firecrawl when `FIRECRAWL_API_KEY` exists.
 8. Replicate image generation creates the number of images chosen in settings when `REPLICATE_API_TOKEN` exists. Multiple images are generated one after another so every requested image gets its own model run.
-9. The generated image URLs are downloaded into R2 through the Convex R2 component with a fresh optional Convex auth token at storage time.
+9. The generated image URLs are downloaded into R2. The route uses the Convex R2 action when a Convex token is available, and otherwise writes directly to the same R2 bucket with the signed-in user's ID.
 10. Replicate writer generation uses the article style, writing rules, retrieved product context, toggles, and R2 image URLs before returning blog metadata and MDX in a simple XML shape.
 11. The MDX cleanup removes repeated image URLs, inserts any unused supporting images near section headings, and adds found YouTube videos when the writer did not include them.
 12. The workspace saves the blog and image R2 keys through `upsertGeneratedBlog`, which marks the topic as written.

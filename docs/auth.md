@@ -16,9 +16,11 @@ Preview deployments can be opened without signing in when `AUTH_DISABLED_FOR_PRE
 
 When real login is enabled, workspace data and the blog editor both wait for Convex auth, not just Clerk auth. That prevents live Convex queries from running before the browser has a valid Convex token.
 
-Server routes should request Clerk's `convex` token template only when a required server-side Convex call is about to run. Long-running routes should not request that token before their main work starts.
+Server routes should never make Clerk's `convex` token template a required first step for slow work. A route may capture that token early as optional setup, but the core scan, research, image generation, and writing flow must continue when token minting fails.
 
 Optional server-side Convex work uses `getOptionalConvexAuthToken`. This keeps core flows like product scanning and blog writing from failing only because Clerk could not mint a Convex JWT for an enhancement such as R2 image copying or RAG indexing.
+
+When optional image storage cannot use Convex auth, the route uses the already-verified route user ID to write directly to R2. This keeps ownership in the object key without making the main generation flow depend on a second auth check.
 
 The app has Clerk sign-in and sign-up routes:
 

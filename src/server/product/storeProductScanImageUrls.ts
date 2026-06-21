@@ -6,6 +6,7 @@ type StoreProductScanImageUrlsOptions = {
   filenamePrefix: string;
   token?: string;
   urls: string[];
+  userId?: string;
 };
 
 export const storeProductScanImageUrls = async ({
@@ -13,6 +14,7 @@ export const storeProductScanImageUrls = async ({
   filenamePrefix,
   token,
   urls,
+  userId,
 }: StoreProductScanImageUrlsOptions) => {
   const storedImages = await Promise.all(
     urls.map((url, index) =>
@@ -21,6 +23,7 @@ export const storeProductScanImageUrls = async ({
         filenameHint: `${filenamePrefix}-${index + 1}`,
         token,
         url,
+        userId,
       }),
     ),
   );

@@ -2,13 +2,15 @@
 
 ## What It Does
 
-Generated and scanned images are copied into Cloudflare R2 through the Convex R2 component. The app stores R2 object keys in Convex and serves fresh signed URLs from Convex queries.
+Generated and scanned images are copied into Cloudflare R2. The app stores R2 object keys in Convex and serves fresh signed URLs from Convex queries.
 
 This keeps article images and product scan images from depending on temporary third-party URLs from Replicate, Firecrawl, or scraped site metadata.
 
 ## How It Works
 
 The Convex app installs the R2 component in `convex/convex.config.ts`. `convex/r2/storeImageFromUrl.ts` is an authenticated action that downloads an external image URL, stores the bytes with `r2.store`, and returns the R2 key plus a signed serving URL.
+
+Long-running Next.js routes also have a direct R2 fallback based on the same bucket credentials. If Clerk cannot mint a Convex JWT for an optional storage action, `storeImageUrlWithConvexR2` downloads the external image in the Next route, uploads it to R2 with the S3 API, and returns a signed URL. The saved key is still compatible with Convex R2 refresh queries because both paths write to the same bucket.
 
 Product scan runs first, then `storeProductScanImages` copies logo/Open Graph assets and product screenshots into R2. The scan response includes the copied image URLs and the matching `assetKeys` and `productImageKeys`. `saveProductScan` stores those keys on the product workspace.
 
@@ -20,7 +22,7 @@ Convex queries refresh image URLs before returning data:
 - `listBlogs` and `getBlog` refresh blog image URLs from each image `r2Key`.
 - Blog MDX is rewritten on read when an old signed URL is replaced with a fresh one.
 
-If Convex or R2 storage is unavailable during a server route call, the app keeps the original external URL so generation and scanning can still finish.
+If R2 storage is unavailable during a server route call, the app keeps the original external URL so generation and scanning can still finish.
 
 ## Setup
 
@@ -30,7 +32,7 @@ Install dependencies:
 npm install
 ```
 
-Set R2 credentials on the Convex deployment:
+Set R2 credentials on both the Vercel/Next.js deployment and the Convex deployment:
 
 ```bash
 npx convex env set R2_TOKEN <token>
@@ -51,6 +53,7 @@ The R2 bucket must allow Convex to read and write objects.
 - `convex/products/refreshProductImageUrls.ts`
 - `convex/blogs/refreshBlogImageUrls.ts`
 - `src/server/r2/storeImageUrlWithConvexR2.ts`
+- `src/server/r2/storeImageUrlWithDirectR2.ts`
 - `src/server/product/storeProductScanImages.ts`
 - `src/server/blog/storeGeneratedBlogImages.ts`
 - `src/app/api/product/scan/route.ts`

@@ -14,7 +14,7 @@ This gives the writer enough context to understand the product and place interna
 4. The scanner reads homepage markdown, branding, links, screenshots, sitemap links, and crawl links.
 5. It picks detail pages like pricing, features, product, docs, about, and use-case pages.
 6. It asks the configured Replicate writer model to turn the scraped context into a simple product profile.
-7. The scan route downloads logo/Open Graph assets and product screenshots into R2 through the Convex R2 component.
+7. The scan route downloads logo/Open Graph assets and product screenshots into R2. It uses the Convex R2 action when Convex auth is available and otherwise writes directly to the same R2 bucket with the signed-in user's ID.
 8. The scan route indexes the product profile, internal links, and raw scanned context in the Convex RAG component under the active product workspace.
 9. The workspace saves the finished product profile and R2 image keys through the signed-in Convex client.
 

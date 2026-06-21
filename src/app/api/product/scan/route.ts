@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { getOptionalConvexAuthToken } from "@/server/auth/getOptionalConvexAuthToken";
 import { requireRouteUserId } from "@/server/auth/requireRouteUserId";
 import { getErrorStatus } from "@/server/http/getErrorStatus";
 import { getPublicErrorMessage } from "@/server/http/getPublicErrorMessage";
@@ -11,7 +12,8 @@ export const maxDuration = 300;
 
 export async function POST(request: Request) {
   try {
-    await requireRouteUserId();
+    const userId = await requireRouteUserId();
+    const token = await getOptionalConvexAuthToken();
 
     const body = await request.json();
     const input = productScanRequestSchema.parse(body);
@@ -22,10 +24,13 @@ export async function POST(request: Request) {
     });
     const storedProduct = await storeProductScanImages({
       product,
+      token,
+      userId,
     });
     await indexProductRagContext({
       product: storedProduct,
       productId: input.productId,
+      token,
     });
 
     return NextResponse.json({ product: storedProduct });

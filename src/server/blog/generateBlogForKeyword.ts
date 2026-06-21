@@ -17,6 +17,7 @@ type GenerateBlogForKeywordOptions = {
   keyword: string;
   product: StoredProduct;
   productId?: string;
+  userId?: string;
 };
 
 export const generateBlogForKeyword = async ({
@@ -25,6 +26,7 @@ export const generateBlogForKeyword = async ({
   keyword,
   product,
   productId,
+  userId,
 }: GenerateBlogForKeywordOptions): Promise<GeneratedBlog> => {
   const settings = normalizeBlogGenerationSettings(
     blogGenerationSettings || product.blogGenerationSettings,
@@ -48,6 +50,7 @@ export const generateBlogForKeyword = async ({
   const storedImages = await storeGeneratedBlogImages({
     images,
     token: convexAuthToken,
+    userId,
   });
 
   return await writeBlogDraft({
