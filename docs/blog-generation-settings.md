@@ -12,17 +12,19 @@ The `/settings` route opens the shared workspace page with `initialMode="setting
 
 Live mode reads `products.blogGenerationSettings` from Convex, fills missing values with `defaultBlogGenerationSettings`, and saves changes through `updateBlogGenerationSettings`. Demo mode keeps the same settings shape in local state per workspace.
 
-When a user writes a blog, the active product profile is sent to `POST /api/blogs/generate`. The product payload includes `blogGenerationSettings`, and the blog generation workflow applies them before research, link choice, video lookup, image generation, and writer prompting.
+When a user writes a blog, the active product profile and current `blogGenerationSettings` are sent to `POST /api/blogs/generate`. The route receives settings as their own request field so the newest saved settings are used even if the product query has not refreshed yet.
+
+The blog generation workflow applies settings before research, link choice, video lookup, image generation, and writer prompting.
 
 ## Settings
 
 - Article style controls the main voice used in the writer prompt.
 - Global article settings add the user's own writing rules without changing the required XML response shape.
 - Internal links controls how many sitemap links can be selected for each article.
-- Image style changes the image prompt direction.
-- Images per article controls how many image prompts are created.
+- Image style changes the image prompt direction sent to Replicate.
+- Images per article controls how many image prompts are created. If no images are requested, the writer is told not to add image markdown or pull product scan images into the article.
 - Table of contents asks the writer to add a short section list.
-- YouTube video controls whether the workflow looks for videos.
+- YouTube video controls whether the workflow looks for videos. With `YOUTUBE_API_KEY`, the app uses the YouTube Data API. Without it, the app searches YouTube video pages through Firecrawl when `FIRECRAWL_API_KEY` is available. AI alone is not used to invent video URLs.
 - Call-to-action controls whether the writer ends with a product next step.
 - Include infographics guides supporting images toward data-style visuals when useful.
 - Mention similar products and tools allows natural comparison sections.
@@ -48,7 +50,10 @@ When a user writes a blog, the active product profile is sent to `POST /api/blog
 - `src/app/api/blogs/generate/blogGenerationSettingsSchema.ts`
 - `src/server/blog/generateBlogForKeyword.ts`
 - `src/server/blog/buildBlogGenerationSettingsPrompt.ts`
+- `src/server/blog/buildBlogWriterProductContext.ts`
 - `src/server/blog/buildImagePromptPlans.ts`
+- `src/server/blog/findYoutubeVideosWithApi.ts`
+- `src/server/blog/findYoutubeVideosWithFirecrawl.ts`
 
 ## Use Cases
 
@@ -57,6 +62,7 @@ When a user writes a blog, the active product profile is sent to `POST /api/blog
 - Turn off videos for topics where embedded media is not useful.
 - Generate fewer images when speed matters.
 - Use branded feature images for product-led articles.
+- Use current settings immediately after saving them.
 
 ## Source References
 

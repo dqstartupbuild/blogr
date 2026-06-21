@@ -1,5 +1,6 @@
 import { query } from "../_generated/server";
 import { requireUserId } from "../identity/requireUserId";
+import { refreshProductImageUrls } from "./refreshProductImageUrls";
 
 export const getCurrentProduct = query({
   args: {},
@@ -14,13 +15,15 @@ export const getCurrentProduct = query({
       : null;
 
     if (selectedProduct?.userId === userId) {
-      return selectedProduct;
+      return await refreshProductImageUrls(selectedProduct);
     }
 
-    return await ctx.db
+    const fallbackProduct = await ctx.db
       .query("products")
       .withIndex("by_userId_updatedAt", (q) => q.eq("userId", userId))
       .order("desc")
       .first();
+
+    return fallbackProduct ? await refreshProductImageUrls(fallbackProduct) : null;
   },
 });

@@ -1,7 +1,7 @@
-import type { MutationCtx, QueryCtx } from "../_generated/server";
+import type { ActionCtx, MutationCtx, QueryCtx } from "../_generated/server";
 import { getPreviewUserId } from "./getPreviewUserId";
 
-export const requireUserId = async (ctx: MutationCtx | QueryCtx) => {
+export const requireUserId = async (ctx: ActionCtx | MutationCtx | QueryCtx) => {
   const identity = await ctx.auth.getUserIdentity();
 
   if (!identity) {

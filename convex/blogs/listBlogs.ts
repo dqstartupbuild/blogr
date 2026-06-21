@@ -2,6 +2,7 @@ import { v } from "convex/values";
 import { query } from "../_generated/server";
 import { requireUserId } from "../identity/requireUserId";
 import { resolveActiveProductId } from "../products/resolveActiveProductId";
+import { refreshBlogImageUrls } from "./refreshBlogImageUrls";
 
 export const listBlogs = query({
   args: {
@@ -12,11 +13,13 @@ export const listBlogs = query({
     const productId = await resolveActiveProductId(ctx, userId, args.productId);
 
     if (!productId) {
-      return await ctx.db
+      const blogs = await ctx.db
         .query("blogs")
         .withIndex("by_userId_updatedAt", (q) => q.eq("userId", userId))
         .order("desc")
         .collect();
+
+      return await Promise.all(blogs.map(refreshBlogImageUrls));
     }
 
     const scopedBlogs = await ctx.db
@@ -32,7 +35,9 @@ export const listBlogs = query({
       .order("desc")
       .collect();
 
-    return [...scopedBlogs, ...legacyBlogs.filter((blog) => !blog.productId)]
+    const blogs = [...scopedBlogs, ...legacyBlogs.filter((blog) => !blog.productId)]
       .sort((left, right) => right.updatedAt - left.updatedAt);
+
+    return await Promise.all(blogs.map(refreshBlogImageUrls));
   },
 });

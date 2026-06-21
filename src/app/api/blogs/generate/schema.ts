@@ -1,7 +1,9 @@
 import { z } from "zod";
+import { blogGenerationSettingsSchema } from "./blogGenerationSettingsSchema";
 import { storedProductSchema } from "./storedProductSchema";
 
 export const blogGenerateRequestSchema = z.object({
+  blogGenerationSettings: blogGenerationSettingsSchema.optional(),
   keyword: z.string().trim().min(1, "Choose a topic first."),
   product: storedProductSchema,
 });

@@ -1,6 +1,7 @@
 import { v } from "convex/values";
 import { query } from "../_generated/server";
 import { requireUserId } from "../identity/requireUserId";
+import { refreshBlogImageUrls } from "./refreshBlogImageUrls";
 
 export const getBlog = query({
   args: {
@@ -19,6 +20,6 @@ export const getBlog = query({
       return null;
     }
 
-    return blog;
+    return await refreshBlogImageUrls(blog);
   },
 });

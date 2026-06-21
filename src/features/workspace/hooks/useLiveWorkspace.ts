@@ -215,6 +215,7 @@ export const useLiveWorkspace = (
     try {
       const response = await fetch("/api/blogs/generate", {
         body: JSON.stringify({
+          blogGenerationSettings,
           keyword: topic.keyword,
           product: productResult,
         }),

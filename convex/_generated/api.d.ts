@@ -10,6 +10,7 @@
 
 import type * as blogs_getBlog from "../blogs/getBlog.js";
 import type * as blogs_listBlogs from "../blogs/listBlogs.js";
+import type * as blogs_refreshBlogImageUrls from "../blogs/refreshBlogImageUrls.js";
 import type * as blogs_updateBlogContent from "../blogs/updateBlogContent.js";
 import type * as blogs_upsertGeneratedBlog from "../blogs/upsertGeneratedBlog.js";
 import type * as identity_getPreviewUserId from "../identity/getPreviewUserId.js";
@@ -21,10 +22,18 @@ import type * as products_createProductWorkspace from "../products/createProduct
 import type * as products_defaultBlogGenerationSettings from "../products/defaultBlogGenerationSettings.js";
 import type * as products_getCurrentProduct from "../products/getCurrentProduct.js";
 import type * as products_getProductWorkspaces from "../products/getProductWorkspaces.js";
+import type * as products_refreshProductImageUrls from "../products/refreshProductImageUrls.js";
 import type * as products_resolveActiveProductId from "../products/resolveActiveProductId.js";
 import type * as products_saveProductScan from "../products/saveProductScan.js";
 import type * as products_setActiveProductWorkspace from "../products/setActiveProductWorkspace.js";
 import type * as products_updateBlogGenerationSettings from "../products/updateBlogGenerationSettings.js";
+import type * as r2_buildR2ImageKey from "../r2/buildR2ImageKey.js";
+import type * as r2_client from "../r2/client.js";
+import type * as r2_getImageExtensionFromContentType from "../r2/getImageExtensionFromContentType.js";
+import type * as r2_getR2ImageUrl from "../r2/getR2ImageUrl.js";
+import type * as r2_getR2ImageUrls from "../r2/getR2ImageUrls.js";
+import type * as r2_sanitizeR2KeyPart from "../r2/sanitizeR2KeyPart.js";
+import type * as r2_storeImageFromUrl from "../r2/storeImageFromUrl.js";
 import type * as topics_createTopic from "../topics/createTopic.js";
 import type * as topics_deleteTopic from "../topics/deleteTopic.js";
 import type * as topics_getTopic from "../topics/getTopic.js";
@@ -41,6 +50,7 @@ import type {
 declare const fullApi: ApiFromModules<{
   "blogs/getBlog": typeof blogs_getBlog;
   "blogs/listBlogs": typeof blogs_listBlogs;
+  "blogs/refreshBlogImageUrls": typeof blogs_refreshBlogImageUrls;
   "blogs/updateBlogContent": typeof blogs_updateBlogContent;
   "blogs/upsertGeneratedBlog": typeof blogs_upsertGeneratedBlog;
   "identity/getPreviewUserId": typeof identity_getPreviewUserId;
@@ -52,10 +62,18 @@ declare const fullApi: ApiFromModules<{
   "products/defaultBlogGenerationSettings": typeof products_defaultBlogGenerationSettings;
   "products/getCurrentProduct": typeof products_getCurrentProduct;
   "products/getProductWorkspaces": typeof products_getProductWorkspaces;
+  "products/refreshProductImageUrls": typeof products_refreshProductImageUrls;
   "products/resolveActiveProductId": typeof products_resolveActiveProductId;
   "products/saveProductScan": typeof products_saveProductScan;
   "products/setActiveProductWorkspace": typeof products_setActiveProductWorkspace;
   "products/updateBlogGenerationSettings": typeof products_updateBlogGenerationSettings;
+  "r2/buildR2ImageKey": typeof r2_buildR2ImageKey;
+  "r2/client": typeof r2_client;
+  "r2/getImageExtensionFromContentType": typeof r2_getImageExtensionFromContentType;
+  "r2/getR2ImageUrl": typeof r2_getR2ImageUrl;
+  "r2/getR2ImageUrls": typeof r2_getR2ImageUrls;
+  "r2/sanitizeR2KeyPart": typeof r2_sanitizeR2KeyPart;
+  "r2/storeImageFromUrl": typeof r2_storeImageFromUrl;
   "topics/createTopic": typeof topics_createTopic;
   "topics/deleteTopic": typeof topics_deleteTopic;
   "topics/getTopic": typeof topics_getTopic;
@@ -90,4 +108,6 @@ export declare const internal: FilterApi<
   FunctionReference<any, "internal">
 >;
 
-export declare const components: {};
+export declare const components: {
+  r2: import("@convex-dev/r2/_generated/component.js").ComponentApi<"r2">;
+};

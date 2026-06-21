@@ -11,6 +11,7 @@ const linkValidator = v.object({
 const imageValidator = v.object({
   alt: v.string(),
   prompt: v.string(),
+  r2Key: v.optional(v.string()),
   url: v.string(),
 });
 

@@ -19,6 +19,7 @@ export const buildInitialProductScanProduct = ({
 
   return {
     assets: [],
+    assetKeys: [],
     audience: "",
     colors: ["#000000", "#ffffff"],
     competitors: "",
@@ -26,6 +27,7 @@ export const buildInitialProductScanProduct = ({
     name: host,
     niche: cleanNiche,
     productImages: [],
+    productImageKeys: [],
     rawContext: `Website: ${normalizedUrl}\nNiche: ${cleanNiche}`,
     siteLinks: [buildInitialProductLink(normalizedUrl)],
     websiteUrl: normalizedUrl,

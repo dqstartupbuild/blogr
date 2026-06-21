@@ -9,7 +9,9 @@ export type ProductScanResult = {
   competitors: string;
   colors: string[];
   assets: string[];
+  assetKeys?: string[];
   productImages: string[];
+  productImageKeys?: string[];
   siteLinks: LinkItem[];
   rawContext: string;
 };

@@ -11,6 +11,7 @@ const linkValidator = v.object({
 const imageValidator = v.object({
   alt: v.string(),
   prompt: v.string(),
+  r2Key: v.optional(v.string()),
   url: v.string(),
 });
 
@@ -25,7 +26,9 @@ export default defineSchema({
     competitors: v.string(),
     colors: v.array(v.string()),
     assets: v.array(v.string()),
+    assetKeys: v.optional(v.array(v.string())),
     productImages: v.array(v.string()),
+    productImageKeys: v.optional(v.array(v.string())),
     siteLinks: v.array(linkValidator),
     blogGenerationSettings: v.optional(blogGenerationSettingsValidator),
     rawContext: v.string(),

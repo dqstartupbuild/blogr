@@ -2,6 +2,7 @@ import type { BlogImage } from "./types/BlogImage";
 import type { ResearchSource } from "./types/ResearchSource";
 import type { StoredProduct } from "./types/StoredProduct";
 import { buildBlogGenerationSettingsPrompt } from "./buildBlogGenerationSettingsPrompt";
+import { buildBlogWriterProductContext } from "./buildBlogWriterProductContext";
 import type { BlogGenerationSettings } from "@/features/workspace/types/BlogGenerationSettings";
 import type { LinkItem } from "@/features/workspace/types/LinkItem";
 
@@ -46,7 +47,7 @@ Voice:
 - Use technical detail only when the keyword truly needs technical detail.
 
 Product context:
-${JSON.stringify(product, null, 2)}
+${buildBlogWriterProductContext(product)}
 
 ${buildBlogGenerationSettingsPrompt(settings)}
 
@@ -65,6 +66,9 @@ ${JSON.stringify(images, null, 2)}
 MDX rules:
 - Include frontmatter with title, description, targetKeyword, featureImage, and image alt text when available.
 - Put the feature image URL in frontmatter as featureImage.
+- Use only image URLs listed in "Images to lace through the post".
+- Never use product context asset URLs or product screenshot URLs as article images.
+- If the image list is empty, do not add image markdown and leave featureImage blank.
 - Use the feature image as a markdown image at most once.
 - Use each supporting image as a markdown image at most once.
 - Never repeat the same image URL in the MDX body.

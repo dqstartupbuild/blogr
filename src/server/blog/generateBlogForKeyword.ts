@@ -3,22 +3,28 @@ import { chooseInternalLinks } from "./chooseInternalLinks";
 import { findYoutubeVideos } from "./findYoutubeVideos";
 import { generateBlogImages } from "./generateBlogImages";
 import { runBlogResearch } from "./runBlogResearch";
+import { storeGeneratedBlogImages } from "./storeGeneratedBlogImages";
 import { writeBlogDraft } from "./writeBlogDraft";
 import { normalizeBlogGenerationSettings } from "@/features/workspace/utils/normalizeBlogGenerationSettings";
+import type { BlogGenerationSettings } from "@/features/workspace/types/BlogGenerationSettings";
 import type { GeneratedBlog } from "./types/GeneratedBlog";
 import type { StoredProduct } from "./types/StoredProduct";
 
 type GenerateBlogForKeywordOptions = {
+  blogGenerationSettings?: BlogGenerationSettings;
+  convexAuthToken?: string;
   keyword: string;
   product: StoredProduct;
 };
 
 export const generateBlogForKeyword = async ({
+  blogGenerationSettings,
+  convexAuthToken,
   keyword,
   product,
 }: GenerateBlogForKeywordOptions): Promise<GeneratedBlog> => {
   const settings = normalizeBlogGenerationSettings(
-    product.blogGenerationSettings,
+    blogGenerationSettings || product.blogGenerationSettings,
   );
   const [sources, youtubeVideos, images] = await Promise.all([
     runBlogResearch(keyword),
@@ -31,9 +37,13 @@ export const generateBlogForKeyword = async ({
     limit: settings.internalLinksPerArticle,
   });
   const sourceLinks = buildSourceLinks(sources);
+  const storedImages = await storeGeneratedBlogImages({
+    images,
+    token: convexAuthToken,
+  });
 
   return await writeBlogDraft({
-    images,
+    images: storedImages,
     internalLinks,
     keyword,
     product,

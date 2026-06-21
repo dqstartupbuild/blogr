@@ -4,6 +4,7 @@ import { linkItemSchema } from "./linkItemSchema";
 
 export const storedProductSchema = z.object({
   assets: z.array(z.string()).default([]),
+  assetKeys: z.array(z.string()).default([]),
   audience: z.string(),
   blogGenerationSettings: blogGenerationSettingsSchema.optional(),
   colors: z.array(z.string()).default([]),
@@ -12,6 +13,7 @@ export const storedProductSchema = z.object({
   name: z.string(),
   niche: z.string(),
   productImages: z.array(z.string()).default([]),
+  productImageKeys: z.array(z.string()).default([]),
   rawContext: z.string(),
   siteLinks: z.array(linkItemSchema).default([]),
   websiteUrl: z.string(),

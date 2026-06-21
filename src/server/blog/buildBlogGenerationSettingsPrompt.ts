@@ -21,6 +21,11 @@ Article settings:
       ? "Add a short table of contents after the intro."
       : "Do not add a table of contents."
   }
+- YouTube videos: ${
+    settings.youtubeVideo
+      ? "Use only the provided YouTube video links when they are genuinely useful. Do not invent YouTube links."
+      : "Do not mention or link to YouTube videos."
+  }
 - Call-to-action: ${
     settings.callToAction
       ? "Finish with a clear next step that points readers back to the product website when it fits."
