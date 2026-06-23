@@ -1,14 +1,20 @@
-import { assertBlogPublishConfiguration } from "./assertBlogPublishConfiguration";
 import { createBlogPublishHeaders } from "./createBlogPublishHeaders";
 import { getBlogPublishTimeoutMs } from "./getBlogPublishTimeoutMs";
 import { readBlogPublishWebhookMessage } from "./readBlogPublishWebhookMessage";
 import type { BlogPublishPayload } from "./types/BlogPublishPayload";
 
-export const sendBlogPublishWebhook = async (payload: BlogPublishPayload) => {
-  const { token, url } = assertBlogPublishConfiguration();
-  const response = await fetch(url, {
+type SendBlogPublishWebhookOptions = {
+  token: string;
+  url: string;
+};
+
+export const sendBlogPublishWebhook = async (
+  payload: BlogPublishPayload,
+  destination: SendBlogPublishWebhookOptions,
+) => {
+  const response = await fetch(destination.url, {
     body: JSON.stringify(payload),
-    headers: createBlogPublishHeaders(token),
+    headers: createBlogPublishHeaders(destination.token),
     method: "POST",
     signal: AbortSignal.timeout(getBlogPublishTimeoutMs()),
   });

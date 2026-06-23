@@ -1,6 +1,7 @@
 import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
 import { blogGenerationSettingsValidator } from "./products/blogGenerationSettingsValidator";
+import { blogPublishingIntegrationValidator } from "./products/blogPublishingIntegrationValidator";
 
 const linkValidator = v.object({
   title: v.string(),
@@ -31,6 +32,7 @@ export default defineSchema({
     productImageKeys: v.optional(v.array(v.string())),
     siteLinks: v.array(linkValidator),
     blogGenerationSettings: v.optional(blogGenerationSettingsValidator),
+    blogPublishingIntegration: v.optional(blogPublishingIntegrationValidator),
     rawContext: v.string(),
     scannedAt: v.number(),
     createdAt: v.number(),

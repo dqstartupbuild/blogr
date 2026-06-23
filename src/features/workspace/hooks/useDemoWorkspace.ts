@@ -18,6 +18,7 @@ import type { ProductWorkspace } from "../types/ProductWorkspace";
 import type { TopicItem } from "../types/TopicItem";
 import type { WriteBlogOptions } from "../types/WriteBlogOptions";
 import type { WorkspaceViewMode } from "../types/WorkspaceViewMode";
+import type { BlogPublishingIntegrationDraft } from "../types/integrations/BlogPublishingIntegrationDraft";
 
 export const useDemoWorkspace = (initialMode: WorkspaceViewMode) => {
   const [mode, setMode] = useState<WorkspaceViewMode>(initialMode);
@@ -50,6 +51,10 @@ export const useDemoWorkspace = (initialMode: WorkspaceViewMode) => {
     [demoProductWorkspace.id]: defaultBlogGenerationSettings,
   });
   const [settingsStatusMessage, setSettingsStatusMessage] = useState("");
+  const [
+    publishingIntegrationStatusMessage,
+    setPublishingIntegrationStatusMessage,
+  ] = useState("");
   const [selectedBlogId, setSelectedBlogId] = useState(demoBlogs[0]?.id ?? "");
   const product = productsByWorkspace[activeWorkspaceId] || emptyProduct;
   const blogGenerationSettings =
@@ -204,6 +209,38 @@ export const useDemoWorkspace = (initialMode: WorkspaceViewMode) => {
     setSettingsStatusMessage("Settings saved in preview.");
   };
 
+  const saveBlogPublishingIntegration = (
+    integration: BlogPublishingIntegrationDraft,
+  ) => {
+    setProductsByWorkspace((current) => {
+      const product = current[activeWorkspaceId] || emptyProduct;
+
+      return {
+        ...current,
+        [activeWorkspaceId]: {
+          ...product,
+          blogPublishingIntegration: {
+            enabled: integration.enabled,
+            hasAccessToken:
+              integration.enabled &&
+              Boolean(
+                integration.accessToken ||
+                  product.blogPublishingIntegration?.hasAccessToken,
+              ),
+            sourceName: integration.sourceName.trim() || "Blogger",
+            updatedAt: Date.now(),
+            webhookUrl: integration.enabled ? integration.webhookUrl.trim() : "",
+          },
+        },
+      };
+    });
+    setPublishingIntegrationStatusMessage(
+      integration.enabled
+        ? "Publishing connected in preview."
+        : "Publishing removed in preview.",
+    );
+  };
+
   const selectWorkspace = async (workspaceId: string) => {
     if (!workspaces.some((workspace) => workspace.id === workspaceId)) {
       return;
@@ -262,8 +299,10 @@ export const useDemoWorkspace = (initialMode: WorkspaceViewMode) => {
     mode,
     setMode,
     blogGenerationSettings,
+    isSavingBlogPublishingIntegration: false,
     isSavingBlogGenerationSettings: false,
     product,
+    publishingIntegrationStatusMessage,
     productScanState: {
       isScanning: isScanningProduct,
       message: productScanMessage,
@@ -280,6 +319,7 @@ export const useDemoWorkspace = (initialMode: WorkspaceViewMode) => {
     discoverTopicIdeas,
     refreshTopicBrief,
     saveBlogGenerationSettings,
+    saveBlogPublishingIntegration,
     workspaceSwitcher: {
       activeWorkspace,
       activeWorkspaceId,

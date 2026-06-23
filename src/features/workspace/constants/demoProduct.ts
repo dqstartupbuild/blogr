@@ -1,6 +1,8 @@
 import type { ProductProfile } from "../types/ProductProfile";
+import { emptyBlogPublishingIntegration } from "./emptyBlogPublishingIntegration";
 
 export const demoProduct: ProductProfile = {
+  blogPublishingIntegration: emptyBlogPublishingIntegration,
   name: "ClearPath",
   websiteUrl: "https://example.com",
   niche: "simple planning software for busy founders",

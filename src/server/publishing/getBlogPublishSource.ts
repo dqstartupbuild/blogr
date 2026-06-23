@@ -1,3 +1,7 @@
-export const getBlogPublishSource = () => {
-  return process.env.BLOG_PUBLISH_SOURCE_NAME?.trim() || "Blogger";
+export const getBlogPublishSource = (sourceName?: string) => {
+  return (
+    sourceName?.trim() ||
+    process.env.BLOG_PUBLISH_SOURCE_NAME?.trim() ||
+    "Blogger"
+  );
 };

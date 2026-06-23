@@ -11,6 +11,7 @@ export const blogItemSchema = z.object({
   internalLinks: z.array(linkItemSchema).default([]),
   keyword: z.string(),
   mdx: z.string(),
+  productId: z.string().optional(),
   slug: z.string(),
   sources: z.array(linkItemSchema).default([]),
   status: z.union([z.literal("draft"), z.literal("ready"), z.literal("failed")]),

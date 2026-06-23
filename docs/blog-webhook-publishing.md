@@ -6,6 +6,8 @@ Users can publish a generated blog to another app with the **Publish** button.
 
 The target app owns the public blog. This app sends the generated article to that target app through a bearer-token webhook, using the same shape as the Outrank-style webhook reference.
 
+Each product workspace can have its own publishing integration. This lets one account publish different products or clients to different blog apps without changing deployment env vars.
+
 ## How It Works
 
 1. A user clicks **Publish** from the blog preview or editor header.
@@ -13,12 +15,30 @@ The target app owns the public blog. This app sends the generated article to tha
 3. The route checks the signed-in user with `requireRouteUserId`.
 4. The route validates the blog payload with the shared blog item schema.
 5. `buildBlogPublishPayload` turns the blog into a `publish_articles` webhook payload.
-6. `sendBlogPublishWebhook` posts the payload to `BLOG_PUBLISH_WEBHOOK_URL` with `Authorization: Bearer BLOG_PUBLISH_WEBHOOK_TOKEN`.
-7. The target app creates or updates the public blog post by `slug`.
+6. `resolveBlogPublishDestination` looks for a saved publishing integration on the blog's product workspace.
+7. If the product does not have a saved integration, the route falls back to the deployment env vars.
+8. `sendBlogPublishWebhook` posts the payload with `Authorization: Bearer <token>`.
+9. The target app creates or updates the public blog post by `slug`.
 
 Publishing uses the currently loaded draft. In the editor, that means a user can publish the text they are looking at after making changes.
 
-## Configuration
+## Settings Workflow
+
+Open **Settings** for the active product workspace, then use the **Publishing** panel.
+
+The user enters:
+
+- Webhook URL
+- Access token
+- Source name
+
+The access token is saved server-side in Convex and is not returned to the browser. The settings screen only shows whether a token is already saved.
+
+Click **Save publishing** to connect that product. Click **Remove** to disconnect publishing for that product.
+
+## Env Fallback
+
+Product settings are the normal setup path. Env vars still work as a fallback for demos, previews, or single-destination deployments.
 
 Set these env vars on the Blogger deployment:
 
@@ -29,7 +49,7 @@ BLOG_PUBLISH_SOURCE_NAME=Blogger
 BLOG_PUBLISH_TIMEOUT_MS=15000
 ```
 
-`BLOG_PUBLISH_WEBHOOK_URL` and `BLOG_PUBLISH_WEBHOOK_TOKEN` are required. `BLOG_PUBLISH_SOURCE_NAME` defaults to `Blogger`. `BLOG_PUBLISH_TIMEOUT_MS` defaults to 15000 and is capped at 60000.
+`BLOG_PUBLISH_SOURCE_NAME` defaults to `Blogger`. `BLOG_PUBLISH_TIMEOUT_MS` defaults to 15000 and is capped at 60000.
 
 ## Webhook Payload
 
@@ -80,17 +100,24 @@ The receiving app should:
 
 The target webhook must be public but token-protected. Never put the webhook token in browser code.
 
+Saved product tokens are only read by Convex functions and the Next.js publish route. Client product queries return `hasAccessToken` instead of the token value.
+
 Bearer auth is enough for the first version because this is a server-to-server webhook. If the receiver later needs stronger replay protection, add a timestamped HMAC header while keeping bearer auth for compatibility.
 
 ## Relevant Code
 
 - `src/features/workspace/components/BlogPublishButton.tsx`
+- `src/features/workspace/components/BlogPublishingIntegrationPanel.tsx`
 - `src/features/workspace/utils/publishBlog.ts`
 - `src/app/api/blogs/publish/route.ts`
 - `src/app/api/blogs/publish/schema.ts`
+- `src/server/publishing/resolveBlogPublishDestination.ts`
+- `src/server/publishing/getBlogPublishProductDestination.ts`
 - `src/server/publishing/buildBlogPublishPayload.ts`
 - `src/server/publishing/buildBlogPublishArticle.ts`
 - `src/server/publishing/sendBlogPublishWebhook.ts`
+- `convex/products/updateBlogPublishingIntegration.ts`
+- `convex/products/getBlogPublishingIntegration.ts`
 
 ## File Tree
 
@@ -98,9 +125,12 @@ Bearer auth is enough for the first version because this is a server-to-server w
 src/app/api/blogs/publish/
 src/server/publishing/
 src/server/publishing/types/
+src/features/workspace/components/BlogPublishingIntegrationPanel.tsx
 src/features/workspace/components/BlogPublishButton.tsx
 src/features/workspace/utils/publishBlog.ts
+src/features/workspace/types/integrations/
 src/features/workspace/types/publishing/
+convex/products/*BlogPublishing*
 docs/blog-webhook-publishing.md
 docs/codex-target-app-blog-webhook.md
 ```

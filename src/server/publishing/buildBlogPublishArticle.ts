@@ -5,7 +5,10 @@ import { getBlogPublishSource } from "./getBlogPublishSource";
 import { getBlogPublishTimestamp } from "./getBlogPublishTimestamp";
 import type { BlogPublishArticle } from "./types/BlogPublishArticle";
 
-export const buildBlogPublishArticle = (blog: BlogItem): BlogPublishArticle => {
+export const buildBlogPublishArticle = (
+  blog: BlogItem,
+  sourceName?: string,
+): BlogPublishArticle => {
   const createdAt = getBlogPublishTimestamp(blog.createdAt || blog.updatedAt);
   const updatedAt = getBlogPublishTimestamp(blog.updatedAt);
 
@@ -19,7 +22,7 @@ export const buildBlogPublishArticle = (blog: BlogItem): BlogPublishArticle => {
     image_url: getBlogPublishImageUrl(blog),
     meta_description: blog.excerpt,
     slug: blog.slug,
-    source: getBlogPublishSource(),
+    source: getBlogPublishSource(sourceName),
     tags: buildBlogPublishTags(blog),
     title: blog.title,
     updated_at: updatedAt,

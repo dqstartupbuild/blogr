@@ -40,7 +40,7 @@ export const WorkspaceSettingsPanel = ({
 
   return (
     <section className="rounded-lg border border-black bg-white p-4">
-      <SectionTitle title="Settings" />
+      <SectionTitle title="Article settings" />
       <form
         className="mt-4 grid gap-5"
         onSubmit={async (event) => {

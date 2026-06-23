@@ -1,5 +1,6 @@
 import type { Doc } from "../_generated/dataModel";
 import { getR2ImageUrls } from "../r2/getR2ImageUrls";
+import { sanitizeBlogPublishingIntegration } from "./sanitizeBlogPublishingIntegration";
 
 export const refreshProductImageUrls = async (product: Doc<"products">) => {
   const [assets, productImages] = await Promise.all([
@@ -16,6 +17,9 @@ export const refreshProductImageUrls = async (product: Doc<"products">) => {
   return {
     ...product,
     assets,
+    blogPublishingIntegration: sanitizeBlogPublishingIntegration(
+      product.blogPublishingIntegration,
+    ),
     productImages,
   };
 };

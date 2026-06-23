@@ -11,6 +11,7 @@ export type BlogItem = {
   createdAt?: number;
   id: string;
   keyword: string;
+  productId?: string;
   title: string;
   slug: string;
   excerpt: string;

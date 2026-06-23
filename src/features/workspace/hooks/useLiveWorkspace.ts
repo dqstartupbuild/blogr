@@ -8,6 +8,7 @@ import { getCurrentProductQuery } from "@/server/convex/references/getCurrentPro
 import { listBlogsQuery } from "@/server/convex/references/listBlogsQuery";
 import { listTopicsQuery } from "@/server/convex/references/listTopicsQuery";
 import { saveProductScanMutation } from "@/server/convex/references/saveProductScanMutation";
+import { updateBlogPublishingIntegrationMutation } from "@/server/convex/references/updateBlogPublishingIntegrationMutation";
 import { updateTopicNotesMutation } from "@/server/convex/references/updateTopicNotesMutation";
 import { updateTopicStatusMutation } from "@/server/convex/references/updateTopicStatusMutation";
 import { updateBlogGenerationSettingsMutation } from "@/server/convex/references/updateBlogGenerationSettingsMutation";
@@ -29,6 +30,7 @@ import type { ProductScanResponse } from "../types/ProductScanResponse";
 import type { WriteBlogOptions } from "../types/WriteBlogOptions";
 import type { WorkspaceSwitcherState } from "../types/WorkspaceSwitcherState";
 import type { WorkspaceViewMode } from "../types/WorkspaceViewMode";
+import type { BlogPublishingIntegrationDraft } from "../types/integrations/BlogPublishingIntegrationDraft";
 import type { TopicDiscoveryRequest } from "../types/topicDiscovery/TopicDiscoveryRequest";
 import type { TopicDiscoveryResponse } from "../types/topicDiscovery/TopicDiscoveryResponse";
 
@@ -45,8 +47,16 @@ export const useLiveWorkspace = (
   const [productScanMessage, setProductScanMessage] = useState("");
   const [isScanningProduct, setIsScanningProduct] = useState(false);
   const [settingsStatusMessage, setSettingsStatusMessage] = useState("");
+  const [
+    publishingIntegrationStatusMessage,
+    setPublishingIntegrationStatusMessage,
+  ] = useState("");
   const [isSavingBlogGenerationSettings, setIsSavingBlogGenerationSettings] =
     useState(false);
+  const [
+    isSavingBlogPublishingIntegration,
+    setIsSavingBlogPublishingIntegration,
+  ] = useState(false);
   const activeProductId = workspaceSwitcher.activeWorkspaceId;
   const convexProductId = activeProductId
     ? castProductId(activeProductId)
@@ -67,6 +77,9 @@ export const useLiveWorkspace = (
   const saveProductScan = useMutation(saveProductScanMutation);
   const updateBlogGenerationSettings = useMutation(
     updateBlogGenerationSettingsMutation,
+  );
+  const updateBlogPublishingIntegration = useMutation(
+    updateBlogPublishingIntegrationMutation,
   );
   const updateTopicNotes = useMutation(updateTopicNotesMutation);
   const updateTopicStatus = useMutation(updateTopicStatusMutation);
@@ -339,6 +352,39 @@ export const useLiveWorkspace = (
     }
   };
 
+  const saveBlogPublishingIntegration = async (
+    integration: BlogPublishingIntegrationDraft,
+  ) => {
+    if (!convexProductId) {
+      setPublishingIntegrationStatusMessage("Choose a workspace first.");
+      return;
+    }
+
+    setIsSavingBlogPublishingIntegration(true);
+    setPublishingIntegrationStatusMessage("");
+
+    try {
+      await updateBlogPublishingIntegration({
+        accessToken: integration.accessToken,
+        enabled: integration.enabled,
+        productId: convexProductId,
+        sourceName: integration.sourceName,
+        webhookUrl: integration.webhookUrl,
+      });
+      setPublishingIntegrationStatusMessage(
+        integration.enabled ? "Publishing connected." : "Publishing removed.",
+      );
+    } catch (error) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : "Could not save publishing yet.";
+      setPublishingIntegrationStatusMessage(message);
+    } finally {
+      setIsSavingBlogPublishingIntegration(false);
+    }
+  };
+
   const writeBlog = async (topicId: string, options?: WriteBlogOptions) => {
     const topic = topics.find((item) => item.id === topicId);
     const sourceText = options?.sourceText?.trim();
@@ -418,14 +464,17 @@ export const useLiveWorkspace = (
     blogs,
     discoverBlogRefreshIdeas,
     discoverTopicIdeas,
+    isSavingBlogPublishingIntegration,
     isSavingBlogGenerationSettings,
     mode,
     product,
+    publishingIntegrationStatusMessage,
     productScanState: {
       isScanning: isScanningProduct,
       message: productScanMessage,
     },
     saveBlogGenerationSettings,
+    saveBlogPublishingIntegration,
     scanProduct,
     selectedBlog,
     selectedBlogId: activeSelectedBlogId,

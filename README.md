@@ -31,12 +31,14 @@ Without keys, the workspace shows a local demo layout. With Clerk and Convex pub
 - `APIFY_TOKEN`
 - `YOUTUBE_API_KEY` optional
 - `EXA_API_KEY` optional video search fallback
-- `BLOG_PUBLISH_WEBHOOK_URL` optional blog publishing destination
-- `BLOG_PUBLISH_WEBHOOK_TOKEN` optional blog publishing token
-- `BLOG_PUBLISH_SOURCE_NAME` optional publishing source label
+- `BLOG_PUBLISH_WEBHOOK_URL` optional fallback blog publishing destination
+- `BLOG_PUBLISH_WEBHOOK_TOKEN` optional fallback blog publishing token
+- `BLOG_PUBLISH_SOURCE_NAME` optional fallback publishing source label
 - `BLOG_PUBLISH_TIMEOUT_MS` optional publishing request timeout
 
 Set `AUTH_DISABLED_FOR_PREVIEW=true` only for local preview work. Keep it false in production.
+
+Blog publishing is normally configured per product from the Settings tab. The blog publishing env vars are only needed when you want one deployment-level fallback destination.
 
 ## Convex Setup
 

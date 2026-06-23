@@ -1,5 +1,6 @@
 import { query } from "../_generated/server";
 import { requireUserId } from "../identity/requireUserId";
+import { sanitizeProductForClient } from "./sanitizeProductForClient";
 
 export const getProductWorkspaces = query({
   args: {},
@@ -24,7 +25,7 @@ export const getProductWorkspaces = query({
 
     return {
       activeProductId,
-      products,
+      products: products.map(sanitizeProductForClient),
     };
   },
 });

@@ -1,6 +1,7 @@
 "use client";
 
 import { BlogPreviewPanel } from "./BlogPreviewPanel";
+import { BlogPublishingIntegrationPanel } from "./BlogPublishingIntegrationPanel";
 import { BlogsPanel } from "./BlogsPanel";
 import { ProductSetupPanel } from "./ProductSetupPanel";
 import { TopicsPanel } from "./TopicsPanel";
@@ -16,6 +17,7 @@ import type { TopicItem } from "../types/TopicItem";
 import type { WriteBlogOptions } from "../types/WriteBlogOptions";
 import type { WorkspaceSwitcherState } from "../types/WorkspaceSwitcherState";
 import type { WorkspaceViewMode } from "../types/WorkspaceViewMode";
+import type { BlogPublishingIntegrationDraft } from "../types/integrations/BlogPublishingIntegrationDraft";
 import type { DiscoverTopicIdeas } from "../types/topicDiscovery/DiscoverTopicIdeas";
 
 type WorkspaceContentProps = {
@@ -24,13 +26,18 @@ type WorkspaceContentProps = {
   blogs: BlogItem[];
   discoverBlogRefreshIdeas: DiscoverBlogRefreshIdeas;
   discoverTopicIdeas: DiscoverTopicIdeas;
+  isSavingBlogPublishingIntegration: boolean;
   isSavingBlogGenerationSettings: boolean;
   mode: WorkspaceViewMode;
   product: ProductProfile;
+  publishingIntegrationStatusMessage: string;
   productScanState: ProductScanState;
   refreshTopicBrief: RefreshTopicBrief;
   saveBlogGenerationSettings: (
     settings: BlogGenerationSettings,
+  ) => void | Promise<void>;
+  saveBlogPublishingIntegration: (
+    integration: BlogPublishingIntegrationDraft,
   ) => void | Promise<void>;
   scanProduct: (websiteUrl: string, niche: string) => void | Promise<void>;
   selectedBlog?: BlogItem;
@@ -52,12 +59,15 @@ export const WorkspaceContent = ({
   blogs,
   discoverBlogRefreshIdeas,
   discoverTopicIdeas,
+  isSavingBlogPublishingIntegration,
   isSavingBlogGenerationSettings,
   mode,
   product,
+  publishingIntegrationStatusMessage,
   productScanState,
   refreshTopicBrief,
   saveBlogGenerationSettings,
+  saveBlogPublishingIntegration,
   scanProduct,
   selectedBlog,
   selectedBlogId,
@@ -101,15 +111,26 @@ export const WorkspaceContent = ({
             />
           ) : null}
           {mode === "settings" ? (
-            <WorkspaceSettingsPanel
-              isSaving={isSavingBlogGenerationSettings}
-              key={`${workspaceSwitcher.activeWorkspaceId}:${JSON.stringify(
-                blogGenerationSettings,
-              )}`}
-              saveSettings={saveBlogGenerationSettings}
-              settings={blogGenerationSettings}
-              statusMessage={settingsStatusMessage}
-            />
+            <div className="space-y-5">
+              <BlogPublishingIntegrationPanel
+                integration={product.blogPublishingIntegration}
+                isSaving={isSavingBlogPublishingIntegration}
+                key={`${workspaceSwitcher.activeWorkspaceId}:${JSON.stringify(
+                  product.blogPublishingIntegration,
+                )}`}
+                saveIntegration={saveBlogPublishingIntegration}
+                statusMessage={publishingIntegrationStatusMessage}
+              />
+              <WorkspaceSettingsPanel
+                isSaving={isSavingBlogGenerationSettings}
+                key={`${workspaceSwitcher.activeWorkspaceId}:${JSON.stringify(
+                  blogGenerationSettings,
+                )}`}
+                saveSettings={saveBlogGenerationSettings}
+                settings={blogGenerationSettings}
+                statusMessage={settingsStatusMessage}
+              />
+            </div>
           ) : null}
         </main>
         <BlogPreviewPanel blog={selectedBlog} />

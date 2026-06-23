@@ -6,8 +6,9 @@ import type { BlogPublishPayload } from "./types/BlogPublishPayload";
 export const buildBlogPublishPayload = (
   blog: BlogItem,
   eventType: BlogPublishEventType = "update_article",
+  sourceName?: string,
 ): BlogPublishPayload => {
-  const article = buildBlogPublishArticle(blog);
+  const article = buildBlogPublishArticle(blog, sourceName);
 
   if (eventType === "publish_articles") {
     return {

@@ -1,8 +1,15 @@
-import type { Doc } from "../../../../convex/_generated/dataModel";
 import type { ProductWorkspace } from "../types/ProductWorkspace";
 
+type ConvexProductWorkspaceLike = {
+  _id: string;
+  name: string;
+  niche: string;
+  updatedAt: number;
+  websiteUrl: string;
+};
+
 export const mapConvexProductWorkspace = (
-  product: Doc<"products">,
+  product: ConvexProductWorkspaceLike,
 ): ProductWorkspace => {
   return {
     id: product._id,

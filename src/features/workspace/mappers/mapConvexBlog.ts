@@ -11,6 +11,7 @@ export const mapConvexBlog = (blog: Doc<"blogs">): BlogItem => {
     internalLinks: blog.internalLinks || [],
     keyword: blog.keyword,
     mdx: blog.mdx,
+    productId: blog.productId,
     slug: blog.slug,
     status: blog.status,
     sources: blog.sources || [],

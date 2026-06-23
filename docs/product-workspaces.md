@@ -8,7 +8,7 @@ Changing the workspace does not merge data or reload the whole app. It changes t
 
 ## How It Works
 
-The `products` table is the workspace record. Each product row stores the workspace profile, scanned site details, assets, links, writing context, and blog generation settings.
+The `products` table is the workspace record. Each product row stores the workspace profile, scanned site details, assets, links, writing context, blog generation settings, and publishing integration settings.
 
 The `workspaceSelections` table stores the user's active `productId`. `getProductWorkspaces` returns all product workspaces and the active product ID. If the saved selection is missing, the newest product becomes the active workspace for that session.
 
@@ -17,7 +17,7 @@ Workspace-owned records store the product ID:
 - `topics.productId`
 - `blogs.productId`
 
-Dashboard queries use the active product ID when listing topics and blogs. New topics, generated blogs, product scans, settings saves, and blog edits pass the active product ID into Convex mutations by default.
+Dashboard queries use the active product ID when listing topics and blogs. New topics, generated blogs, product scans, settings saves, publishing integration saves, and blog edits pass the active product ID into Convex mutations by default.
 
 The switcher is shared by the main dashboard and live blog editor. If a user switches workspaces while editing a blog, the app moves back to `/blogs` because the old blog ID may not belong to the new workspace.
 
@@ -41,6 +41,8 @@ Use the Clerk subject stored in existing `userId` fields for `USER_ID`.
 - `convex/products/setActiveProductWorkspace.ts`
 - `convex/products/saveProductScan.ts`
 - `convex/products/updateBlogGenerationSettings.ts`
+- `convex/products/updateBlogPublishingIntegration.ts`
+- `convex/products/getBlogPublishingIntegration.ts`
 - `convex/migrations/backfillProductWorkspaceIds.ts`
 - `convex/workspaceSelections/saveWorkspaceSelection.ts`
 - `convex/topics/createTopic.ts`
@@ -64,6 +66,7 @@ Use the Clerk subject stored in existing `userId` fields for `USER_ID`.
 - Scan a different site for each workspace.
 - Keep generated blogs and saved outputs attached to the product they were created for.
 - Keep article style, image choices, and article extras separate per product.
+- Publish each product to its own connected blog app.
 - Create a blank workspace first, then fill in details when the site is ready.
 
 ## Source References
