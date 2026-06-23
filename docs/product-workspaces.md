@@ -19,7 +19,7 @@ Workspace-owned records store the product ID:
 
 Dashboard queries use the active product ID when listing topics and blogs. New topics, generated blogs, product scans, settings saves, publishing integration saves, and blog edits pass the active product ID into Convex mutations by default.
 
-The active product's Settings tab shows the publishing setup guide beside the connection fields. Users can copy a Codex prompt for the receiving app, inspect the expected webhook path and sample payload, then save the deployed webhook URL and token on that product.
+The active product's Settings tab shows product setup, article settings, and the publishing setup guide beside the connection fields. Users can copy a Codex prompt for the receiving app, inspect the expected webhook path and sample payload, then save the deployed webhook URL and token on that product. Product setup is not repeated on the Topics or Blogs tabs.
 
 The switcher is shared by the main dashboard and live blog editor. If a user switches workspaces while editing a blog, the app moves back to `/blogs` because the old blog ID may not belong to the new workspace.
 

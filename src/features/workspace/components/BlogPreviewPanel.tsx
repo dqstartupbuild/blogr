@@ -9,19 +9,35 @@ import type { BlogItem } from "../types/BlogItem";
 
 type BlogPreviewPanelProps = {
   blog?: BlogItem;
+  variant?: "card" | "drawer";
 };
 
-export const BlogPreviewPanel = ({ blog }: BlogPreviewPanelProps) => {
+export const BlogPreviewPanel = ({
+  blog,
+  variant = "card",
+}: BlogPreviewPanelProps) => {
+  const sectionClassName =
+    variant === "drawer"
+      ? "bg-white"
+      : "rounded-lg border border-black bg-white p-4";
+  const markdownClassName =
+    variant === "drawer"
+      ? "mt-4 rounded-md border border-black bg-white p-4"
+      : "mt-4 max-h-[420px] overflow-auto rounded-md border border-black bg-white p-4";
+
   if (!blog) {
     return (
-      <aside className="rounded-lg border border-black bg-white p-4">
+      <section className={sectionClassName}>
         <SectionTitle title="Preview" />
-      </aside>
+        <p className="mt-3 text-sm leading-6 text-black">
+          Choose a blog to preview it here.
+        </p>
+      </section>
     );
   }
 
   return (
-    <aside className="rounded-lg border border-black bg-white p-4 xl:sticky xl:top-5 xl:self-start">
+    <section className={sectionClassName}>
       <SectionTitle
         action={
           <div className="flex gap-2">
@@ -44,9 +60,9 @@ export const BlogPreviewPanel = ({ blog }: BlogPreviewPanelProps) => {
         {blog.title}
       </h3>
       <p className="mt-2 text-sm leading-6 text-black">{blog.excerpt}</p>
-      <div className="mt-4 max-h-[420px] overflow-auto rounded-md border border-black bg-white p-4">
+      <div className={markdownClassName}>
         <MarkdownPreview mdx={blog.mdx} />
       </div>
-    </aside>
+    </section>
   );
 };

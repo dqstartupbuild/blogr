@@ -8,7 +8,7 @@ The settings stay attached to the active product workspace, so one product can u
 
 ## How It Works
 
-The `/settings` route opens the shared workspace page with `initialMode="settings"`. `WorkspaceTabs` shows Settings next to Topics and Blogs, and `WorkspaceContent` renders `WorkspaceSettingsPanel` for that mode.
+The `/settings` route opens the shared workspace page with `initialMode="settings"`. `WorkspaceTabs` shows Settings next to Topics and Blogs, and `WorkspaceContent` renders product setup, publishing setup, and `WorkspaceSettingsPanel` for that mode.
 
 Live mode reads `products.blogGenerationSettings` from Convex, fills missing values with `defaultBlogGenerationSettings`, and saves changes through `updateBlogGenerationSettings`. Demo mode keeps the same settings shape in local state per workspace.
 

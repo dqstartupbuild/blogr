@@ -10,9 +10,9 @@ Users can filter the topic list by status: all, saved, writing, written, or fail
 
 Each topic row can show or refresh its saved search brief. Manual topics can get a brief later with **Find brief**.
 
-The first screen is the usable workspace, not a landing page. It stays simple: product, topics, blogs, preview.
+The first screen is the usable workspace, not a landing page. It stays focused on topics and blogs, while product setup lives in Settings.
 
-The blog preview renders generated MDX as readable blog content, so users can browse posts without reading raw markdown. The preview also exposes **Publish** and **Zip** actions for the selected blog.
+The blog preview opens from a fixed right-side sidebar button, so users can read the selected article without scrolling past a long topic or blog list. The preview renders generated MDX as readable blog content and exposes **Publish** and **Zip** actions for the selected blog.
 
 The dashboard is scoped to the active product workspace. Switching workspaces changes which product profile, topics, blogs, and previews are shown.
 
@@ -38,7 +38,7 @@ The discovery dialog also exposes non-topic insights as planning rows. Users can
 
 Blog rows and the blog editor expose **Find refresh ideas** for existing blogs. In the blog list, users can save a refresh plan as a topic. In the editor, users can save the plan or add it directly to the draft.
 
-The Settings tab includes a **Publishing** panel for the active product. It includes a setup guide, a copyable Codex prompt for the receiving app, webhook details, and the per-product connection fields. The selected blog preview exposes **Publish**, which sends the current blog to that product's saved webhook destination through `POST /api/blogs/publish`.
+The Settings tab includes product setup, article settings, and a **Publishing** panel for the active product. The Publishing panel includes a setup guide, a copyable Codex prompt for the receiving app, webhook details, and the per-product connection fields. The selected blog preview exposes **Publish**, which sends the current blog to that product's saved webhook destination through `POST /api/blogs/publish`.
 
 ## Relevant Code
 
@@ -52,6 +52,8 @@ The Settings tab includes a **Publishing** panel for the active product. It incl
 - `src/features/workspace/components/WorkspaceConnectionIssueView.tsx`
 - `src/features/workspace/components/WorkspaceContent.tsx`
 - `src/features/workspace/components/WorkspaceSwitcher.tsx`
+- `src/features/workspace/components/BlogPreviewSidebar.tsx`
+- `src/features/workspace/components/BlogPreviewPanel.tsx`
 - `src/features/workspace/components/MarkdownPreview.tsx`
 - `src/features/workspace/components/TopicDiscoveryLauncher.tsx`
 - `src/features/workspace/components/TopicDiscoveryDialog.tsx`
@@ -84,6 +86,8 @@ The Settings tab includes a **Publishing** panel for the active product. It incl
 - Find or refresh a search brief for a saved topic.
 - Find refresh ideas for a saved blog.
 - Add a refresh plan to an existing blog draft.
+- Open and close the article preview without losing your place in a long list.
+- Update product details from Settings instead of repeating that form on every tab.
 - Connect publishing for each product from Settings.
 - Publish a generated blog to a connected blog app.
 - Keep topics separate from finished blogs.

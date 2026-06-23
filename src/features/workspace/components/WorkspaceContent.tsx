@@ -1,6 +1,6 @@
 "use client";
 
-import { BlogPreviewPanel } from "./BlogPreviewPanel";
+import { BlogPreviewSidebar } from "./BlogPreviewSidebar";
 import { BlogPublishingIntegrationPanel } from "./BlogPublishingIntegrationPanel";
 import { BlogsPanel } from "./BlogsPanel";
 import { ProductSetupPanel } from "./ProductSetupPanel";
@@ -84,14 +84,8 @@ export const WorkspaceContent = ({
       setMode={setMode}
       workspaceSwitcher={workspaceSwitcher}
     >
-      <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_420px]">
+      <div className="grid gap-5">
         <main className="space-y-5">
-          <ProductSetupPanel
-            key={`${product.websiteUrl}:${product.niche}`}
-            product={product}
-            productScanState={productScanState}
-            scanProduct={scanProduct}
-          />
           {mode === "topics" ? (
             <TopicsPanel
               addTopic={addTopic}
@@ -112,6 +106,12 @@ export const WorkspaceContent = ({
           ) : null}
           {mode === "settings" ? (
             <div className="space-y-5">
+              <ProductSetupPanel
+                key={`${product.websiteUrl}:${product.niche}`}
+                product={product}
+                productScanState={productScanState}
+                scanProduct={scanProduct}
+              />
               <BlogPublishingIntegrationPanel
                 integration={product.blogPublishingIntegration}
                 isSaving={isSavingBlogPublishingIntegration}
@@ -134,7 +134,7 @@ export const WorkspaceContent = ({
             </div>
           ) : null}
         </main>
-        <BlogPreviewPanel blog={selectedBlog} />
+        {mode === "settings" ? null : <BlogPreviewSidebar blog={selectedBlog} />}
       </div>
     </WorkspaceShell>
   );

@@ -2,13 +2,13 @@
 
 ## What It Does
 
-The user enters a website and niche inside the active workspace. The app scans the site, collects product context, finds internal links, extracts brand assets and colors, copies scanned images into R2, indexes the scanned context for retrieval, and saves the product profile to that workspace in Convex.
+The user enters a website and niche from the active workspace's Settings tab. The app scans the site, collects product context, finds internal links, extracts brand assets and colors, copies scanned images into R2, indexes the scanned context for retrieval, and saves the product profile to that workspace in Convex.
 
 This gives the writer enough context to understand the product and place internal links naturally in future blog posts.
 
 ## How It Works
 
-1. The workspace saves the website and niche to the active product workspace through Convex right away.
+1. The Settings page saves the website and niche to the active product workspace through Convex right away.
 2. `POST /api/product/scan` checks the signed-in user.
 3. `scanProductWebsite` normalizes the URL and calls Firecrawl.
 4. The scanner reads homepage markdown, branding, links, screenshots, sitemap links, and crawl links.
@@ -16,7 +16,7 @@ This gives the writer enough context to understand the product and place interna
 6. It asks the configured Replicate writer model to turn the scraped context into a simple product profile.
 7. The scan route downloads logo/Open Graph assets and product screenshots into R2. It uses the Convex R2 action when Convex auth is available and otherwise writes directly to the same R2 bucket with the signed-in user's ID.
 8. The scan route indexes the product profile, internal links, and raw scanned context in the Convex RAG component under the active product workspace.
-9. The workspace saves the finished product profile and R2 image keys through the signed-in Convex client.
+9. The Settings page saves the finished product profile and R2 image keys through the signed-in Convex client.
 
 The route allows a longer runtime because Firecrawl plus AI extraction can take
 more than a quick request. The workspace shows scan progress, success, and any
@@ -31,8 +31,8 @@ When multiple product workspaces exist, `saveProductScan` receives the active
 product ID and updates that workspace only. If no product exists yet, the scan
 creates the first product workspace and makes it active.
 
-Live workspaces start with empty product inputs. Demo mode uses example product
-copy only when Clerk and Convex are not configured.
+Live workspaces start with empty product inputs in Settings. Demo mode uses example
+product copy only when Clerk and Convex are not configured.
 
 ## Relevant Code
 
