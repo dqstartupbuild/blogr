@@ -7,4 +7,9 @@ export const blogGenerateRequestSchema = z.object({
   keyword: z.string().trim().min(1, "Choose a topic first."),
   product: storedProductSchema,
   productId: z.string().optional(),
+  sourceText: z
+    .string()
+    .trim()
+    .max(40000, "Keep the pasted text under 40,000 characters.")
+    .optional(),
 });

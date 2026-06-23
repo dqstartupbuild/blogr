@@ -14,6 +14,7 @@ import type { CreateProductWorkspaceInput } from "../types/CreateProductWorkspac
 import type { ProductProfile } from "../types/ProductProfile";
 import type { ProductWorkspace } from "../types/ProductWorkspace";
 import type { TopicItem } from "../types/TopicItem";
+import type { WriteBlogOptions } from "../types/WriteBlogOptions";
 import type { WorkspaceViewMode } from "../types/WorkspaceViewMode";
 
 export const useDemoWorkspace = (initialMode: WorkspaceViewMode) => {
@@ -117,10 +118,11 @@ export const useDemoWorkspace = (initialMode: WorkspaceViewMode) => {
     }));
   };
 
-  const writeBlog = (topicId: string) => {
+  const writeBlog = (topicId: string, options?: WriteBlogOptions) => {
     const topic = topics.find((item) => item.id === topicId);
     if (!topic) return;
 
+    const sourceText = options?.sourceText?.trim();
     const blogId = `blog-${Date.now()}`;
     const title = `A Simple Guide to ${topic.keyword}`;
     const nextBlog: BlogItem = {
@@ -130,7 +132,12 @@ export const useDemoWorkspace = (initialMode: WorkspaceViewMode) => {
       slug: topic.keyword.toLowerCase().replace(/[^a-z0-9]+/g, "-"),
       excerpt: `A clear, friendly draft about ${topic.keyword}.`,
       status: "ready",
-      mdx: `# ${title}\n\nThis draft is ready for the live AI workflow. Add your keys, scan your site, and the app will replace this with the full researched post.`,
+      mdx: sourceText
+        ? `# ${title}\n\nThis preview draft will use your pasted source as a starting point in the live AI workflow. Add your keys, scan your site, and the app will turn it into a fresh post for this product.\n\n## Source preview\n\n${sourceText.slice(
+            0,
+            700,
+          )}`
+        : `# ${title}\n\nThis draft is ready for the live AI workflow. Add your keys, scan your site, and the app will replace this with the full researched post.`,
       images: [],
       updatedAt: Date.now(),
       internalLinks: product.siteLinks.slice(

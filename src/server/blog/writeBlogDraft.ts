@@ -20,6 +20,7 @@ type WriteBlogDraftOptions = {
   product: StoredProduct;
   productRagContext: string;
   settings: BlogGenerationSettings;
+  sourceText?: string;
   sources: ResearchSource[];
   sourceLinks: LinkItem[];
   youtubeVideos: LinkItem[];
@@ -32,6 +33,7 @@ export const writeBlogDraft = async ({
   product,
   productRagContext,
   settings,
+  sourceText,
   sources,
   sourceLinks,
   youtubeVideos,
@@ -43,6 +45,7 @@ export const writeBlogDraft = async ({
     product,
     productRagContext,
     settings,
+    sourceText,
     sources,
     youtubeVideos,
   });

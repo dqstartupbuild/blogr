@@ -2,11 +2,15 @@ import { SectionTitle } from "./SectionTitle";
 import { TopicCreator } from "./TopicCreator";
 import { TopicList } from "./TopicList";
 import type { TopicItem } from "../types/TopicItem";
+import type { WriteBlogOptions } from "../types/WriteBlogOptions";
 
 type TopicsPanelProps = {
   topics: TopicItem[];
   addTopic: (keyword: string) => void;
-  writeBlog: (topicId: string) => Promise<void> | void;
+  writeBlog: (
+    topicId: string,
+    options?: WriteBlogOptions,
+  ) => Promise<void> | void;
 };
 
 export const TopicsPanel = ({

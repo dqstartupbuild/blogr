@@ -4,6 +4,7 @@ import type { StoredProduct } from "./types/StoredProduct";
 import { buildBlogGenerationSettingsPrompt } from "./buildBlogGenerationSettingsPrompt";
 import { buildBlogWriterProductContext } from "./buildBlogWriterProductContext";
 import { buildProductRagContextPrompt } from "./buildProductRagContextPrompt";
+import { buildRepurposedSourcePrompt } from "./buildRepurposedSourcePrompt";
 import type { BlogGenerationSettings } from "@/features/workspace/types/BlogGenerationSettings";
 import type { LinkItem } from "@/features/workspace/types/LinkItem";
 
@@ -14,6 +15,7 @@ type BuildBlogWriterPromptOptions = {
   product: StoredProduct;
   productRagContext: string;
   settings: BlogGenerationSettings;
+  sourceText?: string;
   sources: ResearchSource[];
   youtubeVideos: LinkItem[];
 };
@@ -25,6 +27,7 @@ export const buildBlogWriterPrompt = ({
   product,
   productRagContext,
   settings,
+  sourceText,
   sources,
   youtubeVideos,
 }: BuildBlogWriterPromptOptions) => {
@@ -55,6 +58,8 @@ ${buildBlogWriterProductContext(product)}
 ${buildBlogGenerationSettingsPrompt(settings)}
 
 ${buildProductRagContextPrompt(productRagContext)}
+
+${buildRepurposedSourcePrompt(sourceText)}
 
 Research sources to use and cite:
 ${JSON.stringify(sources, null, 2)}

@@ -23,6 +23,7 @@ import type { BlogGenerationSettings } from "../types/BlogGenerationSettings";
 import type { BlogItem } from "../types/BlogItem";
 import type { ProductProfile } from "../types/ProductProfile";
 import type { ProductScanResponse } from "../types/ProductScanResponse";
+import type { WriteBlogOptions } from "../types/WriteBlogOptions";
 import type { WorkspaceSwitcherState } from "../types/WorkspaceSwitcherState";
 import type { WorkspaceViewMode } from "../types/WorkspaceViewMode";
 
@@ -183,8 +184,9 @@ export const useLiveWorkspace = (
     }
   };
 
-  const writeBlog = async (topicId: string) => {
+  const writeBlog = async (topicId: string, options?: WriteBlogOptions) => {
     const topic = topics.find((item) => item.id === topicId);
+    const sourceText = options?.sourceText?.trim();
 
     if (!topic) {
       return;
@@ -219,6 +221,7 @@ export const useLiveWorkspace = (
           keyword: topic.keyword,
           product: productResult,
           productId: activeProductId,
+          sourceText: sourceText || undefined,
         }),
         headers: {
           "Content-Type": "application/json",

@@ -2,20 +2,20 @@
 
 ## What It Does
 
-The workflow turns a saved keyword into a longform MDX blog post.
+The workflow turns a saved keyword into a longform MDX blog post. A user can also paste existing text into a topic's repurpose flow so the writer has a starting point.
 
-It researches the topic, applies the active workspace settings, retrieves product context from the scanned website, chooses internal links from the scanned product site, finds YouTube videos when enabled, collects sources, asks the configured Replicate writer model to write the post, reviews the finished post for image-worthy sections, generates those images, and copies generated images into R2.
+It researches the topic, applies the active workspace settings, retrieves product context from the scanned website, chooses internal links from the scanned product site, finds YouTube videos when enabled, collects sources, asks the configured Replicate writer model to write or repurpose the post, reviews the finished post for image-worthy sections, generates those images, and copies generated images into R2.
 
 ## How It Works
 
 1. The workspace marks the topic as `writing` through the signed-in Convex client.
 2. `POST /api/blogs/generate` checks the signed-in user.
-3. The workspace sends the selected keyword, current product profile, and current blog generation settings to the route.
+3. The workspace sends the selected keyword, current product profile, current blog generation settings, and optional pasted source text to the route.
 4. Firecrawl Search collects source pages.
 5. The workflow searches the active product workspace's RAG namespace for context that matches the keyword.
 6. Internal links are scored against the keyword, then limited by the workspace setting.
 7. YouTube videos are found only when the workspace setting is on. The YouTube Data API is used when `YOUTUBE_API_KEY` exists. Otherwise the workflow searches YouTube video pages through Exa when `EXA_API_KEY` exists, then Firecrawl when `FIRECRAWL_API_KEY` exists.
-8. Replicate writer generation uses the article style, writing rules, retrieved product context, toggles, and no image list before returning blog metadata and MDX in a simple XML shape.
+8. Replicate writer generation uses the article style, writing rules, retrieved product context, optional repurposing source, toggles, and no image list before returning blog metadata and MDX in a simple XML shape.
 9. The image-planning reviewer uses `REPLICATE_IMAGE_PLANNER_MODEL`, defaulting to `openai/gpt-5-mini`, to pick the sections that need visuals and write section-specific image prompts.
 10. Replicate image generation creates the number of images chosen in settings when `REPLICATE_API_TOKEN` exists. Multiple images are generated one after another so every requested image gets its own model run.
 11. The generated image URLs are downloaded into R2. The route uses the Convex R2 action when a Convex token is available, and otherwise writes directly to the same R2 bucket with the signed-in user's ID.
@@ -33,6 +33,7 @@ as failed with a short error.
 - `src/features/workspace/hooks/useLiveWorkspace.ts`
 - `src/server/blog/generateBlogForKeyword.ts`
 - `src/server/blog/buildBlogGenerationSettingsPrompt.ts`
+- `src/server/blog/buildRepurposedSourcePrompt.ts`
 - `src/server/blog/buildProductRagContextPrompt.ts`
 - `src/server/blog/runBlogResearch.ts`
 - `src/server/blog/chooseInternalLinks.ts`
@@ -71,6 +72,8 @@ The writer is asked for XML with:
 - `<mdx>`
 
 The MDX prompt asks for frontmatter, one H1, a direct answer, short paragraphs, useful examples, cited sources, natural internal links, and playable YouTube embeds only when helpful. Workspace settings can add a table of contents, change article voice, allow first-person writing, add or remove a call-to-action, and allow similar product comparisons.
+
+When optional source text is provided, the writer is told to use it as a starting point, keep the useful ideas, and rewrite the piece into a fresh blog post for the active product and keyword.
 
 Images are planned after the article is written. The image-planning reviewer reads the finished MDX, chooses the best sections for visuals, and writes image prompts grounded in those sections instead of using generic brand-related scenes.
 

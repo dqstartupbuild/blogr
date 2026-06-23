@@ -1,10 +1,14 @@
 import { EmptyState } from "./EmptyState";
 import { TopicRow } from "./TopicRow";
 import type { TopicItem } from "../types/TopicItem";
+import type { WriteBlogOptions } from "../types/WriteBlogOptions";
 
 type TopicListProps = {
   topics: TopicItem[];
-  writeBlog: (topicId: string) => Promise<void> | void;
+  writeBlog: (
+    topicId: string,
+    options?: WriteBlogOptions,
+  ) => Promise<void> | void;
 };
 
 export const TopicList = ({ topics, writeBlog }: TopicListProps) => {

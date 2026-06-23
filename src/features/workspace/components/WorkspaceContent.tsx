@@ -11,6 +11,7 @@ import type { BlogGenerationSettings } from "../types/BlogGenerationSettings";
 import type { ProductProfile } from "../types/ProductProfile";
 import type { ProductScanState } from "../types/ProductScanState";
 import type { TopicItem } from "../types/TopicItem";
+import type { WriteBlogOptions } from "../types/WriteBlogOptions";
 import type { WorkspaceSwitcherState } from "../types/WorkspaceSwitcherState";
 import type { WorkspaceViewMode } from "../types/WorkspaceViewMode";
 
@@ -33,7 +34,10 @@ type WorkspaceContentProps = {
   setSelectedBlogId: (blogId: string) => void;
   topics: TopicItem[];
   workspaceSwitcher: WorkspaceSwitcherState;
-  writeBlog: (topicId: string) => void | Promise<void>;
+  writeBlog: (
+    topicId: string,
+    options?: WriteBlogOptions,
+  ) => void | Promise<void>;
 };
 
 export const WorkspaceContent = ({
