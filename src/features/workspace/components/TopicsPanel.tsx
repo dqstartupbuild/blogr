@@ -1,12 +1,15 @@
 import { SectionTitle } from "./SectionTitle";
+import { TopicDiscoveryLauncher } from "./TopicDiscoveryLauncher";
 import { TopicCreator } from "./TopicCreator";
 import { TopicList } from "./TopicList";
 import type { TopicItem } from "../types/TopicItem";
 import type { WriteBlogOptions } from "../types/WriteBlogOptions";
+import type { DiscoverTopicIdeas } from "../types/topicDiscovery/DiscoverTopicIdeas";
 
 type TopicsPanelProps = {
   topics: TopicItem[];
-  addTopic: (keyword: string) => void;
+  addTopic: (keyword: string, notes?: string) => void | Promise<void>;
+  discoverTopicIdeas: DiscoverTopicIdeas;
   writeBlog: (
     topicId: string,
     options?: WriteBlogOptions,
@@ -16,11 +19,18 @@ type TopicsPanelProps = {
 export const TopicsPanel = ({
   topics,
   addTopic,
+  discoverTopicIdeas,
   writeBlog,
 }: TopicsPanelProps) => {
   return (
     <section className="rounded-lg border border-black bg-white p-4">
-      <SectionTitle title="Topics" />
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <SectionTitle title="Topics" />
+        <TopicDiscoveryLauncher
+          addTopic={addTopic}
+          discoverTopicIdeas={discoverTopicIdeas}
+        />
+      </div>
       <TopicCreator addTopic={addTopic} />
       <TopicList topics={topics} writeBlog={writeBlog} />
     </section>

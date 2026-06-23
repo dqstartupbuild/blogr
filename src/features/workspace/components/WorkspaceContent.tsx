@@ -14,11 +14,13 @@ import type { TopicItem } from "../types/TopicItem";
 import type { WriteBlogOptions } from "../types/WriteBlogOptions";
 import type { WorkspaceSwitcherState } from "../types/WorkspaceSwitcherState";
 import type { WorkspaceViewMode } from "../types/WorkspaceViewMode";
+import type { DiscoverTopicIdeas } from "../types/topicDiscovery/DiscoverTopicIdeas";
 
 type WorkspaceContentProps = {
-  addTopic: (keyword: string) => void | Promise<void>;
+  addTopic: (keyword: string, notes?: string) => void | Promise<void>;
   blogGenerationSettings: BlogGenerationSettings;
   blogs: BlogItem[];
+  discoverTopicIdeas: DiscoverTopicIdeas;
   isSavingBlogGenerationSettings: boolean;
   mode: WorkspaceViewMode;
   product: ProductProfile;
@@ -44,6 +46,7 @@ export const WorkspaceContent = ({
   addTopic,
   blogGenerationSettings,
   blogs,
+  discoverTopicIdeas,
   isSavingBlogGenerationSettings,
   mode,
   product,
@@ -76,6 +79,7 @@ export const WorkspaceContent = ({
           {mode === "topics" ? (
             <TopicsPanel
               addTopic={addTopic}
+              discoverTopicIdeas={discoverTopicIdeas}
               topics={topics}
               writeBlog={writeBlog}
             />

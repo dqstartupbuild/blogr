@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { demoBlogs } from "../constants/demoBlogs";
 import { demoProduct } from "../constants/demoProduct";
 import { demoProductWorkspace } from "../constants/demoProductWorkspace";
+import { demoTopicDiscoveryResult } from "../constants/demoTopicDiscoveryResult";
 import { demoTopics } from "../constants/demoTopics";
 import { defaultBlogGenerationSettings } from "../constants/defaultBlogGenerationSettings";
 import { emptyProduct } from "../constants/emptyProduct";
@@ -101,21 +102,30 @@ export const useDemoWorkspace = (initialMode: WorkspaceViewMode) => {
     setIsScanningProduct(false);
   };
 
-  const addTopic = (keyword: string) => {
+  const addTopic = (keyword: string, notes?: string) => {
     const trimmed = keyword.trim();
     if (!trimmed) return;
+
+    const topicId = `topic-${Date.now()}-${Math.random()
+      .toString(16)
+      .slice(2)}`;
 
     setTopicsByWorkspace((current) => ({
       ...current,
       [activeWorkspaceId]: [
         {
-          id: `topic-${Date.now()}`,
+          id: topicId,
           keyword: trimmed,
+          notes,
           status: "saved",
         },
         ...(current[activeWorkspaceId] || []),
       ],
     }));
+  };
+
+  const discoverTopicIdeas = async () => {
+    return demoTopicDiscoveryResult;
   };
 
   const writeBlog = (topicId: string, options?: WriteBlogOptions) => {
@@ -242,6 +252,7 @@ export const useDemoWorkspace = (initialMode: WorkspaceViewMode) => {
     setSelectedBlogId,
     scanProduct,
     addTopic,
+    discoverTopicIdeas,
     saveBlogGenerationSettings,
     workspaceSwitcher: {
       activeWorkspace,

@@ -5,6 +5,7 @@ import { buildBlogGenerationSettingsPrompt } from "./buildBlogGenerationSettings
 import { buildBlogWriterProductContext } from "./buildBlogWriterProductContext";
 import { buildProductRagContextPrompt } from "./buildProductRagContextPrompt";
 import { buildRepurposedSourcePrompt } from "./buildRepurposedSourcePrompt";
+import { buildTopicBriefPrompt } from "./buildTopicBriefPrompt";
 import type { BlogGenerationSettings } from "@/features/workspace/types/BlogGenerationSettings";
 import type { LinkItem } from "@/features/workspace/types/LinkItem";
 
@@ -17,6 +18,7 @@ type BuildBlogWriterPromptOptions = {
   settings: BlogGenerationSettings;
   sourceText?: string;
   sources: ResearchSource[];
+  topicBrief?: string;
   youtubeVideos: LinkItem[];
 };
 
@@ -29,6 +31,7 @@ export const buildBlogWriterPrompt = ({
   settings,
   sourceText,
   sources,
+  topicBrief,
   youtubeVideos,
 }: BuildBlogWriterPromptOptions) => {
   return `
@@ -58,6 +61,8 @@ ${buildBlogWriterProductContext(product)}
 ${buildBlogGenerationSettingsPrompt(settings)}
 
 ${buildProductRagContextPrompt(productRagContext)}
+
+${buildTopicBriefPrompt(topicBrief)}
 
 ${buildRepurposedSourcePrompt(sourceText)}
 

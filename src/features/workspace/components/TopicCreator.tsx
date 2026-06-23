@@ -6,7 +6,7 @@ import { PrimaryButton } from "./PrimaryButton";
 import { TextField } from "./TextField";
 
 type TopicCreatorProps = {
-  addTopic: (keyword: string) => void;
+  addTopic: (keyword: string, notes?: string) => void | Promise<void>;
 };
 
 export const TopicCreator = ({ addTopic }: TopicCreatorProps) => {

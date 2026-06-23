@@ -12,4 +12,9 @@ export const blogGenerateRequestSchema = z.object({
     .trim()
     .max(40000, "Keep the pasted text under 40,000 characters.")
     .optional(),
+  topicBrief: z
+    .string()
+    .trim()
+    .max(20000, "Keep the topic brief under 20,000 characters.")
+    .optional(),
 });

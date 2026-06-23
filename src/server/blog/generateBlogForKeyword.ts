@@ -20,6 +20,7 @@ type GenerateBlogForKeywordOptions = {
   product: StoredProduct;
   productId?: string;
   sourceText?: string;
+  topicBrief?: string;
   userId?: string;
 };
 
@@ -30,6 +31,7 @@ export const generateBlogForKeyword = async ({
   product,
   productId,
   sourceText,
+  topicBrief,
   userId,
 }: GenerateBlogForKeywordOptions): Promise<GeneratedBlog> => {
   const settings = normalizeBlogGenerationSettings(
@@ -58,6 +60,7 @@ export const generateBlogForKeyword = async ({
     productRagContext,
     settings,
     sourceText,
+    topicBrief,
     sourceLinks,
     sources,
     youtubeVideos,

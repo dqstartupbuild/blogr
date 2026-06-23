@@ -4,6 +4,8 @@
 
 The workspace lets a user paste a keyword, save it as a topic, come back later, and start a blog from that topic.
 
+The Topics tab can also find search-informed topic ideas. Users review suggested ideas in a checkbox queue before saving them, and saved discovered topics carry a writing brief in topic notes.
+
 The first screen is the usable workspace, not a landing page. It stays simple: product, topics, blogs, preview.
 
 The blog preview renders generated MDX as readable blog content, so users can browse posts without reading raw markdown.
@@ -26,6 +28,8 @@ With Clerk and Convex keys, `LiveWorkspaceView` waits for Clerk and Convex auth 
 
 The user can create or switch product workspaces, scan a product site, save topics, start writing, browse generated blogs, and open the editor. Topic and blog queries include the active product ID, so each workspace keeps its own records.
 
+Topic discovery calls `POST /api/topics/discover`, runs Apify Google Search Scraper, turns SERP signals into topic ideas and briefs, and saves selected ideas through the same `createTopic` mutation.
+
 ## Relevant Code
 
 - `src/features/workspace/components/WorkspaceView.tsx`
@@ -39,6 +43,11 @@ The user can create or switch product workspaces, scan a product site, save topi
 - `src/features/workspace/components/WorkspaceContent.tsx`
 - `src/features/workspace/components/WorkspaceSwitcher.tsx`
 - `src/features/workspace/components/MarkdownPreview.tsx`
+- `src/features/workspace/components/TopicDiscoveryLauncher.tsx`
+- `src/features/workspace/components/TopicDiscoveryDialog.tsx`
+- `src/app/api/topics/discover/route.ts`
+- `src/server/topics/generateTopicIdeas.ts`
+- `src/server/apify/runGoogleSearchScraper.ts`
 - `src/features/workspace/hooks/useLiveWorkspaceSwitcher.ts`
 - `src/features/workspace/hooks/useDemoWorkspace.ts`
 - `src/features/workspace/hooks/useLiveWorkspace.ts`
@@ -51,6 +60,8 @@ The user can create or switch product workspaces, scan a product site, save topi
 ## Use Cases
 
 - Save keyword ideas as they come up.
+- Find search-informed topic ideas from a product profile and optional seed keyword.
+- Review noisy search results before saving topics.
 - Keep topics separate from finished blogs.
 - Revisit the blog list on `/blogs`.
 - Keep each product or client project separate.
@@ -65,6 +76,9 @@ src/features/workspace/components/
 src/features/workspace/hooks/
 src/features/workspace/mappers/
 src/features/workspace/types/
+src/app/api/topics/discover/
+src/server/apify/
+src/server/topics/
 convex/products/
 convex/workspaceSelections/
 convex/topics/

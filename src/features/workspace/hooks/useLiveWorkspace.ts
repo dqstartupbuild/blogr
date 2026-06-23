@@ -26,6 +26,8 @@ import type { ProductScanResponse } from "../types/ProductScanResponse";
 import type { WriteBlogOptions } from "../types/WriteBlogOptions";
 import type { WorkspaceSwitcherState } from "../types/WorkspaceSwitcherState";
 import type { WorkspaceViewMode } from "../types/WorkspaceViewMode";
+import type { TopicDiscoveryRequest } from "../types/topicDiscovery/TopicDiscoveryRequest";
+import type { TopicDiscoveryResponse } from "../types/topicDiscovery/TopicDiscoveryResponse";
 
 export const useLiveWorkspace = (
   initialMode: WorkspaceViewMode,
@@ -147,15 +149,72 @@ export const useLiveWorkspace = (
     }
   };
 
-  const addTopic = async (keyword: string) => {
+  const addTopic = async (keyword: string, notes?: string) => {
     if (!convexProductId) {
       return;
     }
 
     await createTopic({
       keyword,
+      notes,
       productId: convexProductId,
     });
+  };
+
+  const discoverTopicIdeas = async ({
+    includeAiAnswers,
+    seedKeyword,
+  }: TopicDiscoveryRequest) => {
+    const discoveryProduct = productResult
+      ? {
+          audience: productResult.audience,
+          competitors: productResult.competitors,
+          description: productResult.description,
+          name: productResult.name,
+          niche: productResult.niche,
+          rawContext: productResult.rawContext,
+          siteLinks: productResult.siteLinks,
+          websiteUrl: productResult.websiteUrl,
+        }
+      : product;
+
+    if (
+      !seedKeyword?.trim() &&
+      !discoveryProduct.niche?.trim() &&
+      !discoveryProduct.description?.trim()
+    ) {
+      throw new Error("Add a product niche or seed keyword first.");
+    }
+
+    const response = await fetch("/api/topics/discover", {
+      body: JSON.stringify({
+        existingBlogs: blogs.map((blog) => ({
+          excerpt: blog.excerpt,
+          keyword: blog.keyword,
+          title: blog.title,
+          updatedAt: blog.updatedAt,
+        })),
+        existingTopics: topics.map((topic) => ({
+          keyword: topic.keyword,
+        })),
+        includeAiAnswers,
+        product: discoveryProduct,
+        seedKeyword,
+      }),
+      headers: {
+        "Content-Type": "application/json",
+      },
+      method: "POST",
+    });
+    const data = (await response
+      .json()
+      .catch(() => ({}))) as TopicDiscoveryResponse;
+
+    if (!response.ok || !data.discovery) {
+      throw new Error(data.error || "Could not find topic ideas yet.");
+    }
+
+    return data.discovery;
   };
 
   const saveBlogGenerationSettings = async (
@@ -222,6 +281,7 @@ export const useLiveWorkspace = (
           product: productResult,
           productId: activeProductId,
           sourceText: sourceText || undefined,
+          topicBrief: topic.notes,
         }),
         headers: {
           "Content-Type": "application/json",
@@ -260,6 +320,7 @@ export const useLiveWorkspace = (
     addTopic,
     blogGenerationSettings,
     blogs,
+    discoverTopicIdeas,
     isSavingBlogGenerationSettings,
     mode,
     product,

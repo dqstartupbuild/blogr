@@ -23,6 +23,7 @@ type WriteBlogDraftOptions = {
   sourceText?: string;
   sources: ResearchSource[];
   sourceLinks: LinkItem[];
+  topicBrief?: string;
   youtubeVideos: LinkItem[];
 };
 
@@ -36,6 +37,7 @@ export const writeBlogDraft = async ({
   sourceText,
   sources,
   sourceLinks,
+  topicBrief,
   youtubeVideos,
 }: WriteBlogDraftOptions): Promise<GeneratedBlog> => {
   const prompt = buildBlogWriterPrompt({
@@ -47,6 +49,7 @@ export const writeBlogDraft = async ({
     settings,
     sourceText,
     sources,
+    topicBrief,
     youtubeVideos,
   });
   const text = await runReplicateText({

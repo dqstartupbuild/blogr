@@ -2,7 +2,7 @@
 
 Blogger is a simple Next.js workspace for turning saved keywords into longform MDX blog posts for a user's niche.
 
-The app uses Clerk for auth, Convex for data, Firecrawl for website and web research, Replicate for the writer and image models, Cloudflare R2 for stored images, and OpenAI embeddings for product context retrieval.
+The app uses Clerk for auth, Convex for data, Firecrawl for website and web research, Apify for Google topic discovery, Replicate for the writer and image models, Cloudflare R2 for stored images, and OpenAI embeddings for product context retrieval.
 
 ## Local Setup
 
@@ -28,6 +28,7 @@ Without keys, the workspace shows a local demo layout. With Clerk and Convex pub
 - `REPLICATE_IMAGE_MODEL`
 - `OPENAI_API_KEY` for Convex RAG embeddings
 - `FIRECRAWL_API_KEY`
+- `APIFY_TOKEN`
 - `YOUTUBE_API_KEY` optional
 - `EXA_API_KEY` optional video search fallback
 
@@ -58,6 +59,7 @@ npx convex env set R2_BUCKET <bucket>
 
 - [Product website ingestion](docs/product-website-ingestion.md)
 - [Topic workspace](docs/topic-workspace.md)
+- [Topic discovery](docs/topic-discovery.md)
 - [Blog generation workflow](docs/blog-generation-workflow.md)
 - [Article image planning agent](docs/article-image-planning-agent.md)
 - [RAG product context](docs/rag-product-context.md)
