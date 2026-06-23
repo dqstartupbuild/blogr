@@ -1,7 +1,7 @@
+import { FilteredTopicList } from "./FilteredTopicList";
 import { SectionTitle } from "./SectionTitle";
 import { TopicDiscoveryLauncher } from "./TopicDiscoveryLauncher";
 import { TopicCreator } from "./TopicCreator";
-import { TopicList } from "./TopicList";
 import type { TopicItem } from "../types/TopicItem";
 import type { WriteBlogOptions } from "../types/WriteBlogOptions";
 import type { DiscoverTopicIdeas } from "../types/topicDiscovery/DiscoverTopicIdeas";
@@ -32,7 +32,7 @@ export const TopicsPanel = ({
         />
       </div>
       <TopicCreator addTopic={addTopic} />
-      <TopicList topics={topics} writeBlog={writeBlog} />
+      <FilteredTopicList topics={topics} writeBlog={writeBlog} />
     </section>
   );
 };

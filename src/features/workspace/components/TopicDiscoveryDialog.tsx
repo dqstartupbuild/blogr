@@ -5,9 +5,12 @@ import { PrimaryButton } from "./PrimaryButton";
 import { SecondaryButton } from "./SecondaryButton";
 import { TopicDiscoveryForm } from "./TopicDiscoveryForm";
 import { TopicDiscoveryInsights } from "./TopicDiscoveryInsights";
+import { TopicDiscoveryPlanList } from "./TopicDiscoveryPlanList";
 import { TopicDiscoveryReviewList } from "./TopicDiscoveryReviewList";
 import { buildTopicDiscoveryIdeaNotes } from "../utils/buildTopicDiscoveryIdeaNotes";
+import { buildTopicDiscoveryPlanItems } from "../utils/buildTopicDiscoveryPlanItems";
 import type { DiscoverTopicIdeas } from "../types/topicDiscovery/DiscoverTopicIdeas";
+import type { TopicDiscoveryPlanItem } from "../types/topicDiscovery/TopicDiscoveryPlanItem";
 import type { TopicDiscoveryResult } from "../types/topicDiscovery/TopicDiscoveryResult";
 
 type TopicDiscoveryDialogProps = {
@@ -27,11 +30,13 @@ export const TopicDiscoveryDialog = ({
   const [includeAiAnswers, setIncludeAiAnswers] = useState(false);
   const [discovery, setDiscovery] = useState<TopicDiscoveryResult | null>(null);
   const [selectedTitles, setSelectedTitles] = useState<string[]>([]);
+  const [savedPlanItemIds, setSavedPlanItemIds] = useState<string[]>([]);
   const [message, setMessage] = useState("");
   const [isFinding, setIsFinding] = useState(false);
   const [isAdding, setIsAdding] = useState(false);
   const selectedIdeas =
     discovery?.ideas.filter((idea) => selectedTitles.includes(idea.title)) || [];
+  const planItems = discovery ? buildTopicDiscoveryPlanItems(discovery) : [];
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -45,6 +50,7 @@ export const TopicDiscoveryDialog = ({
       .then((result) => {
         setDiscovery(result);
         setSelectedTitles(result.ideas.map((idea) => idea.title));
+        setSavedPlanItemIds([]);
         setMessage(
           result.ideas.length > 0
             ? "Choose the topics you want to save."
@@ -90,6 +96,23 @@ export const TopicDiscoveryDialog = ({
     );
   };
 
+  const savePlanItem = (item: TopicDiscoveryPlanItem) => {
+    setIsAdding(true);
+    setMessage("");
+
+    void Promise.resolve(addTopic(item.title, item.notes))
+      .then(() => {
+        setSavedPlanItemIds((current) => [...current, item.id]);
+        setMessage("Plan saved.");
+      })
+      .catch((error) => {
+        setMessage(
+          error instanceof Error ? error.message : "Could not save that plan yet.",
+        );
+      })
+      .finally(() => setIsAdding(false));
+  };
+
   if (!isOpen) {
     return null;
   }
@@ -122,6 +145,11 @@ export const TopicDiscoveryDialog = ({
               ideas={discovery.ideas}
               onToggle={toggleTitle}
               selectedTitles={selectedTitles}
+            />
+            <TopicDiscoveryPlanList
+              items={planItems}
+              onSave={savePlanItem}
+              savedItemIds={savedPlanItemIds}
             />
             <TopicDiscoveryInsights discovery={discovery} />
           </div>

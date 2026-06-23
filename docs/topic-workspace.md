@@ -6,6 +6,8 @@ The workspace lets a user paste a keyword, save it as a topic, come back later, 
 
 The Topics tab can also find search-informed topic ideas. Users review suggested ideas in a checkbox queue before saving them, and saved discovered topics carry a writing brief in topic notes.
 
+Users can filter the topic list by status: all, saved, writing, written, or failed.
+
 The first screen is the usable workspace, not a landing page. It stays simple: product, topics, blogs, preview.
 
 The blog preview renders generated MDX as readable blog content, so users can browse posts without reading raw markdown.
@@ -30,6 +32,8 @@ The user can create or switch product workspaces, scan a product site, save topi
 
 Topic discovery calls `POST /api/topics/discover`, runs Apify Google Search Scraper, turns SERP signals into topic ideas and briefs, and saves selected ideas through the same `createTopic` mutation.
 
+The discovery dialog also exposes non-topic insights as planning rows. Users can save People Also Ask questions, content gaps, comparison ideas, clusters, refresh suggestions, AI answer notes, and difficulty notes as topics with notes.
+
 ## Relevant Code
 
 - `src/features/workspace/components/WorkspaceView.tsx`
@@ -45,6 +49,9 @@ Topic discovery calls `POST /api/topics/discover`, runs Apify Google Search Scra
 - `src/features/workspace/components/MarkdownPreview.tsx`
 - `src/features/workspace/components/TopicDiscoveryLauncher.tsx`
 - `src/features/workspace/components/TopicDiscoveryDialog.tsx`
+- `src/features/workspace/components/TopicDiscoveryPlanList.tsx`
+- `src/features/workspace/components/FilteredTopicList.tsx`
+- `src/features/workspace/components/TopicStatusFilterTabs.tsx`
 - `src/app/api/topics/discover/route.ts`
 - `src/server/topics/generateTopicIdeas.ts`
 - `src/server/apify/runGoogleSearchScraper.ts`
@@ -62,6 +69,8 @@ Topic discovery calls `POST /api/topics/discover`, runs Apify Google Search Scra
 - Save keyword ideas as they come up.
 - Find search-informed topic ideas from a product profile and optional seed keyword.
 - Review noisy search results before saving topics.
+- Save search gaps, refresh notes, AI answer notes, and difficulty notes as planning topics.
+- Filter topics by status.
 - Keep topics separate from finished blogs.
 - Revisit the blog list on `/blogs`.
 - Keep each product or client project separate.

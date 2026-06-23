@@ -6,6 +6,8 @@ Topic Discovery helps users find blog topics inside the Topics tab. The user can
 
 The app does not save every scraped idea automatically. It shows a review queue with checkboxes because search results can be noisy.
 
+The discovery dialog also shows planning ideas from the same search run. Users can save questions, gaps, comparison ideas, clusters, refresh notes, AI answer notes, and difficulty notes as planning topics.
+
 ## How It Works
 
 The client calls `POST /api/topics/discover` with the current product profile, existing topics, existing blogs, a seed keyword, and whether to check AI answers.
@@ -39,6 +41,8 @@ When a user clicks **Add topics**, the selected topic titles are saved through t
 
 When the user writes a blog from that topic, `useLiveWorkspace` sends the saved notes as `topicBrief` to `/api/blogs/generate`. The blog writer uses that brief to match search intent, answer useful questions, cover weak spots, and shape titles and meta descriptions.
 
+When a user clicks **Save plan** on a non-topic insight, the app saves that insight as a topic with its source context in notes. That gives users a simple way to turn gaps, refresh ideas, comparison angles, AI answer notes, and difficulty notes into work they can write or plan from later.
+
 ## Environment
 
 The live discovery route requires:
@@ -61,8 +65,10 @@ APIFY_TOKEN=
 - `src/server/topics/createFallbackTopicDiscoveryResult.ts`
 - `src/features/workspace/components/TopicDiscoveryLauncher.tsx`
 - `src/features/workspace/components/TopicDiscoveryDialog.tsx`
+- `src/features/workspace/components/TopicDiscoveryPlanList.tsx`
 - `src/features/workspace/components/TopicDiscoveryReviewList.tsx`
 - `src/features/workspace/components/TopicDiscoveryInsights.tsx`
+- `src/features/workspace/utils/buildTopicDiscoveryPlanItems.ts`
 - `src/features/workspace/utils/buildTopicDiscoveryIdeaNotes.ts`
 - `src/server/blog/buildTopicBriefPrompt.ts`
 
@@ -72,6 +78,7 @@ APIFY_TOKEN=
 - Build briefs from real search questions and ranking pages.
 - Add FAQ sections based on People Also Ask questions.
 - Spot competitor gaps and comparison angles.
+- Save gaps, refresh ideas, and AI answer notes as planning topics.
 - Refresh older blogs with questions and angles that now appear in search.
 
 ## File Tree
