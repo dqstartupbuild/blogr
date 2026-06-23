@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import { StatusBadge } from "./StatusBadge";
+import { TopicBriefButton } from "./TopicBriefButton";
+import { TopicBriefDialog } from "./TopicBriefDialog";
 import { TopicRepurposeButton } from "./TopicRepurposeButton";
 import { TopicRepurposeDialog } from "./TopicRepurposeDialog";
 import { TopicWriteButton } from "./TopicWriteButton";
@@ -9,6 +11,7 @@ import type { TopicItem } from "../types/TopicItem";
 import type { WriteBlogOptions } from "../types/WriteBlogOptions";
 
 type TopicRowProps = {
+  refreshTopicBrief: (topicId: string) => Promise<string>;
   topic: TopicItem;
   writeBlog: (
     topicId: string,
@@ -16,9 +19,15 @@ type TopicRowProps = {
   ) => Promise<void> | void;
 };
 
-export const TopicRow = ({ topic, writeBlog }: TopicRowProps) => {
+export const TopicRow = ({
+  refreshTopicBrief,
+  topic,
+  writeBlog,
+}: TopicRowProps) => {
+  const [isBriefOpen, setIsBriefOpen] = useState(false);
   const [isRepurposeOpen, setIsRepurposeOpen] = useState(false);
   const isWriting = topic.status === "writing";
+  const hasBrief = Boolean(topic.notes?.trim());
 
   return (
     <article className="grid gap-3 bg-white p-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
@@ -31,6 +40,11 @@ export const TopicRow = ({ topic, writeBlog }: TopicRowProps) => {
         </div>
       </div>
       <div className="flex flex-col gap-2 sm:flex-row">
+        <TopicBriefButton
+          disabled={isWriting}
+          hasBrief={hasBrief}
+          onOpen={() => setIsBriefOpen(true)}
+        />
         <TopicRepurposeButton
           disabled={isWriting}
           onOpen={() => setIsRepurposeOpen(true)}
@@ -42,6 +56,14 @@ export const TopicRow = ({ topic, writeBlog }: TopicRowProps) => {
           }}
         />
       </div>
+      {isBriefOpen ? (
+        <TopicBriefDialog
+          key={topic.id}
+          onClose={() => setIsBriefOpen(false)}
+          refreshTopicBrief={refreshTopicBrief}
+          topic={topic}
+        />
+      ) : null}
       <TopicRepurposeDialog
         isOpen={isRepurposeOpen}
         onClose={() => setIsRepurposeOpen(false)}

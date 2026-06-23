@@ -9,6 +9,7 @@ import { demoTopics } from "../constants/demoTopics";
 import { defaultBlogGenerationSettings } from "../constants/defaultBlogGenerationSettings";
 import { emptyProduct } from "../constants/emptyProduct";
 import { buildProductWorkspaceName } from "../mappers/buildProductWorkspaceName";
+import { buildExistingTopicBriefNotes } from "../utils/buildExistingTopicBriefNotes";
 import type { BlogItem } from "../types/BlogItem";
 import type { BlogGenerationSettings } from "../types/BlogGenerationSettings";
 import type { CreateProductWorkspaceInput } from "../types/CreateProductWorkspaceInput";
@@ -125,6 +126,29 @@ export const useDemoWorkspace = (initialMode: WorkspaceViewMode) => {
   };
 
   const discoverTopicIdeas = async () => {
+    return demoTopicDiscoveryResult;
+  };
+
+  const refreshTopicBrief = async (topicId: string) => {
+    const topic = topics.find((item) => item.id === topicId);
+
+    if (!topic) {
+      throw new Error("Topic not found.");
+    }
+
+    const notes = buildExistingTopicBriefNotes(topic, demoTopicDiscoveryResult);
+
+    setTopicsByWorkspace((current) => ({
+      ...current,
+      [activeWorkspaceId]: (current[activeWorkspaceId] || []).map((item) =>
+        item.id === topicId ? { ...item, notes } : item,
+      ),
+    }));
+
+    return notes;
+  };
+
+  const discoverBlogRefreshIdeas = async () => {
     return demoTopicDiscoveryResult;
   };
 
@@ -252,7 +276,9 @@ export const useDemoWorkspace = (initialMode: WorkspaceViewMode) => {
     setSelectedBlogId,
     scanProduct,
     addTopic,
+    discoverBlogRefreshIdeas,
     discoverTopicIdeas,
+    refreshTopicBrief,
     saveBlogGenerationSettings,
     workspaceSwitcher: {
       activeWorkspace,

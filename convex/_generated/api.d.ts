@@ -45,6 +45,7 @@ import type * as topics_createTopic from "../topics/createTopic.js";
 import type * as topics_deleteTopic from "../topics/deleteTopic.js";
 import type * as topics_getTopic from "../topics/getTopic.js";
 import type * as topics_listTopics from "../topics/listTopics.js";
+import type * as topics_updateTopicNotes from "../topics/updateTopicNotes.js";
 import type * as topics_updateTopicStatus from "../topics/updateTopicStatus.js";
 import type * as workspaceSelections_saveWorkspaceSelection from "../workspaceSelections/saveWorkspaceSelection.js";
 
@@ -92,6 +93,7 @@ declare const fullApi: ApiFromModules<{
   "topics/deleteTopic": typeof topics_deleteTopic;
   "topics/getTopic": typeof topics_getTopic;
   "topics/listTopics": typeof topics_listTopics;
+  "topics/updateTopicNotes": typeof topics_updateTopicNotes;
   "topics/updateTopicStatus": typeof topics_updateTopicStatus;
   "workspaceSelections/saveWorkspaceSelection": typeof workspaceSelections_saveWorkspaceSelection;
 }>;

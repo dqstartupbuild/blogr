@@ -8,6 +8,8 @@ The Topics tab can also find search-informed topic ideas. Users review suggested
 
 Users can filter the topic list by status: all, saved, writing, written, or failed.
 
+Each topic row can show or refresh its saved search brief. Manual topics can get a brief later with **Find brief**.
+
 The first screen is the usable workspace, not a landing page. It stays simple: product, topics, blogs, preview.
 
 The blog preview renders generated MDX as readable blog content, so users can browse posts without reading raw markdown.
@@ -34,6 +36,8 @@ Topic discovery calls `POST /api/topics/discover`, runs Apify Google Search Scra
 
 The discovery dialog also exposes non-topic insights as planning rows. Users can save People Also Ask questions, content gaps, comparison ideas, clusters, refresh suggestions, AI answer notes, and difficulty notes as topics with notes.
 
+Blog rows and the blog editor expose **Find refresh ideas** for existing blogs. In the blog list, users can save a refresh plan as a topic. In the editor, users can save the plan or add it directly to the draft.
+
 ## Relevant Code
 
 - `src/features/workspace/components/WorkspaceView.tsx`
@@ -50,6 +54,8 @@ The discovery dialog also exposes non-topic insights as planning rows. Users can
 - `src/features/workspace/components/TopicDiscoveryLauncher.tsx`
 - `src/features/workspace/components/TopicDiscoveryDialog.tsx`
 - `src/features/workspace/components/TopicDiscoveryPlanList.tsx`
+- `src/features/workspace/components/TopicBriefDialog.tsx`
+- `src/features/workspace/components/BlogRefreshDialog.tsx`
 - `src/features/workspace/components/FilteredTopicList.tsx`
 - `src/features/workspace/components/TopicStatusFilterTabs.tsx`
 - `src/app/api/topics/discover/route.ts`
@@ -71,6 +77,9 @@ The discovery dialog also exposes non-topic insights as planning rows. Users can
 - Review noisy search results before saving topics.
 - Save search gaps, refresh notes, AI answer notes, and difficulty notes as planning topics.
 - Filter topics by status.
+- Find or refresh a search brief for a saved topic.
+- Find refresh ideas for a saved blog.
+- Add a refresh plan to an existing blog draft.
 - Keep topics separate from finished blogs.
 - Revisit the blog list on `/blogs`.
 - Keep each product or client project separate.

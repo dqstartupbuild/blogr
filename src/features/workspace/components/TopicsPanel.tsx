@@ -3,6 +3,7 @@ import { SectionTitle } from "./SectionTitle";
 import { TopicDiscoveryLauncher } from "./TopicDiscoveryLauncher";
 import { TopicCreator } from "./TopicCreator";
 import type { TopicItem } from "../types/TopicItem";
+import type { RefreshTopicBrief } from "../types/RefreshTopicBrief";
 import type { WriteBlogOptions } from "../types/WriteBlogOptions";
 import type { DiscoverTopicIdeas } from "../types/topicDiscovery/DiscoverTopicIdeas";
 
@@ -10,6 +11,7 @@ type TopicsPanelProps = {
   topics: TopicItem[];
   addTopic: (keyword: string, notes?: string) => void | Promise<void>;
   discoverTopicIdeas: DiscoverTopicIdeas;
+  refreshTopicBrief: RefreshTopicBrief;
   writeBlog: (
     topicId: string,
     options?: WriteBlogOptions,
@@ -20,6 +22,7 @@ export const TopicsPanel = ({
   topics,
   addTopic,
   discoverTopicIdeas,
+  refreshTopicBrief,
   writeBlog,
 }: TopicsPanelProps) => {
   return (
@@ -32,7 +35,11 @@ export const TopicsPanel = ({
         />
       </div>
       <TopicCreator addTopic={addTopic} />
-      <FilteredTopicList topics={topics} writeBlog={writeBlog} />
+      <FilteredTopicList
+        refreshTopicBrief={refreshTopicBrief}
+        topics={topics}
+        writeBlog={writeBlog}
+      />
     </section>
   );
 };

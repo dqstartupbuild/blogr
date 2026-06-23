@@ -8,6 +8,7 @@ import { getCurrentProductQuery } from "@/server/convex/references/getCurrentPro
 import { listBlogsQuery } from "@/server/convex/references/listBlogsQuery";
 import { listTopicsQuery } from "@/server/convex/references/listTopicsQuery";
 import { saveProductScanMutation } from "@/server/convex/references/saveProductScanMutation";
+import { updateTopicNotesMutation } from "@/server/convex/references/updateTopicNotesMutation";
 import { updateTopicStatusMutation } from "@/server/convex/references/updateTopicStatusMutation";
 import { updateBlogGenerationSettingsMutation } from "@/server/convex/references/updateBlogGenerationSettingsMutation";
 import { upsertGeneratedBlogMutation } from "@/server/convex/references/upsertGeneratedBlogMutation";
@@ -17,6 +18,8 @@ import { mapConvexBlog } from "../mappers/mapConvexBlog";
 import { mapConvexProduct } from "../mappers/mapConvexProduct";
 import { mapConvexTopic } from "../mappers/mapConvexTopic";
 import { mapProductScanResult } from "../mappers/mapProductScanResult";
+import { buildBlogRefreshSeedKeyword } from "../utils/buildBlogRefreshSeedKeyword";
+import { buildExistingTopicBriefNotes } from "../utils/buildExistingTopicBriefNotes";
 import { normalizeBlogGenerationSettings } from "../utils/normalizeBlogGenerationSettings";
 import type { BlogGenerateResponse } from "../types/BlogGenerateResponse";
 import type { BlogGenerationSettings } from "../types/BlogGenerationSettings";
@@ -65,6 +68,7 @@ export const useLiveWorkspace = (
   const updateBlogGenerationSettings = useMutation(
     updateBlogGenerationSettingsMutation,
   );
+  const updateTopicNotes = useMutation(updateTopicNotesMutation);
   const updateTopicStatus = useMutation(updateTopicStatusMutation);
   const upsertGeneratedBlog = useMutation(upsertGeneratedBlogMutation);
   const visibleScannedProduct =
@@ -217,6 +221,98 @@ export const useLiveWorkspace = (
     return data.discovery;
   };
 
+  const refreshTopicBrief = async (topicId: string) => {
+    const topic = topics.find((item) => item.id === topicId);
+
+    if (!topic) {
+      throw new Error("Topic not found.");
+    }
+
+    if (!convexProductId) {
+      throw new Error("Choose a workspace first.");
+    }
+
+    const discovery = await discoverTopicIdeas({
+      includeAiAnswers: false,
+      seedKeyword: topic.keyword,
+    });
+    const notes = buildExistingTopicBriefNotes(topic, discovery);
+
+    if (!notes.trim()) {
+      throw new Error("No search brief was found for this topic.");
+    }
+
+    await updateTopicNotes({
+      notes,
+      productId: convexProductId,
+      topicId: castTopicId(topicId),
+    });
+
+    return notes;
+  };
+
+  const discoverBlogRefreshIdeas = async (
+    blogId: string,
+    { includeAiAnswers, seedKeyword }: TopicDiscoveryRequest,
+  ) => {
+    const blog = blogs.find((item) => item.id === blogId);
+
+    if (!blog) {
+      throw new Error("Blog not found.");
+    }
+
+    const discoveryProduct = productResult
+      ? {
+          audience: productResult.audience,
+          competitors: productResult.competitors,
+          description: productResult.description,
+          name: productResult.name,
+          niche: productResult.niche,
+          rawContext: productResult.rawContext,
+          siteLinks: productResult.siteLinks,
+          websiteUrl: productResult.websiteUrl,
+        }
+      : product;
+    const searchKeyword =
+      seedKeyword?.trim() || buildBlogRefreshSeedKeyword(blog);
+
+    if (!searchKeyword) {
+      throw new Error("Add a keyword or title before searching.");
+    }
+
+    const response = await fetch("/api/topics/discover", {
+      body: JSON.stringify({
+        existingBlogs: [
+          {
+            excerpt: blog.excerpt,
+            keyword: blog.keyword,
+            title: blog.title,
+            updatedAt: blog.updatedAt,
+          },
+        ],
+        existingTopics: topics.map((topic) => ({
+          keyword: topic.keyword,
+        })),
+        includeAiAnswers,
+        product: discoveryProduct,
+        seedKeyword: searchKeyword,
+      }),
+      headers: {
+        "Content-Type": "application/json",
+      },
+      method: "POST",
+    });
+    const data = (await response
+      .json()
+      .catch(() => ({}))) as TopicDiscoveryResponse;
+
+    if (!response.ok || !data.discovery) {
+      throw new Error(data.error || "Could not find refresh ideas yet.");
+    }
+
+    return data.discovery;
+  };
+
   const saveBlogGenerationSettings = async (
     settings: BlogGenerationSettings,
   ) => {
@@ -320,6 +416,7 @@ export const useLiveWorkspace = (
     addTopic,
     blogGenerationSettings,
     blogs,
+    discoverBlogRefreshIdeas,
     discoverTopicIdeas,
     isSavingBlogGenerationSettings,
     mode,
@@ -333,6 +430,7 @@ export const useLiveWorkspace = (
     selectedBlog,
     selectedBlogId: activeSelectedBlogId,
     settingsStatusMessage,
+    refreshTopicBrief,
     setMode,
     setSelectedBlogId,
     topics,

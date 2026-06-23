@@ -10,6 +10,7 @@ import type { TopicStatusFilter } from "../types/TopicStatusFilter";
 import type { WriteBlogOptions } from "../types/WriteBlogOptions";
 
 type FilteredTopicListProps = {
+  refreshTopicBrief: (topicId: string) => Promise<string>;
   topics: TopicItem[];
   writeBlog: (
     topicId: string,
@@ -18,6 +19,7 @@ type FilteredTopicListProps = {
 };
 
 export const FilteredTopicList = ({
+  refreshTopicBrief,
   topics,
   writeBlog,
 }: FilteredTopicListProps) => {
@@ -35,7 +37,11 @@ export const FilteredTopicList = ({
         onChange={setActiveFilter}
       />
       {filteredTopics.length > 0 ? (
-        <TopicList topics={filteredTopics} writeBlog={writeBlog} />
+        <TopicList
+          refreshTopicBrief={refreshTopicBrief}
+          topics={filteredTopics}
+          writeBlog={writeBlog}
+        />
       ) : (
         <EmptyState label="No topics in this view." />
       )}

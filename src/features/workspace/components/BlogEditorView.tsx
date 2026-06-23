@@ -30,10 +30,13 @@ export const BlogEditorView = ({
   return (
     <div className="min-h-screen bg-white text-black">
       <BlogEditorHeader
+        applyRefreshPlan={editor.applyRefreshPlan}
+        discoverBlogRefreshIdeas={editor.discoverBlogRefreshIdeas}
         downloadBlog={downloadBlog}
         isSaving={editor.isSaving}
         message={editor.message}
         saveBlog={editor.saveBlog}
+        saveRefreshPlan={editor.saveRefreshPlan}
         workspaceSwitcher={workspaceSwitcher}
       />
       <main className="mx-auto grid w-full max-w-7xl gap-5 px-4 py-5 sm:px-6 lg:grid-cols-[minmax(0,1fr)_420px] lg:px-8">

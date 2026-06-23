@@ -5,11 +5,21 @@ import { useMutation, useQuery } from "convex/react";
 import { isLiveWorkspaceEnabled } from "@/config/isLiveWorkspaceEnabled";
 import { castBlogId } from "@/server/convex/castBlogId";
 import { castProductId } from "@/server/convex/castProductId";
+import { createTopicMutation } from "@/server/convex/references/createTopicMutation";
 import { getBlogQuery } from "@/server/convex/references/getBlogQuery";
+import { getCurrentProductQuery } from "@/server/convex/references/getCurrentProductQuery";
 import { updateBlogContentMutation } from "@/server/convex/references/updateBlogContentMutation";
 import { demoBlogs } from "../constants/demoBlogs";
+import { demoProduct } from "../constants/demoProduct";
+import { demoTopicDiscoveryResult } from "../constants/demoTopicDiscoveryResult";
+import { emptyProduct } from "../constants/emptyProduct";
 import { mapConvexBlog } from "../mappers/mapConvexBlog";
+import { appendRefreshPlanToMdx } from "../utils/appendRefreshPlanToMdx";
+import { buildBlogRefreshSeedKeyword } from "../utils/buildBlogRefreshSeedKeyword";
 import type { BlogEditorState } from "../types/BlogEditorState";
+import type { TopicDiscoveryRequest } from "../types/topicDiscovery/TopicDiscoveryRequest";
+import type { TopicDiscoveryResponse } from "../types/topicDiscovery/TopicDiscoveryResponse";
+import type { TopicDiscoveryPlanItem } from "../types/topicDiscovery/TopicDiscoveryPlanItem";
 
 type UseBlogEditorOptions = {
   activeWorkspaceId?: string;
@@ -40,6 +50,11 @@ export const useBlogEditor = ({
       ? { blogId: convexBlogId, productId: convexProductId }
       : "skip",
   );
+  const productResult = useQuery(
+    getCurrentProductQuery,
+    isLive && convexProductId ? {} : "skip",
+  );
+  const createTopic = useMutation(createTopicMutation);
   const updateBlogContent = useMutation(updateBlogContentMutation);
   const liveState = useMemo(
     () => ({
@@ -99,11 +114,110 @@ export const useBlogEditor = ({
     }
   };
 
+  const discoverBlogRefreshIdeas = async (
+    requestedBlogId: string,
+    { includeAiAnswers, seedKeyword }: TopicDiscoveryRequest,
+  ) => {
+    if (!blog || blog.id !== requestedBlogId) {
+      throw new Error("Blog not found.");
+    }
+
+    if (!isLive) {
+      return demoTopicDiscoveryResult;
+    }
+
+    const discoveryProduct = productResult
+      ? {
+          audience: productResult.audience,
+          competitors: productResult.competitors,
+          description: productResult.description,
+          name: productResult.name,
+          niche: productResult.niche,
+          rawContext: productResult.rawContext,
+          siteLinks: productResult.siteLinks,
+          websiteUrl: productResult.websiteUrl,
+        }
+      : {
+          ...emptyProduct,
+          ...demoProduct,
+        };
+    const searchKeyword =
+      seedKeyword?.trim() || buildBlogRefreshSeedKeyword(blog);
+
+    if (!searchKeyword) {
+      throw new Error("Add a keyword or title before searching.");
+    }
+
+    const response = await fetch("/api/topics/discover", {
+      body: JSON.stringify({
+        existingBlogs: [
+          {
+            excerpt: blog.excerpt,
+            keyword: blog.keyword,
+            title: blog.title,
+            updatedAt: blog.updatedAt,
+          },
+        ],
+        existingTopics: [],
+        includeAiAnswers,
+        product: discoveryProduct,
+        seedKeyword: searchKeyword,
+      }),
+      headers: {
+        "Content-Type": "application/json",
+      },
+      method: "POST",
+    });
+    const data = (await response
+      .json()
+      .catch(() => ({}))) as TopicDiscoveryResponse;
+
+    if (!response.ok || !data.discovery) {
+      throw new Error(data.error || "Could not find refresh ideas yet.");
+    }
+
+    return data.discovery;
+  };
+
+  const saveRefreshPlan = async (item: TopicDiscoveryPlanItem) => {
+    if (!isLive) {
+      setMessage("Saved in preview.");
+      return;
+    }
+
+    if (!convexProductId) {
+      throw new Error("Choose a workspace first.");
+    }
+
+    await createTopic({
+      keyword: item.title,
+      notes: item.notes,
+      productId: convexProductId,
+    });
+
+    setMessage("Plan saved.");
+  };
+
+  const applyRefreshPlan = (item: TopicDiscoveryPlanItem) => {
+    const nextMdx = appendRefreshPlanToMdx(editorState.mdx, item);
+
+    if (nextMdx === editorState.mdx) {
+      setMessage("That plan is already in the draft.");
+      throw new Error("That plan is already in the draft.");
+    }
+
+    updateField("mdx", nextMdx);
+    setMessage("Plan added to draft.");
+  };
+
   return {
+    applyRefreshPlan,
+    discoverBlogRefreshIdeas,
     isSaving,
     blog,
     message,
     saveBlog,
+    saveRefreshPlan,
     state: editorState,
     updateField,
   };

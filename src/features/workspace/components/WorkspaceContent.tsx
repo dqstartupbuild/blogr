@@ -8,8 +8,10 @@ import { WorkspaceSettingsPanel } from "./WorkspaceSettingsPanel";
 import { WorkspaceShell } from "./WorkspaceShell";
 import type { BlogItem } from "../types/BlogItem";
 import type { BlogGenerationSettings } from "../types/BlogGenerationSettings";
+import type { DiscoverBlogRefreshIdeas } from "../types/DiscoverBlogRefreshIdeas";
 import type { ProductProfile } from "../types/ProductProfile";
 import type { ProductScanState } from "../types/ProductScanState";
+import type { RefreshTopicBrief } from "../types/RefreshTopicBrief";
 import type { TopicItem } from "../types/TopicItem";
 import type { WriteBlogOptions } from "../types/WriteBlogOptions";
 import type { WorkspaceSwitcherState } from "../types/WorkspaceSwitcherState";
@@ -20,11 +22,13 @@ type WorkspaceContentProps = {
   addTopic: (keyword: string, notes?: string) => void | Promise<void>;
   blogGenerationSettings: BlogGenerationSettings;
   blogs: BlogItem[];
+  discoverBlogRefreshIdeas: DiscoverBlogRefreshIdeas;
   discoverTopicIdeas: DiscoverTopicIdeas;
   isSavingBlogGenerationSettings: boolean;
   mode: WorkspaceViewMode;
   product: ProductProfile;
   productScanState: ProductScanState;
+  refreshTopicBrief: RefreshTopicBrief;
   saveBlogGenerationSettings: (
     settings: BlogGenerationSettings,
   ) => void | Promise<void>;
@@ -46,11 +50,13 @@ export const WorkspaceContent = ({
   addTopic,
   blogGenerationSettings,
   blogs,
+  discoverBlogRefreshIdeas,
   discoverTopicIdeas,
   isSavingBlogGenerationSettings,
   mode,
   product,
   productScanState,
+  refreshTopicBrief,
   saveBlogGenerationSettings,
   scanProduct,
   selectedBlog,
@@ -80,13 +86,16 @@ export const WorkspaceContent = ({
             <TopicsPanel
               addTopic={addTopic}
               discoverTopicIdeas={discoverTopicIdeas}
+              refreshTopicBrief={refreshTopicBrief}
               topics={topics}
               writeBlog={writeBlog}
             />
           ) : null}
           {mode === "blogs" ? (
             <BlogsPanel
+              addTopic={addTopic}
               blogs={blogs}
+              discoverBlogRefreshIdeas={discoverBlogRefreshIdeas}
               selectedBlogId={selectedBlogId}
               setSelectedBlogId={setSelectedBlogId}
             />

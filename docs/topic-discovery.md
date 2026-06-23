@@ -43,6 +43,10 @@ When the user writes a blog from that topic, `useLiveWorkspace` sends the saved 
 
 When a user clicks **Save plan** on a non-topic insight, the app saves that insight as a topic with its source context in notes. That gives users a simple way to turn gaps, refresh ideas, comparison angles, AI answer notes, and difficulty notes into work they can write or plan from later.
 
+Existing topics also have a **Find brief** or **View brief** action. Users can review the saved notes, refresh the brief from a new search, and then write the topic with that brief.
+
+Existing blogs have **Find refresh ideas**. Users can search again for the blog keyword, save refresh plans as topics, or add a plan directly to the draft from the blog editor.
+
 ## Environment
 
 The live discovery route requires:
@@ -68,8 +72,12 @@ APIFY_TOKEN=
 - `src/features/workspace/components/TopicDiscoveryPlanList.tsx`
 - `src/features/workspace/components/TopicDiscoveryReviewList.tsx`
 - `src/features/workspace/components/TopicDiscoveryInsights.tsx`
+- `src/features/workspace/components/TopicBriefDialog.tsx`
+- `src/features/workspace/components/BlogRefreshDialog.tsx`
 - `src/features/workspace/utils/buildTopicDiscoveryPlanItems.ts`
 - `src/features/workspace/utils/buildTopicDiscoveryIdeaNotes.ts`
+- `src/features/workspace/utils/buildExistingTopicBriefNotes.ts`
+- `src/features/workspace/utils/appendRefreshPlanToMdx.ts`
 - `src/server/blog/buildTopicBriefPrompt.ts`
 
 ## Use Cases
@@ -80,6 +88,8 @@ APIFY_TOKEN=
 - Spot competitor gaps and comparison angles.
 - Save gaps, refresh ideas, and AI answer notes as planning topics.
 - Refresh older blogs with questions and angles that now appear in search.
+- Refresh the brief for a topic that was saved before discovery existed.
+- Add a refresh plan directly to an existing blog draft.
 
 ## File Tree
 
