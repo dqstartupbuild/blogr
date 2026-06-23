@@ -8,6 +8,7 @@ type BlogImageItem = {
 };
 
 export type BlogItem = {
+  createdAt?: number;
   id: string;
   keyword: string;
   title: string;

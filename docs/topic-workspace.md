@@ -12,7 +12,7 @@ Each topic row can show or refresh its saved search brief. Manual topics can get
 
 The first screen is the usable workspace, not a landing page. It stays simple: product, topics, blogs, preview.
 
-The blog preview renders generated MDX as readable blog content, so users can browse posts without reading raw markdown.
+The blog preview renders generated MDX as readable blog content, so users can browse posts without reading raw markdown. The preview also exposes **Publish** and **Zip** actions for the selected blog.
 
 The dashboard is scoped to the active product workspace. Switching workspaces changes which product profile, topics, blogs, and previews are shown.
 
@@ -38,6 +38,8 @@ The discovery dialog also exposes non-topic insights as planning rows. Users can
 
 Blog rows and the blog editor expose **Find refresh ideas** for existing blogs. In the blog list, users can save a refresh plan as a topic. In the editor, users can save the plan or add it directly to the draft.
 
+The selected blog preview exposes **Publish**, which sends the current blog to the configured webhook destination through `POST /api/blogs/publish`.
+
 ## Relevant Code
 
 - `src/features/workspace/components/WorkspaceView.tsx`
@@ -56,6 +58,7 @@ Blog rows and the blog editor expose **Find refresh ideas** for existing blogs. 
 - `src/features/workspace/components/TopicDiscoveryPlanList.tsx`
 - `src/features/workspace/components/TopicBriefDialog.tsx`
 - `src/features/workspace/components/BlogRefreshDialog.tsx`
+- `src/features/workspace/components/BlogPublishButton.tsx`
 - `src/features/workspace/components/FilteredTopicList.tsx`
 - `src/features/workspace/components/TopicStatusFilterTabs.tsx`
 - `src/app/api/topics/discover/route.ts`
@@ -80,6 +83,7 @@ Blog rows and the blog editor expose **Find refresh ideas** for existing blogs. 
 - Find or refresh a search brief for a saved topic.
 - Find refresh ideas for a saved blog.
 - Add a refresh plan to an existing blog draft.
+- Publish a generated blog to a connected blog app.
 - Keep topics separate from finished blogs.
 - Revisit the blog list on `/blogs`.
 - Keep each product or client project separate.

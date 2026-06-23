@@ -31,6 +31,10 @@ Without keys, the workspace shows a local demo layout. With Clerk and Convex pub
 - `APIFY_TOKEN`
 - `YOUTUBE_API_KEY` optional
 - `EXA_API_KEY` optional video search fallback
+- `BLOG_PUBLISH_WEBHOOK_URL` optional blog publishing destination
+- `BLOG_PUBLISH_WEBHOOK_TOKEN` optional blog publishing token
+- `BLOG_PUBLISH_SOURCE_NAME` optional publishing source label
+- `BLOG_PUBLISH_TIMEOUT_MS` optional publishing request timeout
 
 Set `AUTH_DISABLED_FOR_PREVIEW=true` only for local preview work. Keep it false in production.
 
@@ -65,6 +69,8 @@ npx convex env set R2_BUCKET <bucket>
 - [RAG product context](docs/rag-product-context.md)
 - [Blog generation reliability](docs/blog-generation-reliability.md)
 - [Blog editor](docs/blog-editor.md)
+- [Blog webhook publishing](docs/blog-webhook-publishing.md)
+- [Codex target app blog webhook brief](docs/codex-target-app-blog-webhook.md)
 - [Zip export](docs/zip-export.md)
 - [Auth](docs/auth.md)
 - [Convex data](docs/convex-data.md)

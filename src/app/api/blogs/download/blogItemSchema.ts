@@ -3,6 +3,7 @@ import { linkItemSchema } from "../generate/linkItemSchema";
 import { blogImageSchema } from "./blogImageSchema";
 
 export const blogItemSchema = z.object({
+  createdAt: z.number().optional(),
   excerpt: z.string(),
   featureImageUrl: z.string().optional(),
   id: z.string(),

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { ArrowLeft, Save } from "lucide-react";
+import { BlogPublishButton } from "./BlogPublishButton";
 import { BlogRefreshLauncher } from "./BlogRefreshLauncher";
 import { BlogZipButton } from "./BlogZipButton";
 import { PrimaryButton } from "./PrimaryButton";
@@ -58,6 +59,7 @@ export const BlogEditorHeader = ({
             discoverBlogRefreshIdeas={discoverBlogRefreshIdeas}
             savePlan={saveRefreshPlan}
           />
+          <BlogPublishButton blog={downloadBlog} />
           <BlogZipButton blog={downloadBlog} />
           <PrimaryButton disabled={isSaving} onClick={saveBlog} type="button">
             <Save size={16} aria-hidden="true" />

@@ -1,5 +1,6 @@
 import Image from "next/image";
 import { Edit3 } from "lucide-react";
+import { BlogPublishButton } from "./BlogPublishButton";
 import { BlogZipButton } from "./BlogZipButton";
 import { MarkdownPreview } from "./MarkdownPreview";
 import { SecondaryAnchor } from "./SecondaryAnchor";
@@ -28,6 +29,7 @@ export const BlogPreviewPanel = ({ blog }: BlogPreviewPanelProps) => {
               <Edit3 size={16} aria-hidden="true" />
               Edit
             </SecondaryAnchor>
+            <BlogPublishButton blog={blog} />
             <BlogZipButton blog={blog} />
           </div>
         }

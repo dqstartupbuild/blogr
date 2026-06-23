@@ -3,6 +3,7 @@ import type { BlogItem } from "../types/BlogItem";
 
 export const mapConvexBlog = (blog: Doc<"blogs">): BlogItem => {
   return {
+    createdAt: blog.createdAt,
     excerpt: blog.excerpt,
     featureImageUrl: blog.featureImageUrl,
     id: blog._id,
