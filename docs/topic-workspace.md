@@ -38,7 +38,7 @@ The discovery dialog also exposes non-topic insights as planning rows. Users can
 
 Blog rows and the blog editor expose **Find refresh ideas** for existing blogs. In the blog list, users can save a refresh plan as a topic. In the editor, users can save the plan or add it directly to the draft.
 
-The Settings tab includes a **Publishing** panel for the active product. The selected blog preview exposes **Publish**, which sends the current blog to that product's saved webhook destination through `POST /api/blogs/publish`.
+The Settings tab includes a **Publishing** panel for the active product. It includes a setup guide, a copyable Codex prompt for the receiving app, webhook details, and the per-product connection fields. The selected blog preview exposes **Publish**, which sends the current blog to that product's saved webhook destination through `POST /api/blogs/publish`.
 
 ## Relevant Code
 

@@ -15,16 +15,19 @@ Each product workspace can have its own publishing integration. This lets one ac
 3. The route checks the signed-in user with `requireRouteUserId`.
 4. The route validates the blog payload with the shared blog item schema.
 5. `buildBlogPublishPayload` turns the blog into a `publish_articles` webhook payload.
-6. `resolveBlogPublishDestination` looks for a saved publishing integration on the blog's product workspace.
-7. If the product does not have a saved integration, the route falls back to the deployment env vars.
-8. `sendBlogPublishWebhook` posts the payload with `Authorization: Bearer <token>`.
-9. The target app creates or updates the public blog post by `slug`.
+6. If the blog belongs to a product workspace, the route calls the Convex `publishBlogWithIntegration` action.
+7. The Convex action reads the saved publishing integration for that product without returning the token to the browser.
+8. If the product does not have a saved integration, the route falls back to the deployment env vars.
+9. The webhook request is sent with `Authorization: Bearer <token>`.
+10. The target app creates or updates the public blog post by `slug`.
 
 Publishing uses the currently loaded draft. In the editor, that means a user can publish the text they are looking at after making changes.
 
 ## Settings Workflow
 
 Open **Settings** for the active product workspace, then use the **Publishing** panel.
+
+The panel starts with a **Setup guide**. It gives the user the full workflow, a copyable Codex prompt for the target app, the webhook path, the token env var, a sample payload, and a quick checklist for the receiving app.
 
 The user enters:
 
@@ -35,6 +38,8 @@ The user enters:
 The access token is saved server-side in Convex and is not returned to the browser. The settings screen only shows whether a token is already saved.
 
 Click **Save publishing** to connect that product. Click **Remove** to disconnect publishing for that product.
+
+If a user clicks **Publish** before connecting a product, the publish message includes a **Set up publishing** shortcut back to Settings.
 
 ## Env Fallback
 
@@ -108,16 +113,19 @@ Bearer auth is enough for the first version because this is a server-to-server w
 
 - `src/features/workspace/components/BlogPublishButton.tsx`
 - `src/features/workspace/components/BlogPublishingIntegrationPanel.tsx`
+- `src/features/workspace/components/BlogPublishingSetupGuide.tsx`
+- `src/features/workspace/components/BlogPublishingReceiverDetails.tsx`
 - `src/features/workspace/utils/publishBlog.ts`
+- `src/features/workspace/utils/buildBlogPublishingCodexPrompt.ts`
 - `src/app/api/blogs/publish/route.ts`
 - `src/app/api/blogs/publish/schema.ts`
-- `src/server/publishing/resolveBlogPublishDestination.ts`
-- `src/server/publishing/getBlogPublishProductDestination.ts`
+- `src/server/publishing/getBlogPublishEnvironmentDestination.ts`
 - `src/server/publishing/buildBlogPublishPayload.ts`
 - `src/server/publishing/buildBlogPublishArticle.ts`
 - `src/server/publishing/sendBlogPublishWebhook.ts`
 - `convex/products/updateBlogPublishingIntegration.ts`
 - `convex/products/getBlogPublishingIntegration.ts`
+- `convex/products/publishBlogWithIntegration.ts`
 
 ## File Tree
 
@@ -126,11 +134,15 @@ src/app/api/blogs/publish/
 src/server/publishing/
 src/server/publishing/types/
 src/features/workspace/components/BlogPublishingIntegrationPanel.tsx
+src/features/workspace/components/BlogPublishingSetupGuide.tsx
+src/features/workspace/constants/publishing/
 src/features/workspace/components/BlogPublishButton.tsx
 src/features/workspace/utils/publishBlog.ts
+src/features/workspace/utils/buildBlogPublishingCodexPrompt.ts
 src/features/workspace/types/integrations/
 src/features/workspace/types/publishing/
 convex/products/*BlogPublishing*
+convex/products/publishBlogWithIntegration.ts
 docs/blog-webhook-publishing.md
 docs/codex-target-app-blog-webhook.md
 ```

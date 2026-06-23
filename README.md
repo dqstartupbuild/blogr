@@ -77,3 +77,5 @@ npx convex env set R2_BUCKET <bucket>
 - [Auth](docs/auth.md)
 - [Convex data](docs/convex-data.md)
 - [Theme](docs/theme.md)
+
+The in-app version of the publishing setup guide is available from **Settings** > **Publishing** for the active product.

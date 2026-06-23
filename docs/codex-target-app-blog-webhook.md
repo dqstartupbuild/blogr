@@ -153,12 +153,12 @@ Handle events this way:
 
 ## Blogger Setup After Target App Is Deployed
 
-Set these env vars in Blogger:
+Open Blogger, choose the product workspace, then go to **Settings** and use the **Publishing** panel.
 
-```bash
-BLOG_PUBLISH_WEBHOOK_URL=https://target-app-domain.com/api/webhooks/blog-publisher
-BLOG_PUBLISH_WEBHOOK_TOKEN=the-same-token-set-in-the-target-app
-BLOG_PUBLISH_SOURCE_NAME=Blogger
-```
+Enter:
+
+- Webhook URL: `https://target-app-domain.com/api/webhooks/blog-publisher`
+- Access token: the same value saved in the target app as `BLOG_PUBLISH_WEBHOOK_TOKEN`
+- Source name: `Blogger`
 
 Then open Blogger, choose a generated post, and click **Publish**.

@@ -118,6 +118,7 @@ export const WorkspaceContent = ({
                 key={`${workspaceSwitcher.activeWorkspaceId}:${JSON.stringify(
                   product.blogPublishingIntegration,
                 )}`}
+                productName={product.name}
                 saveIntegration={saveBlogPublishingIntegration}
                 statusMessage={publishingIntegrationStatusMessage}
               />

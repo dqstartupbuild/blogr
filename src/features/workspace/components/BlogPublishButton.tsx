@@ -1,8 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { Send } from "lucide-react";
+import { Send, Settings2 } from "lucide-react";
+import { SecondaryAnchor } from "./SecondaryAnchor";
 import { SecondaryButton } from "./SecondaryButton";
+import { isBlogPublishSetupMessage } from "../utils/isBlogPublishSetupMessage";
 import { publishBlog } from "../utils/publishBlog";
 import type { BlogItem } from "../types/BlogItem";
 
@@ -26,6 +28,7 @@ export const BlogPublishButton = ({ blog }: BlogPublishButtonProps) => {
       setIsPublishing(false);
     }
   };
+  const shouldShowSetupLink = isBlogPublishSetupMessage(message);
 
   return (
     <div className="flex flex-wrap items-center gap-2">
@@ -40,6 +43,12 @@ export const BlogPublishButton = ({ blog }: BlogPublishButtonProps) => {
         <Send size={16} aria-hidden="true" />
         {isPublishing ? "Publishing" : "Publish"}
       </SecondaryButton>
+      {shouldShowSetupLink ? (
+        <SecondaryAnchor href="/settings">
+          <Settings2 size={16} aria-hidden="true" />
+          Set up publishing
+        </SecondaryAnchor>
+      ) : null}
     </div>
   );
 };
