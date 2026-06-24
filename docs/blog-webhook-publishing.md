@@ -19,7 +19,7 @@ Each product workspace can have its own publishing integration. This lets one ac
 7. The Convex action reads the saved publishing integration for that product without returning the token to the browser.
 8. If the product does not have a saved integration, the route falls back to the deployment env vars.
 9. The webhook request is sent with `Authorization: Bearer <token>`.
-10. The target app creates or updates the public blog post by `slug`.
+10. The target app copies article images into its own durable public storage, rewrites the saved article image URLs, and creates or updates the public blog post by `slug`.
 
 Publishing uses the currently loaded draft. In the editor, that means a user can publish the text they are looking at after making changes.
 
@@ -28,6 +28,8 @@ Publishing uses the currently loaded draft. In the editor, that means a user can
 Open **Settings** for the active product workspace, then use the **Publishing** panel.
 
 The panel starts with a **Setup guide**. It gives the user the full workflow, a copyable Codex prompt for the target app, the webhook path, the token env var, a sample payload, and a quick checklist for the receiving app.
+
+The copyable Codex prompt tells the target app to copy Blogger image URLs into the target app's own durable public storage, rewrite article image URLs before saving, render Blogger's MDX and YouTube embeds, and include webhook-published posts in sitemap/feed discovery outputs.
 
 The user enters:
 
@@ -86,7 +88,7 @@ The route sends this shape:
 }
 ```
 
-MDX is the source of truth. `content_html` is intentionally blank because this app stores and edits articles as MDX.
+MDX is the source of truth. `content_html` is intentionally blank because this app stores and edits articles as MDX. Blogger can include YAML frontmatter, markdown images, tables, code blocks, and YouTube iframe embeds in the MDX body.
 
 ## Target App Expectations
 
@@ -98,7 +100,10 @@ The receiving app should:
 - Validate `event_type`, `timestamp`, and article fields.
 - Upsert by `slug` so publishing the same blog again updates the existing post.
 - Store `content_mdx` or `content_markdown`.
-- Use `image_url` as the feature image unless the target app copies images into its own storage.
+- Treat `image_url` and markdown image URLs as temporary source URLs.
+- Download article images during the webhook request, store them in the target app's durable public storage, and rewrite `image_url`, frontmatter `featureImage`, and markdown image URLs before saving the post.
+- Render Blogger MDX features including frontmatter stripping, headings, links, lists, blockquotes, tables, code, markdown images, and YouTube iframe embeds or YouTube links.
+- Include webhook-published posts in sitemap/feed outputs and refresh cached blog pages after publishing.
 - Return a JSON response with `{ "message": "Published." }`.
 
 ## Security
