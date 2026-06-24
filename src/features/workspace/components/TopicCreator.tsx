@@ -14,7 +14,7 @@ export const TopicCreator = ({ addTopic }: TopicCreatorProps) => {
 
   return (
     <form
-      className="mt-4 grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto]"
+      className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto]"
       onSubmit={(event) => {
         event.preventDefault();
         addTopic(keyword);

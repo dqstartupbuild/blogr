@@ -24,7 +24,7 @@ export const WorkspaceCreateForm = ({
 
   return (
     <form
-      className="grid w-full gap-3 rounded-lg border border-black bg-white p-3 sm:grid-cols-[minmax(150px,1fr)_minmax(150px,1fr)_minmax(150px,1fr)_auto_auto]"
+      className="grid w-full gap-3 rounded-lg border border-black/10 bg-white p-3"
       onSubmit={async (event) => {
         event.preventDefault();
         await onCreate({ name, niche, websiteUrl });

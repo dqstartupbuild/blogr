@@ -23,7 +23,7 @@ export const ProductSetupPanel = ({
   const [niche, setNiche] = useState(product.niche);
 
   return (
-    <section className="rounded-lg border border-black bg-white p-4">
+    <section className="rounded-lg border border-black/10 bg-white p-4 shadow-sm">
       <SectionTitle title="Product" />
       <form
         className="mt-4 grid gap-3 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto]"
@@ -58,13 +58,13 @@ export const ProductSetupPanel = ({
           {productScanState.message}
         </p>
       ) : null}
-      <div className="mt-4 grid gap-3 text-sm text-black lg:grid-cols-[minmax(0,1fr)_220px]">
-        <p>{product.description}</p>
+      <div className="mt-4 grid gap-3 text-sm text-black/65 lg:grid-cols-[minmax(0,1fr)_220px]">
+        <p className="leading-6">{product.description}</p>
         <div className="flex flex-wrap gap-2">
           {product.colors.map((color) => (
             <span
               aria-label={`Brand color ${color}`}
-              className="inline-flex h-8 min-w-20 items-center justify-center rounded-md border border-black bg-white px-2 text-xs font-semibold text-black"
+              className="inline-flex h-8 min-w-20 items-center justify-center rounded-md border border-black/15 bg-white px-2 text-xs font-semibold text-black"
               key={color}
               title={color}
             >

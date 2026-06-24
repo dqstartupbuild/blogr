@@ -53,12 +53,12 @@ export const BlogPublishingIntegrationPanel = ({
   };
 
   return (
-    <section className="rounded-lg border border-black bg-white p-4">
+    <section className="rounded-lg border border-black/10 bg-white p-4 shadow-sm">
       <SectionTitle title="Publishing" />
       <div className="mt-5 grid gap-5">
         <BlogPublishingSetupGuide productName={productName} />
         <form
-          className="grid gap-5 border-t border-black pt-4"
+          className="grid gap-5 border-t border-black/10 pt-4"
           onSubmit={async (event) => {
             event.preventDefault();
             await saveIntegration({

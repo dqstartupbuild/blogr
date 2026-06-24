@@ -24,7 +24,7 @@ export const WorkspaceSelect = ({
     <label className="grid gap-1 text-xs font-semibold text-black">
       <span>Workspace</span>
       <select
-        className="h-10 min-w-44 rounded-md border border-black bg-white px-3 text-sm font-medium text-black outline-none disabled:cursor-not-allowed"
+        className="h-10 w-full min-w-0 rounded-md border border-black/15 bg-white px-3 text-sm font-medium text-black outline-none disabled:cursor-not-allowed"
         disabled={disabled}
         onChange={handleChange}
         value={activeWorkspaceId}

@@ -3,9 +3,11 @@
 import { BlogPreviewSidebar } from "./BlogPreviewSidebar";
 import { BlogPublishingIntegrationPanel } from "./BlogPublishingIntegrationPanel";
 import { BlogsPanel } from "./BlogsPanel";
+import { DashboardPanel } from "./DashboardPanel";
 import { ProductSetupPanel } from "./ProductSetupPanel";
 import { TopicsPanel } from "./TopicsPanel";
 import { WorkspaceSettingsPanel } from "./WorkspaceSettingsPanel";
+import { WorkspacePageHeader } from "./WorkspacePageHeader";
 import { WorkspaceShell } from "./WorkspaceShell";
 import type { BlogItem } from "../types/BlogItem";
 import type { BlogGenerationSettings } from "../types/BlogGenerationSettings";
@@ -86,6 +88,9 @@ export const WorkspaceContent = ({
     >
       <div className="grid gap-5">
         <main className="space-y-5">
+          {mode === "dashboard" ? (
+            <DashboardPanel blogs={blogs} topics={topics} />
+          ) : null}
           {mode === "topics" ? (
             <TopicsPanel
               addTopic={addTopic}
@@ -106,6 +111,10 @@ export const WorkspaceContent = ({
           ) : null}
           {mode === "settings" ? (
             <div className="space-y-5">
+              <WorkspacePageHeader
+                description="Set up your product, publishing, and article defaults."
+                title="Settings"
+              />
               <ProductSetupPanel
                 key={`${product.websiteUrl}:${product.niche}`}
                 product={product}
@@ -134,7 +143,9 @@ export const WorkspaceContent = ({
             </div>
           ) : null}
         </main>
-        {mode === "settings" ? null : <BlogPreviewSidebar blog={selectedBlog} />}
+        {mode === "settings" || mode === "dashboard" ? null : (
+          <BlogPreviewSidebar blog={selectedBlog} />
+        )}
       </div>
     </WorkspaceShell>
   );

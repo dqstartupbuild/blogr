@@ -1,5 +1,5 @@
 import { FilteredBlogList } from "./FilteredBlogList";
-import { SectionTitle } from "./SectionTitle";
+import { WorkspacePageHeader } from "./WorkspacePageHeader";
 import type { BlogItem } from "../types/BlogItem";
 import type { DiscoverBlogRefreshIdeas } from "../types/DiscoverBlogRefreshIdeas";
 import type { SaveDiscoveryPlan } from "../types/SaveDiscoveryPlan";
@@ -22,8 +22,11 @@ export const BlogsPanel = ({
   const savePlan: SaveDiscoveryPlan = (item) => addTopic(item.title, item.notes);
 
   return (
-    <section className="rounded-lg border border-black bg-white p-4">
-      <SectionTitle title="Blogs" />
+    <section className="space-y-6">
+      <WorkspacePageHeader
+        description="Review and manage the articles you have generated."
+        title="Articles"
+      />
       <FilteredBlogList
         blogs={blogs}
         discoverBlogRefreshIdeas={discoverBlogRefreshIdeas}

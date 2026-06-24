@@ -1,8 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { WorkspaceHeader } from "./WorkspaceHeader";
-import { WorkspaceTabs } from "./WorkspaceTabs";
+import { WorkspaceSidebar } from "./WorkspaceSidebar";
 import type { WorkspaceSwitcherState } from "../types/WorkspaceSwitcherState";
 import type { WorkspaceViewMode } from "../types/WorkspaceViewMode";
 
@@ -20,12 +19,17 @@ export const WorkspaceShell = ({
   workspaceSwitcher,
 }: WorkspaceShellProps) => {
   return (
-    <div className="min-h-screen bg-white text-black">
-      <WorkspaceHeader workspaceSwitcher={workspaceSwitcher} />
-      <div className="mx-auto flex w-full max-w-7xl flex-col gap-5 px-4 py-5 sm:px-6 lg:px-8">
-        <WorkspaceTabs mode={mode} setMode={setMode} />
-        {children}
-      </div>
+    <div className="min-h-screen bg-white text-black lg:flex">
+      <WorkspaceSidebar
+        mode={mode}
+        setMode={setMode}
+        workspaceSwitcher={workspaceSwitcher}
+      />
+      <main className="min-w-0 flex-1">
+        <div className="mx-auto flex w-full max-w-7xl flex-col gap-6 px-4 py-6 sm:px-6 lg:px-8">
+          {children}
+        </div>
+      </main>
     </div>
   );
 };

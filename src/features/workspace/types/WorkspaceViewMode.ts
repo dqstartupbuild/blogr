@@ -1,1 +1,1 @@
-export type WorkspaceViewMode = "topics" | "blogs" | "settings";
+export type WorkspaceViewMode = "dashboard" | "topics" | "blogs" | "settings";

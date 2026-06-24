@@ -18,7 +18,7 @@ export const BlogPreviewSidebar = ({ blog }: BlogPreviewSidebarProps) => {
       <button
         aria-controls="workspace-blog-preview-sidebar"
         aria-expanded={isOpen}
-        className="fixed bottom-4 right-4 z-40 inline-flex h-11 items-center justify-center gap-2 rounded-md border border-black bg-black px-4 text-sm font-semibold text-white shadow-lg transition hover:bg-white hover:text-black"
+        className="fixed bottom-4 right-4 z-40 hidden h-11 items-center justify-center gap-2 rounded-md border border-black bg-black px-4 text-sm font-semibold text-white shadow-lg transition hover:bg-white hover:text-black sm:inline-flex"
         onClick={() => setIsOpen((current) => !current)}
         type="button"
       >
@@ -38,13 +38,13 @@ export const BlogPreviewSidebar = ({ blog }: BlogPreviewSidebarProps) => {
             type="button"
           />
           <aside
-            className="absolute right-0 top-0 flex h-full w-full max-w-[480px] flex-col border-l border-black bg-white shadow-2xl"
+            className="absolute right-0 top-0 flex h-full w-full max-w-[1120px] flex-col border-l border-black/10 bg-white shadow-2xl"
             id="workspace-blog-preview-sidebar"
           >
-            <div className="flex items-center justify-end border-b border-black px-4 py-3">
+            <div className="flex items-center justify-end border-b border-black/10 px-4 py-3">
               <button
                 aria-label="Close preview"
-                className="inline-flex h-10 w-10 items-center justify-center rounded-md border border-black bg-white text-black transition hover:bg-black hover:text-white"
+                className="inline-flex h-10 w-10 items-center justify-center rounded-md border border-black/15 bg-white text-black transition hover:border-black hover:bg-black hover:text-white"
                 onClick={() => setIsOpen(false)}
                 type="button"
               >

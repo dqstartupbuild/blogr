@@ -2,8 +2,12 @@
 
 import { useState } from "react";
 import { EmptyState } from "./EmptyState";
+import { FilterBar } from "./FilterBar";
+import { FilterSelect } from "./FilterSelect";
+import { SearchField } from "./SearchField";
 import { TopicList } from "./TopicList";
-import { TopicStatusFilterTabs } from "./TopicStatusFilterTabs";
+import { topicStatusFilterOptions } from "../constants/topicStatusFilterOptions";
+import { filterTopicsBySearch } from "../utils/filterTopicsBySearch";
 import { filterTopicsByStatus } from "../utils/filterTopicsByStatus";
 import type { TopicItem } from "../types/TopicItem";
 import type { TopicStatusFilter } from "../types/TopicStatusFilter";
@@ -24,18 +28,32 @@ export const FilteredTopicList = ({
   writeBlog,
 }: FilteredTopicListProps) => {
   const [activeFilter, setActiveFilter] = useState<TopicStatusFilter>("all");
-  const filteredTopics = filterTopicsByStatus(topics, activeFilter);
+  const [searchQuery, setSearchQuery] = useState("");
+  const filteredTopics = filterTopicsBySearch(
+    filterTopicsByStatus(topics, activeFilter),
+    searchQuery,
+  );
 
   if (topics.length === 0) {
     return <EmptyState label="No topics yet." />;
   }
 
   return (
-    <>
-      <TopicStatusFilterTabs
-        activeFilter={activeFilter}
-        onChange={setActiveFilter}
-      />
+    <div className="space-y-4">
+      <FilterBar>
+        <SearchField
+          label="Search topics"
+          onChange={setSearchQuery}
+          placeholder="Search topics..."
+          value={searchQuery}
+        />
+        <FilterSelect
+          label="Status"
+          onChange={(value) => setActiveFilter(value as TopicStatusFilter)}
+          options={topicStatusFilterOptions}
+          value={activeFilter}
+        />
+      </FilterBar>
       {filteredTopics.length > 0 ? (
         <TopicList
           refreshTopicBrief={refreshTopicBrief}
@@ -45,6 +63,6 @@ export const FilteredTopicList = ({
       ) : (
         <EmptyState label="No topics in this view." />
       )}
-    </>
+    </div>
   );
 };

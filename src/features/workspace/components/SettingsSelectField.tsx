@@ -24,7 +24,7 @@ export const SettingsSelectField = ({
     <label className="grid gap-2 text-sm font-medium text-black" htmlFor={id}>
       <span>{label}</span>
       <select
-        className="h-11 rounded-md border border-black bg-white px-3 text-sm text-black outline-none transition focus:border-black"
+        className="h-11 rounded-md border border-black/15 bg-white px-3 text-sm text-black outline-none transition focus:border-black"
         id={id}
         onChange={(event) => onChange(event.target.value)}
         value={value}
@@ -36,7 +36,7 @@ export const SettingsSelectField = ({
         ))}
       </select>
       {description ? (
-        <span className="text-xs leading-5 text-black">{description}</span>
+        <span className="text-xs leading-5 text-black/60">{description}</span>
       ) : null}
     </label>
   );

@@ -24,7 +24,14 @@ export const BlogList = ({
   }
 
   return (
-    <div className="mt-4 grid gap-3">
+    <div className="overflow-hidden rounded-lg border border-black/10 bg-white shadow-sm">
+      <div className="hidden grid-cols-[minmax(0,1.4fr)_minmax(160px,0.7fr)_120px_120px_250px] gap-4 border-b border-black/10 px-4 py-3 text-sm font-semibold text-black/60 xl:grid">
+        <span>Title</span>
+        <span>Topic</span>
+        <span>Status</span>
+        <span>Updated</span>
+        <span className="text-right">Actions</span>
+      </div>
       {blogs.map((blog) => (
         <BlogRow
           blog={blog}

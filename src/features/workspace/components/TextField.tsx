@@ -10,7 +10,7 @@ export const TextField = ({ label, id, ...props }: TextFieldProps) => {
       <span>{label}</span>
       <input
         id={id}
-        className="h-11 rounded-md border border-black bg-white px-3 text-sm text-black outline-none transition placeholder:text-black focus:border-black"
+        className="h-11 rounded-md border border-black/15 bg-white px-3 text-sm text-black outline-none transition placeholder:text-black/45 focus:border-black"
         {...props}
       />
     </label>

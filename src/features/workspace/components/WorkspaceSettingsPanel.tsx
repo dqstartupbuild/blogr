@@ -39,7 +39,7 @@ export const WorkspaceSettingsPanel = ({
   );
 
   return (
-    <section className="rounded-lg border border-black bg-white p-4">
+    <section className="rounded-lg border border-black/10 bg-white p-4 shadow-sm">
       <SectionTitle title="Article settings" />
       <form
         className="mt-4 grid gap-5"

@@ -15,13 +15,13 @@ export const SettingsToggleField = ({
 }: SettingsToggleFieldProps) => {
   return (
     <label
-      className="grid min-h-28 gap-3 rounded-md border border-black bg-white p-3 text-black"
+      className="grid min-h-28 gap-3 rounded-md border border-black/15 bg-white p-3 text-black"
       htmlFor={id}
     >
       <span className="flex items-start justify-between gap-3">
         <span className="grid gap-1">
           <span className="text-sm font-semibold">{label}</span>
-          <span className="text-xs leading-5">{description}</span>
+          <span className="text-xs leading-5 text-black/60">{description}</span>
         </span>
         <input
           checked={checked}

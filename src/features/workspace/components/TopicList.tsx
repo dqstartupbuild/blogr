@@ -22,7 +22,13 @@ export const TopicList = ({
   }
 
   return (
-    <div className="mt-4 divide-y divide-black overflow-hidden rounded-md border border-black">
+    <div className="overflow-hidden rounded-lg border border-black/10 bg-white shadow-sm">
+      <div className="hidden grid-cols-[minmax(0,1fr)_140px_110px_380px] gap-4 border-b border-black/10 px-4 py-3 text-sm font-semibold text-black/60 lg:grid">
+        <span>Topic</span>
+        <span>Status</span>
+        <span>Articles</span>
+        <span className="text-right">Actions</span>
+      </div>
       {topics.map((topic) => (
         <TopicRow
           key={topic.id}

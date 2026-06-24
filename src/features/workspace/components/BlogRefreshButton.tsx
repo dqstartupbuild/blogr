@@ -9,7 +9,7 @@ export const BlogRefreshButton = ({ onOpen }: BlogRefreshButtonProps) => {
   return (
     <SecondaryButton onClick={onOpen} type="button">
       <RefreshCw size={16} aria-hidden="true" />
-      Find refresh ideas
+      Refresh ideas
     </SecondaryButton>
   );
 };

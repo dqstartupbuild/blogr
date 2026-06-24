@@ -71,7 +71,7 @@ export const WorkspaceSwitcher = ({
   };
 
   return (
-    <div className="flex max-w-full flex-wrap items-end justify-end gap-2">
+    <div className="grid max-w-full gap-2">
       <WorkspaceSelect
         activeWorkspaceId={activeWorkspaceId}
         disabled={isBusy}

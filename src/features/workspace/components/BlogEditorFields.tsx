@@ -14,7 +14,7 @@ export const BlogEditorFields = ({
   updateField,
 }: BlogEditorFieldsProps) => {
   return (
-    <section className="space-y-4 rounded-lg border border-black bg-white p-4">
+    <section className="space-y-4 rounded-lg border border-black/10 bg-white p-4 shadow-sm">
       <TextField
         id="blog-title"
         label="Title"
@@ -24,7 +24,7 @@ export const BlogEditorFields = ({
       <label className="grid gap-2 text-sm font-medium text-black" htmlFor="blog-excerpt">
         <span>Summary</span>
         <textarea
-          className="min-h-24 rounded-md border border-black bg-white px-3 py-3 text-sm text-black outline-none transition placeholder:text-black focus:border-black"
+          className="min-h-24 rounded-md border border-black/15 bg-white px-3 py-3 text-sm text-black outline-none transition placeholder:text-black/45 focus:border-black"
           id="blog-excerpt"
           onChange={(event) => updateField("excerpt", event.target.value)}
           value={state.excerpt}

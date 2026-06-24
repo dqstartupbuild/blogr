@@ -7,6 +7,7 @@ import { TopicBriefDialog } from "./TopicBriefDialog";
 import { TopicRepurposeButton } from "./TopicRepurposeButton";
 import { TopicRepurposeDialog } from "./TopicRepurposeDialog";
 import { TopicWriteButton } from "./TopicWriteButton";
+import { countTopicArticles } from "../utils/countTopicArticles";
 import type { TopicItem } from "../types/TopicItem";
 import type { WriteBlogOptions } from "../types/WriteBlogOptions";
 
@@ -28,18 +29,33 @@ export const TopicRow = ({
   const [isRepurposeOpen, setIsRepurposeOpen] = useState(false);
   const isWriting = topic.status === "writing";
   const hasBrief = Boolean(topic.notes?.trim());
+  const articleCount = countTopicArticles(topic);
 
   return (
-    <article className="grid gap-3 bg-white p-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
+    <article className="grid gap-4 border-b border-black/10 bg-white p-4 last:border-b-0 lg:grid-cols-[minmax(0,1fr)_140px_110px_380px] lg:items-center">
       <div className="min-w-0">
-        <p className="truncate text-sm font-semibold text-black">
+        <p className="text-sm font-semibold leading-6 text-black">
           {topic.keyword}
         </p>
-        <div className="mt-2">
-          <StatusBadge status={topic.status} />
-        </div>
+        {topic.notes ? (
+          <p className="mt-1 line-clamp-2 text-sm leading-6 text-black/60">
+            {topic.notes}
+          </p>
+        ) : null}
       </div>
-      <div className="flex flex-col gap-2 sm:flex-row">
+      <div>
+        <p className="mb-1 text-xs font-semibold text-black/50 lg:hidden">
+          Status
+        </p>
+        <StatusBadge status={topic.status} />
+      </div>
+      <div>
+        <p className="mb-1 text-xs font-semibold text-black/50 lg:hidden">
+          Articles
+        </p>
+        <p className="text-sm font-medium text-black">{articleCount}</p>
+      </div>
+      <div className="flex flex-col gap-2 sm:flex-row lg:justify-end">
         <TopicBriefButton
           disabled={isWriting}
           hasBrief={hasBrief}

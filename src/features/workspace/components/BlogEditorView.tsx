@@ -3,6 +3,7 @@
 import { BlogEditorFields } from "./BlogEditorFields";
 import { BlogEditorHeader } from "./BlogEditorHeader";
 import { BlogEditorPreview } from "./BlogEditorPreview";
+import { WorkspaceSidebar } from "./WorkspaceSidebar";
 import { buildEditorDownloadBlog } from "../mappers/buildEditorDownloadBlog";
 import { useBlogEditor } from "../hooks/useBlogEditor";
 import type { WorkspaceSwitcherState } from "../types/WorkspaceSwitcherState";
@@ -28,20 +29,31 @@ export const BlogEditorView = ({
   });
 
   return (
-    <div className="min-h-screen bg-white text-black">
-      <BlogEditorHeader
-        applyRefreshPlan={editor.applyRefreshPlan}
-        discoverBlogRefreshIdeas={editor.discoverBlogRefreshIdeas}
-        downloadBlog={downloadBlog}
-        isSaving={editor.isSaving}
-        message={editor.message}
-        saveBlog={editor.saveBlog}
-        saveRefreshPlan={editor.saveRefreshPlan}
+    <div className="min-h-screen bg-white text-black lg:flex">
+      <WorkspaceSidebar
+        mode="blogs"
+        setMode={() => undefined}
         workspaceSwitcher={workspaceSwitcher}
       />
-      <main className="mx-auto grid w-full max-w-7xl gap-5 px-4 py-5 sm:px-6 lg:grid-cols-[minmax(0,1fr)_420px] lg:px-8">
-        <BlogEditorFields state={editor.state} updateField={editor.updateField} />
-        <BlogEditorPreview state={editor.state} />
+      <main className="min-w-0 flex-1">
+        <div className="mx-auto grid w-full max-w-7xl gap-6 px-4 py-6 sm:px-6 lg:px-8">
+          <BlogEditorHeader
+            applyRefreshPlan={editor.applyRefreshPlan}
+            discoverBlogRefreshIdeas={editor.discoverBlogRefreshIdeas}
+            downloadBlog={downloadBlog}
+            isSaving={editor.isSaving}
+            message={editor.message}
+            saveBlog={editor.saveBlog}
+            saveRefreshPlan={editor.saveRefreshPlan}
+          />
+          <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_420px]">
+            <BlogEditorFields
+              state={editor.state}
+              updateField={editor.updateField}
+            />
+            <BlogEditorPreview blog={downloadBlog} />
+          </div>
+        </div>
       </main>
     </div>
   );
