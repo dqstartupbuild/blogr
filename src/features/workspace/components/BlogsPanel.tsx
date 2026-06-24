@@ -1,4 +1,4 @@
-import { BlogList } from "./BlogList";
+import { FilteredBlogList } from "./FilteredBlogList";
 import { SectionTitle } from "./SectionTitle";
 import type { BlogItem } from "../types/BlogItem";
 import type { DiscoverBlogRefreshIdeas } from "../types/DiscoverBlogRefreshIdeas";
@@ -24,7 +24,7 @@ export const BlogsPanel = ({
   return (
     <section className="rounded-lg border border-black bg-white p-4">
       <SectionTitle title="Blogs" />
-      <BlogList
+      <FilteredBlogList
         blogs={blogs}
         discoverBlogRefreshIdeas={discoverBlogRefreshIdeas}
         savePlan={savePlan}

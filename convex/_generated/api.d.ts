@@ -10,6 +10,7 @@
 
 import type * as blogs_getBlog from "../blogs/getBlog.js";
 import type * as blogs_listBlogs from "../blogs/listBlogs.js";
+import type * as blogs_markBlogPublished from "../blogs/markBlogPublished.js";
 import type * as blogs_refreshBlogImageUrls from "../blogs/refreshBlogImageUrls.js";
 import type * as blogs_updateBlogContent from "../blogs/updateBlogContent.js";
 import type * as blogs_upsertGeneratedBlog from "../blogs/upsertGeneratedBlog.js";
@@ -68,6 +69,7 @@ import type {
 declare const fullApi: ApiFromModules<{
   "blogs/getBlog": typeof blogs_getBlog;
   "blogs/listBlogs": typeof blogs_listBlogs;
+  "blogs/markBlogPublished": typeof blogs_markBlogPublished;
   "blogs/refreshBlogImageUrls": typeof blogs_refreshBlogImageUrls;
   "blogs/updateBlogContent": typeof blogs_updateBlogContent;
   "blogs/upsertGeneratedBlog": typeof blogs_upsertGeneratedBlog;

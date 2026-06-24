@@ -1,5 +1,6 @@
 import { fetchAction } from "convex/nextjs";
 import { NextResponse } from "next/server";
+import { markPublishedBlogStatus } from "./markPublishedBlogStatus";
 import { blogPublishRequestSchema } from "./schema";
 import { getConvexAuthToken } from "@/server/auth/getConvexAuthToken";
 import { requireRouteUserId } from "@/server/auth/requireRouteUserId";
@@ -21,19 +22,24 @@ export async function POST(request: Request) {
     const body = await request.json();
     const { blog } = blogPublishRequestSchema.parse(body);
     const payload = buildBlogPublishPayload(blog, "publish_articles");
+    let convexAuthToken: string | undefined;
 
     if (blog.productId && hasConvexUrl()) {
-      const token = await getConvexAuthToken();
+      convexAuthToken = await getConvexAuthToken();
       const result = await fetchAction(
         publishBlogWithIntegrationAction,
         {
           payload,
           productId: castProductId(blog.productId),
         },
-        { token },
+        { token: convexAuthToken },
       );
 
       if (result.published) {
+        await markPublishedBlogStatus(blog, convexAuthToken).catch(
+          () => undefined,
+        );
+
         return NextResponse.json({
           message: result.message || "Published.",
           published: true,
@@ -53,6 +59,7 @@ export async function POST(request: Request) {
       destination.sourceName,
     );
     const message = await sendBlogPublishWebhook(fallbackPayload, destination);
+    await markPublishedBlogStatus(blog, convexAuthToken).catch(() => undefined);
 
     return NextResponse.json({
       message: message || "Published.",

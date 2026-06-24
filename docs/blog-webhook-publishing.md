@@ -20,8 +20,11 @@ Each product workspace can have its own publishing integration. This lets one ac
 8. If the product does not have a saved integration, the route falls back to the deployment env vars.
 9. The webhook request is sent with `Authorization: Bearer <token>`.
 10. The target app copies article images into its own durable public storage, rewrites the saved article image URLs, and creates or updates the public blog post by `slug`.
+11. After a successful webhook response, Blogger marks the saved blog as `published`.
 
 Publishing uses the currently loaded draft. In the editor, that means a user can publish the text they are looking at after making changes.
+
+Published blogs keep their `published` status in the Blogs tab, so users can filter published posts away from drafts that still need to be sent.
 
 ## Settings Workflow
 
@@ -123,11 +126,13 @@ Bearer auth is enough for the first version because this is a server-to-server w
 - `src/features/workspace/utils/publishBlog.ts`
 - `src/features/workspace/utils/buildBlogPublishingCodexPrompt.ts`
 - `src/app/api/blogs/publish/route.ts`
+- `src/app/api/blogs/publish/markPublishedBlogStatus.ts`
 - `src/app/api/blogs/publish/schema.ts`
 - `src/server/publishing/getBlogPublishEnvironmentDestination.ts`
 - `src/server/publishing/buildBlogPublishPayload.ts`
 - `src/server/publishing/buildBlogPublishArticle.ts`
 - `src/server/publishing/sendBlogPublishWebhook.ts`
+- `convex/blogs/markBlogPublished.ts`
 - `convex/products/updateBlogPublishingIntegration.ts`
 - `convex/products/getBlogPublishingIntegration.ts`
 - `convex/products/publishBlogWithIntegration.ts`
@@ -146,8 +151,10 @@ src/features/workspace/utils/publishBlog.ts
 src/features/workspace/utils/buildBlogPublishingCodexPrompt.ts
 src/features/workspace/types/integrations/
 src/features/workspace/types/publishing/
+convex/blogs/markBlogPublished.ts
 convex/products/*BlogPublishing*
 convex/products/publishBlogWithIntegration.ts
 docs/blog-webhook-publishing.md
+docs/blog-published-status-filter.md
 docs/codex-target-app-blog-webhook.md
 ```

@@ -27,6 +27,7 @@ export const upsertGeneratedBlog = mutation({
       v.literal("draft"),
       v.literal("ready"),
       v.literal("failed"),
+      v.literal("published"),
     ),
     mdx: v.string(),
     featureImageUrl: v.optional(v.string()),

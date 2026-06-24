@@ -68,4 +68,35 @@ If the plan only lives in a meeting note, people will forget it. Keep it somewhe
 If a priority does not change what someone does today, it is probably too vague.
 `,
   },
+  {
+    id: "blog-weekly-team-check-ins",
+    keyword: "weekly team check ins",
+    title: "A Better Weekly Check-In for Busy Teams",
+    slug: "better-weekly-team-check-in",
+    excerpt:
+      "A short check-in format that helps everyone share what matters without dragging the week off track.",
+    status: "published",
+    updatedAt: Date.now() - 1000 * 60 * 60 * 6,
+    featureImageUrl: undefined,
+    images: [],
+    internalLinks: [
+      {
+        title: "Team dashboard",
+        url: "https://example.com/team-dashboard",
+      },
+    ],
+    youtubeVideos: [],
+    sources: [],
+    mdx: `---
+title: "A Better Weekly Check-In for Busy Teams"
+description: "A short check-in format that helps everyone share what matters without dragging the week off track."
+---
+
+# A Better Weekly Check-In for Busy Teams
+
+A useful weekly check-in should help people say what changed, what is blocked, and what needs attention next.
+
+Keep it simple: wins, blockers, and one next step.
+`,
+  },
 ];

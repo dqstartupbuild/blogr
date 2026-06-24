@@ -1,4 +1,5 @@
 import type { LinkItem } from "./LinkItem";
+import type { BlogStatus } from "./BlogStatus";
 
 type BlogImageItem = {
   alt: string;
@@ -15,7 +16,7 @@ export type BlogItem = {
   title: string;
   slug: string;
   excerpt: string;
-  status: "draft" | "ready" | "failed";
+  status: BlogStatus;
   mdx: string;
   featureImageUrl?: string;
   images: BlogImageItem[];

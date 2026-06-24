@@ -6,7 +6,7 @@ The workspace lets a user paste a keyword, save it as a topic, come back later, 
 
 The Topics tab can also find search-informed topic ideas. Users review suggested ideas in a checkbox queue before saving them, and saved discovered topics carry a writing brief in topic notes.
 
-Users can filter the topic list by status: all, saved, writing, written, or failed.
+Users can filter the topic list by status: all, saved, writing, written, or failed. Users can also filter blogs by all, unpublished, or published.
 
 Each topic row can show or refresh its saved search brief. Manual topics can get a brief later with **Find brief**.
 
@@ -36,7 +36,7 @@ Topic discovery calls `POST /api/topics/discover`, runs Apify Google Search Scra
 
 The discovery dialog also exposes non-topic insights as planning rows. Users can save People Also Ask questions, content gaps, comparison ideas, clusters, refresh suggestions, AI answer notes, and difficulty notes as topics with notes.
 
-Blog rows and the blog editor expose **Find refresh ideas** for existing blogs. In the blog list, users can save a refresh plan as a topic. In the editor, users can save the plan or add it directly to the draft.
+Blog rows and the blog editor expose **Find refresh ideas** for existing blogs. In the blog list, users can filter unpublished and published posts, then save a refresh plan as a topic. In the editor, users can save the plan or add it directly to the draft.
 
 The Settings tab includes product setup, article settings, and a **Publishing** panel for the active product. The Publishing panel includes a setup guide, a copyable Codex prompt for the receiving app, webhook details, and the per-product connection fields. The selected blog preview exposes **Publish**, which sends the current blog to that product's saved webhook destination through `POST /api/blogs/publish`.
 
@@ -62,6 +62,8 @@ The Settings tab includes product setup, article settings, and a **Publishing** 
 - `src/features/workspace/components/BlogRefreshDialog.tsx`
 - `src/features/workspace/components/BlogPublishingIntegrationPanel.tsx`
 - `src/features/workspace/components/BlogPublishButton.tsx`
+- `src/features/workspace/components/FilteredBlogList.tsx`
+- `src/features/workspace/components/BlogStatusFilterTabs.tsx`
 - `src/features/workspace/components/FilteredTopicList.tsx`
 - `src/features/workspace/components/TopicStatusFilterTabs.tsx`
 - `src/app/api/topics/discover/route.ts`
@@ -83,6 +85,7 @@ The Settings tab includes product setup, article settings, and a **Publishing** 
 - Review noisy search results before saving topics.
 - Save search gaps, refresh notes, AI answer notes, and difficulty notes as planning topics.
 - Filter topics by status.
+- Filter blogs by published status.
 - Find or refresh a search brief for a saved topic.
 - Find refresh ideas for a saved blog.
 - Add a refresh plan to an existing blog draft.

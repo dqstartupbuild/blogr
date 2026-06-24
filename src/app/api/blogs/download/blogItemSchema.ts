@@ -14,7 +14,12 @@ export const blogItemSchema = z.object({
   productId: z.string().optional(),
   slug: z.string(),
   sources: z.array(linkItemSchema).default([]),
-  status: z.union([z.literal("draft"), z.literal("ready"), z.literal("failed")]),
+  status: z.union([
+    z.literal("draft"),
+    z.literal("ready"),
+    z.literal("failed"),
+    z.literal("published"),
+  ]),
   title: z.string(),
   updatedAt: z.number(),
   youtubeVideos: z.array(linkItemSchema).default([]),
