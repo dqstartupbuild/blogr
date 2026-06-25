@@ -29,12 +29,10 @@ export const RegenerateableFeatureImage = ({
     return null;
   }
 
-  const canRegenerate = Boolean(
-    blogId && typeof imageIndex === "number" && prompt && regenerateImage,
-  );
+  const canRegenerate = Boolean(blogId && regenerateImage);
 
   const handleRegenerate = async () => {
-    if (!canRegenerate || !regenerateImage || !blogId || typeof imageIndex !== "number" || !prompt) {
+    if (!canRegenerate || !regenerateImage || !blogId) {
       return;
     }
 
@@ -47,6 +45,7 @@ export const RegenerateableFeatureImage = ({
         imageIndex,
         isFeatureImage: true,
         prompt,
+        src,
       });
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "Could not refresh that image.");

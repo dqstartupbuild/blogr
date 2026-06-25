@@ -484,10 +484,11 @@ export const useLiveWorkspace = (
   const regenerateImage = async (
     blogId: string,
     options: {
-      alt: string;
-      imageIndex: number;
+      alt?: string;
+      imageIndex?: number;
       isFeatureImage?: boolean;
-      prompt: string;
+      prompt?: string;
+      src?: string;
     },
   ) => {
     const response = await fetch(`/api/blogs/${blogId}/regenerate-image`, {
@@ -497,6 +498,7 @@ export const useLiveWorkspace = (
         isFeatureImage: options.isFeatureImage,
         productId: activeProductId,
         prompt: options.prompt,
+        src: options.src,
       }),
       headers: {
         "Content-Type": "application/json",

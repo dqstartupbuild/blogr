@@ -34,6 +34,7 @@ export const MarkdownPreview = ({
         components={buildMarkdownPreviewComponents({
           blogId,
           images,
+          mdx: markdown,
           regenerateImage,
         })}
         remarkPlugins={[remarkGfm]}

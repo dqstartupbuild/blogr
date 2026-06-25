@@ -213,10 +213,11 @@ export const useBlogEditor = ({
   const regenerateImage = async (
     requestedBlogId: string,
     options: {
-      alt: string;
-      imageIndex: number;
+      alt?: string;
+      imageIndex?: number;
       isFeatureImage?: boolean;
-      prompt: string;
+      prompt?: string;
+      src?: string;
     },
   ) => {
     if (!blog || blog.id !== requestedBlogId) {
@@ -241,6 +242,7 @@ export const useBlogEditor = ({
         isFeatureImage: options.isFeatureImage,
         productId: activeWorkspaceId,
         prompt: options.prompt,
+        src: options.src,
       }),
       headers: {
         "Content-Type": "application/json",

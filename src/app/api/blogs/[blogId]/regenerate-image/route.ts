@@ -3,6 +3,8 @@ import { NextResponse } from "next/server";
 import { getConvexAuthToken } from "@/server/auth/getConvexAuthToken";
 import { requireRouteUserId } from "@/server/auth/requireRouteUserId";
 import { regenerateBlogImage } from "@/server/blog/regenerateBlogImage";
+import { replaceImageUrlInMdx } from "@/server/blog/replaceImageUrlInMdx";
+import { resolveRegenerateImageTarget } from "@/server/blog/resolveRegenerateImageTarget";
 import { castBlogId } from "@/server/convex/castBlogId";
 import { castProductId } from "@/server/convex/castProductId";
 import { getBlogQuery } from "@/server/convex/references/getBlogQuery";
@@ -43,16 +45,24 @@ export async function POST(request: Request, context: RegenerateImageRouteContex
       return NextResponse.json({ error: "Blog not found." }, { status: 404 });
     }
 
-    if (input.imageIndex >= blog.images.length) {
+    const target = resolveRegenerateImageTarget({
+      alt: input.alt,
+      imageIndex: input.imageIndex,
+      images: blog.images,
+      prompt: input.prompt,
+      src: input.src,
+    });
+
+    if (!target) {
       return NextResponse.json(
-        { error: "Image not found." },
-        { status: 404 },
+        { error: "Add an image description before refreshing." },
+        { status: 400 },
       );
     }
 
     const nextImage = await regenerateBlogImage({
-      alt: input.alt,
-      prompt: input.prompt,
+      alt: target.alt,
+      prompt: target.prompt,
       token,
       userId,
     });
@@ -64,21 +74,26 @@ export async function POST(request: Request, context: RegenerateImageRouteContex
       );
     }
 
-    const previousImage = blog.images[input.imageIndex];
-    const nextFeatureImageUrl =
-      input.isFeatureImage || input.imageIndex === 0
-        ? nextImage.url
-        : blog.featureImageUrl;
-    const nextMdx = previousImage?.url
-      ? blog.mdx.split(previousImage.url).join(nextImage.url)
-      : blog.mdx;
+    const previousImage =
+      target.imageIndex !== null ? blog.images[target.imageIndex] : undefined;
+    const previousUrl = previousImage?.url || input.src;
+    const isFeatureImage =
+      input.isFeatureImage || target.imageIndex === 0;
+    const nextFeatureImageUrl = isFeatureImage
+      ? nextImage.url
+      : blog.featureImageUrl;
+    const nextMdx = replaceImageUrlInMdx({
+      mdx: blog.mdx,
+      nextUrl: nextImage.url,
+      previousUrl,
+    });
 
     await fetchMutation(
       updateBlogImageMutation,
       {
         blogId,
         productId,
-        imageIndex: input.imageIndex,
+        imageIndex: target.imageIndex ?? undefined,
         image: nextImage,
         featureImageUrl: nextFeatureImageUrl,
         mdx: nextMdx,

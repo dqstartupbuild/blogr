@@ -6,13 +6,25 @@ Users can refresh any image they don't like, right inside the AI article preview
 
 ## How It Works
 
-The preview renders markdown through `MarkdownPreview`, which now passes the blog's image list and a regenerate callback into `buildMarkdownPreviewComponents`. Each `img` tag is replaced by `RegenerateableImage`, which looks up the matching image in the blog's `images` array by URL. When the user clicks "Regenerate", the component calls the regenerate callback with the image's index, alt text, and original prompt.
+The preview renders markdown through `MarkdownPreview`, which passes the blog's image list, the rendered markdown, and a regenerate callback into `buildMarkdownPreviewComponents`. Each `img` tag is replaced by `RegenerateableImage`. Every image in the preview shows a "Regenerate" button, including the cover image and any image that isn't tracked in the blog's `images` array.
 
-The cover image is rendered by `RegenerateableFeatureImage`, which uses the same callback with `isFeatureImage: true` so the server also updates the blog's `featureImageUrl`.
+To make sure the button shows on every image even after image URLs are re-signed, the preview matches markdown images to stored image prompts in three steps (`resolveBlogImageMatches`):
 
-The regenerate callback lives in `useBlogEditor` (for the editor route) and `useLiveWorkspace` (for the workspace preview drawer). Both call `POST /api/blogs/[blogId]/regenerate-image` with the image index, alt text, prompt, and an optional `isFeatureImage` flag.
+1. Exact URL match against the blog's `images`.
+2. Stable path match: the signed R2 URL's query string changes when links are refreshed, but the path (the R2 key) stays the same, so images are matched by path when the full URL drifts.
+3. Order fallback: any remaining markdown image is matched to the next unused stored image so its prompt is still available.
 
-The API route regenerates the image through `regenerateBlogImage`, which calls Replicate with the original prompt and stores the result in R2. It then updates the blog's `images` array, the `featureImageUrl` (when needed), and the MDX body — replacing the old image URL with the new one everywhere it appears.
+When the user clicks "Regenerate", the component sends the image's `src`, alt text, matched index, and prompt to the regenerate callback. The cover image is rendered by `RegenerateableFeatureImage`, which uses the same callback with `isFeatureImage: true` so the server also updates the blog's `featureImageUrl`.
+
+The regenerate callback lives in `useBlogEditor` (for the editor route) and `useLiveWorkspace` (for the workspace preview drawer). Both call `POST /api/blogs/[blogId]/regenerate-image`.
+
+The API route resolves the target image with `resolveRegenerateImageTarget`:
+
+- It matches the request to an existing image by index, exact URL, or stable path.
+- If no stored prompt exists, it builds a prompt from the image's alt text so even untracked images can be refreshed.
+- If the image isn't in the `images` array yet, the new image is appended instead of replacing one.
+
+It regenerates the image through `regenerateBlogImage` (Replicate + R2 storage), then updates the blog's `images`, the `featureImageUrl` (when needed), and the MDX body. The MDX swap (`replaceImageUrlInMdx`) replaces the old URL everywhere it appears, falling back to a path match if the exact old URL isn't present.
 
 ## Relevant Code
 
@@ -21,6 +33,12 @@ The API route regenerates the image through `regenerateBlogImage`, which calls R
 - `convex/blogs/updateBlogImage.ts`
 - `src/server/convex/references/updateBlogImageMutation.ts`
 - `src/server/blog/regenerateBlogImage.ts`
+- `src/server/blog/resolveRegenerateImageTarget.ts`
+- `src/server/blog/replaceImageUrlInMdx.ts`
+- `src/server/blog/getImageUrlPathKey.ts`
+- `src/features/workspace/utils/resolveBlogImageMatches.ts`
+- `src/features/workspace/utils/getImageUrlPathKey.ts`
+- `src/features/workspace/utils/getMarkdownImageUrls.ts`
 - `src/features/workspace/components/RegenerateImageButton.tsx`
 - `src/features/workspace/components/RegenerateableImage.tsx`
 - `src/features/workspace/components/RegenerateableFeatureImage.tsx`

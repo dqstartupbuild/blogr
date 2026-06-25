@@ -13,7 +13,7 @@ export const updateBlogImage = mutation({
   args: {
     blogId: v.id("blogs"),
     productId: v.optional(v.id("products")),
-    imageIndex: v.number(),
+    imageIndex: v.optional(v.number()),
     image: imageValidator,
     featureImageUrl: v.optional(v.string()),
     mdx: v.string(),
@@ -30,13 +30,15 @@ export const updateBlogImage = mutation({
       throw new Error("Blog not found in this workspace.");
     }
 
-    if (args.imageIndex < 0 || args.imageIndex >= blog.images.length) {
-      throw new Error("Image not found.");
-    }
-
-    const nextImages = blog.images.map((image, index) =>
-      index === args.imageIndex ? args.image : image,
-    );
+    const shouldReplace =
+      typeof args.imageIndex === "number" &&
+      args.imageIndex >= 0 &&
+      args.imageIndex < blog.images.length;
+    const nextImages = shouldReplace
+      ? blog.images.map((image, index) =>
+          index === args.imageIndex ? args.image : image,
+        )
+      : [...blog.images, args.image];
 
     await ctx.db.patch(args.blogId, {
       images: nextImages,
