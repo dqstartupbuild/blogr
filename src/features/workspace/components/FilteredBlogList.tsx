@@ -36,7 +36,7 @@ export const FilteredBlogList = ({
   selectedBlogId,
   setSelectedBlogId,
 }: FilteredBlogListProps) => {
-  const [activeFilter, setActiveFilter] = useState<BlogStatusFilter>("all");
+  const [activeFilter, setActiveFilter] = useState<BlogStatusFilter>("unpublished");
   const [searchQuery, setSearchQuery] = useState("");
   const [topicFilter, setTopicFilter] = useState("all");
   const topicOptions = useMemo(
