@@ -99,6 +99,7 @@ MDX rules:
 - Use YouTube embed URLs in this shape: https://www.youtube.com/embed/{videoId}.
 - Include the provided internal links naturally, not as a list unless it truly fits.
 - Write one complete MDX file, not an outline and not separate files.
-- Aim for 1,800 to 3,000 words when the topic can support it.
+- Aim for 3,000 to 3,600 words when the topic can support it.
+- Never use em-dashes (—). Replace every em-dash with a comma, semicolon, period, or rephrase the sentence to avoid it. For example, change "Readers — especially beginners — often ask" to "Readers, especially beginners, often ask" or "Readers often ask, especially beginners."
 `.trim();
 };
