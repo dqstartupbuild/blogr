@@ -9,7 +9,7 @@ The workspace now uses a sidebar layout with a dashboard, topic table, article t
 3. Review or edit the article.
 4. Export or publish the article.
 
-No mockup-only actions were added. Article deletion and live article links are not shown because this app does not currently expose those actions or URLs.
+No mockup-only actions were added. Live article links are not shown because this app does not currently expose those URLs.
 
 ## Main Files
 
@@ -26,6 +26,9 @@ No mockup-only actions were added. Article deletion and live article links are n
 - `src/features/workspace/components/BlogList.tsx` and `src/features/workspace/components/BlogRow.tsx` render the article table.
 - `src/features/workspace/components/BlogPreviewPanel.tsx` renders the richer article preview drawer.
 - `src/features/workspace/components/BlogEditorView.tsx` renders the editor in the shared sidebar layout.
+- `src/features/workspace/components/DeleteActionButton.tsx` renders confirmed delete actions.
+- `convex/blogs/deleteBlog.ts` deletes live articles and resets their source topic.
+- `convex/topics/deleteTopic.ts` deletes live topics and clears article back-references.
 
 ## Derived Stats
 
@@ -48,3 +51,9 @@ The helpers live in `src/features/workspace/utils/` and are split by purpose.
 - `/blogs` opens the article workspace.
 - `/settings` opens settings.
 - `/blogs/[blogId]` keeps the existing editor workflow with the refreshed layout.
+
+## Delete And Preview Behavior
+
+Articles and topics now have Delete actions with a confirmation prompt. Deleting an article removes it from Articles and moves its source topic back to a saved state when that topic is still present. Deleting a topic leaves any already-created article in Articles.
+
+In the Articles table, selecting an article title opens preview mode only. Editing is available through the explicit Edit button. The floating Preview button is not shown on the Articles list anymore, but it is still available in the article editor.

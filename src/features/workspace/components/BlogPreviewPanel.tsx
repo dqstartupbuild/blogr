@@ -4,6 +4,7 @@ import { ArticleStatsPanel } from "./ArticleStatsPanel";
 import { ArticleStatusPanel } from "./ArticleStatusPanel";
 import { BlogPublishButton } from "./BlogPublishButton";
 import { BlogZipButton } from "./BlogZipButton";
+import { DeleteActionButton } from "./DeleteActionButton";
 import { MarkdownPreview } from "./MarkdownPreview";
 import { SecondaryAnchor } from "./SecondaryAnchor";
 import { StatusBadge } from "./StatusBadge";
@@ -12,14 +13,19 @@ import { estimateReadTimeMinutes } from "../utils/estimateReadTimeMinutes";
 import { formatCountLabel } from "../utils/formatCountLabel";
 import { formatWorkspaceDate } from "../utils/formatWorkspaceDate";
 import type { BlogItem } from "../types/BlogItem";
+import type { DeleteBlog } from "../types/DeleteBlog";
 
 type BlogPreviewPanelProps = {
   blog?: BlogItem;
+  deleteBlog?: DeleteBlog;
+  onBlogDeleted?: () => void;
   variant?: "card" | "drawer";
 };
 
 export const BlogPreviewPanel = ({
   blog,
+  deleteBlog,
+  onBlogDeleted,
   variant = "card",
 }: BlogPreviewPanelProps) => {
   const sectionClassName =
@@ -70,6 +76,16 @@ export const BlogPreviewPanel = ({
           </SecondaryAnchor>
           <BlogPublishButton blog={blog} />
           <BlogZipButton blog={blog} />
+          {deleteBlog ? (
+            <DeleteActionButton
+              confirmMessage="Delete this article? This cannot be undone."
+              label="Delete"
+              onDelete={async () => {
+                await deleteBlog(blog.id);
+                onBlogDeleted?.();
+              }}
+            />
+          ) : null}
         </div>
       </div>
       <div className="mt-6 grid gap-5 xl:grid-cols-[minmax(0,1fr)_280px]">

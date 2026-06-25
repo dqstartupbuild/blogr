@@ -153,6 +153,23 @@ export const useDemoWorkspace = (initialMode: WorkspaceViewMode) => {
     return notes;
   };
 
+  const deleteTopic = (topicId: string) => {
+    setTopicsByWorkspace((current) => ({
+      ...current,
+      [activeWorkspaceId]: (current[activeWorkspaceId] || []).filter(
+        (topic) => topic.id !== topicId,
+      ),
+    }));
+    setBlogsByWorkspace((current) => ({
+      ...current,
+      [activeWorkspaceId]: (current[activeWorkspaceId] || []).map((blog) =>
+        topics.find((topic) => topic.id === topicId)?.blogId === blog.id
+          ? { ...blog, updatedAt: Date.now() }
+          : blog,
+      ),
+    }));
+  };
+
   const discoverBlogRefreshIdeas = async () => {
     return demoTopicDiscoveryResult;
   };
@@ -199,6 +216,31 @@ export const useDemoWorkspace = (initialMode: WorkspaceViewMode) => {
     }));
     setSelectedBlogId(blogId);
     setMode("blogs");
+  };
+
+  const deleteBlog = (blogId: string) => {
+    setBlogsByWorkspace((current) => ({
+      ...current,
+      [activeWorkspaceId]: (current[activeWorkspaceId] || []).filter(
+        (blog) => blog.id !== blogId,
+      ),
+    }));
+    setTopicsByWorkspace((current) => ({
+      ...current,
+      [activeWorkspaceId]: (current[activeWorkspaceId] || []).map((topic) =>
+        topic.blogId === blogId
+          ? {
+              ...topic,
+              blogId: undefined,
+              status: "saved",
+            }
+          : topic,
+      ),
+    }));
+
+    if (selectedBlogId === blogId) {
+      setSelectedBlogId("");
+    }
   };
 
   const saveBlogGenerationSettings = (settings: BlogGenerationSettings) => {
@@ -317,6 +359,8 @@ export const useDemoWorkspace = (initialMode: WorkspaceViewMode) => {
     addTopic,
     discoverBlogRefreshIdeas,
     discoverTopicIdeas,
+    deleteBlog,
+    deleteTopic,
     refreshTopicBrief,
     saveBlogGenerationSettings,
     saveBlogPublishingIntegration,

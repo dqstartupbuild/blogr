@@ -3,6 +3,7 @@
 import { BlogEditorFields } from "./BlogEditorFields";
 import { BlogEditorHeader } from "./BlogEditorHeader";
 import { BlogEditorPreview } from "./BlogEditorPreview";
+import { BlogPreviewSidebar } from "./BlogPreviewSidebar";
 import { WorkspaceSidebar } from "./WorkspaceSidebar";
 import { buildEditorDownloadBlog } from "../mappers/buildEditorDownloadBlog";
 import { useBlogEditor } from "../hooks/useBlogEditor";
@@ -53,6 +54,7 @@ export const BlogEditorView = ({
             />
             <BlogEditorPreview blog={downloadBlog} />
           </div>
+          <BlogPreviewSidebar blog={downloadBlog} />
         </div>
       </main>
     </div>

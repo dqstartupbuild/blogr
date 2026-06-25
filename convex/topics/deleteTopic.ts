@@ -19,6 +19,17 @@ export const deleteTopic = mutation({
       throw new Error("Topic not found in this workspace.");
     }
 
+    if (topic.blogId) {
+      const blog = await ctx.db.get(topic.blogId);
+
+      if (blog?.userId === userId && blog.topicId === args.topicId) {
+        await ctx.db.patch(topic.blogId, {
+          topicId: undefined,
+          updatedAt: Date.now(),
+        });
+      }
+    }
+
     await ctx.db.delete(args.topicId);
   },
 });

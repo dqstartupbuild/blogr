@@ -2,6 +2,7 @@ import { FilteredTopicList } from "./FilteredTopicList";
 import { TopicDiscoveryLauncher } from "./TopicDiscoveryLauncher";
 import { TopicCreator } from "./TopicCreator";
 import { WorkspacePageHeader } from "./WorkspacePageHeader";
+import type { DeleteTopic } from "../types/DeleteTopic";
 import type { TopicItem } from "../types/TopicItem";
 import type { RefreshTopicBrief } from "../types/RefreshTopicBrief";
 import type { WriteBlogOptions } from "../types/WriteBlogOptions";
@@ -10,6 +11,7 @@ import type { DiscoverTopicIdeas } from "../types/topicDiscovery/DiscoverTopicId
 type TopicsPanelProps = {
   topics: TopicItem[];
   addTopic: (keyword: string, notes?: string) => void | Promise<void>;
+  deleteTopic: DeleteTopic;
   discoverTopicIdeas: DiscoverTopicIdeas;
   refreshTopicBrief: RefreshTopicBrief;
   writeBlog: (
@@ -21,6 +23,7 @@ type TopicsPanelProps = {
 export const TopicsPanel = ({
   topics,
   addTopic,
+  deleteTopic,
   discoverTopicIdeas,
   refreshTopicBrief,
   writeBlog,
@@ -41,6 +44,7 @@ export const TopicsPanel = ({
         <TopicCreator addTopic={addTopic} />
       </div>
       <FilteredTopicList
+        deleteTopic={deleteTopic}
         refreshTopicBrief={refreshTopicBrief}
         topics={topics}
         writeBlog={writeBlog}

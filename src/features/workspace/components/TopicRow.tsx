@@ -2,16 +2,19 @@
 
 import { useState } from "react";
 import { StatusBadge } from "./StatusBadge";
+import { DeleteActionButton } from "./DeleteActionButton";
 import { TopicBriefButton } from "./TopicBriefButton";
 import { TopicBriefDialog } from "./TopicBriefDialog";
 import { TopicRepurposeButton } from "./TopicRepurposeButton";
 import { TopicRepurposeDialog } from "./TopicRepurposeDialog";
 import { TopicWriteButton } from "./TopicWriteButton";
 import { countTopicArticles } from "../utils/countTopicArticles";
+import type { DeleteTopic } from "../types/DeleteTopic";
 import type { TopicItem } from "../types/TopicItem";
 import type { WriteBlogOptions } from "../types/WriteBlogOptions";
 
 type TopicRowProps = {
+  deleteTopic: DeleteTopic;
   refreshTopicBrief: (topicId: string) => Promise<string>;
   topic: TopicItem;
   writeBlog: (
@@ -21,6 +24,7 @@ type TopicRowProps = {
 };
 
 export const TopicRow = ({
+  deleteTopic,
   refreshTopicBrief,
   topic,
   writeBlog,
@@ -32,7 +36,7 @@ export const TopicRow = ({
   const articleCount = countTopicArticles(topic);
 
   return (
-    <article className="grid gap-4 border-b border-black/10 bg-white p-4 last:border-b-0 lg:grid-cols-[minmax(0,1fr)_140px_110px_380px] lg:items-center">
+    <article className="grid gap-4 border-b border-black/10 bg-white p-4 last:border-b-0 lg:grid-cols-[minmax(0,1fr)_140px_110px_480px] lg:items-center">
       <div className="min-w-0">
         <p className="text-sm font-semibold leading-6 text-black">
           {topic.keyword}
@@ -70,6 +74,11 @@ export const TopicRow = ({
           onWrite={() => {
             void Promise.resolve(writeBlog(topic.id)).catch(() => undefined);
           }}
+        />
+        <DeleteActionButton
+          confirmMessage="Delete this topic? Articles already created from it will stay in Articles."
+          label="Delete"
+          onDelete={() => deleteTopic(topic.id)}
         />
       </div>
       {isBriefOpen ? (

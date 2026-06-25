@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { BlogPreviewSidebar } from "./BlogPreviewSidebar";
 import { BlogPublishingIntegrationPanel } from "./BlogPublishingIntegrationPanel";
 import { BlogsPanel } from "./BlogsPanel";
@@ -11,6 +12,8 @@ import { WorkspacePageHeader } from "./WorkspacePageHeader";
 import { WorkspaceShell } from "./WorkspaceShell";
 import type { BlogItem } from "../types/BlogItem";
 import type { BlogGenerationSettings } from "../types/BlogGenerationSettings";
+import type { DeleteBlog } from "../types/DeleteBlog";
+import type { DeleteTopic } from "../types/DeleteTopic";
 import type { DiscoverBlogRefreshIdeas } from "../types/DiscoverBlogRefreshIdeas";
 import type { ProductProfile } from "../types/ProductProfile";
 import type { ProductScanState } from "../types/ProductScanState";
@@ -26,6 +29,8 @@ type WorkspaceContentProps = {
   addTopic: (keyword: string, notes?: string) => void | Promise<void>;
   blogGenerationSettings: BlogGenerationSettings;
   blogs: BlogItem[];
+  deleteBlog: DeleteBlog;
+  deleteTopic: DeleteTopic;
   discoverBlogRefreshIdeas: DiscoverBlogRefreshIdeas;
   discoverTopicIdeas: DiscoverTopicIdeas;
   isSavingBlogPublishingIntegration: boolean;
@@ -59,6 +64,8 @@ export const WorkspaceContent = ({
   addTopic,
   blogGenerationSettings,
   blogs,
+  deleteBlog,
+  deleteTopic,
   discoverBlogRefreshIdeas,
   discoverTopicIdeas,
   isSavingBlogPublishingIntegration,
@@ -80,6 +87,18 @@ export const WorkspaceContent = ({
   workspaceSwitcher,
   writeBlog,
 }: WorkspaceContentProps) => {
+  const [isBlogPreviewOpen, setIsBlogPreviewOpen] = useState(false);
+
+  const previewBlog = (blogId: string) => {
+    setSelectedBlogId(blogId);
+    setIsBlogPreviewOpen(true);
+  };
+
+  const deleteBlogAndClosePreview: DeleteBlog = async (blogId) => {
+    await deleteBlog(blogId);
+    setIsBlogPreviewOpen(false);
+  };
+
   return (
     <WorkspaceShell
       mode={mode}
@@ -94,6 +113,7 @@ export const WorkspaceContent = ({
           {mode === "topics" ? (
             <TopicsPanel
               addTopic={addTopic}
+              deleteTopic={deleteTopic}
               discoverTopicIdeas={discoverTopicIdeas}
               refreshTopicBrief={refreshTopicBrief}
               topics={topics}
@@ -104,7 +124,9 @@ export const WorkspaceContent = ({
             <BlogsPanel
               addTopic={addTopic}
               blogs={blogs}
+              deleteBlog={deleteBlogAndClosePreview}
               discoverBlogRefreshIdeas={discoverBlogRefreshIdeas}
+              previewBlog={previewBlog}
               selectedBlogId={selectedBlogId}
               setSelectedBlogId={setSelectedBlogId}
             />
@@ -143,9 +165,15 @@ export const WorkspaceContent = ({
             </div>
           ) : null}
         </main>
-        {mode === "settings" || mode === "dashboard" ? null : (
-          <BlogPreviewSidebar blog={selectedBlog} />
-        )}
+        {mode === "blogs" ? (
+          <BlogPreviewSidebar
+            blog={selectedBlog}
+            deleteBlog={deleteBlogAndClosePreview}
+            isOpen={isBlogPreviewOpen}
+            onOpenChange={setIsBlogPreviewOpen}
+            showTrigger={false}
+          />
+        ) : null}
       </div>
     </WorkspaceShell>
   );

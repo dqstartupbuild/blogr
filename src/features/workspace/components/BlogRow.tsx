@@ -1,40 +1,44 @@
 import Link from "next/link";
 import { Edit3, FileText } from "lucide-react";
 import { BlogRefreshLauncher } from "./BlogRefreshLauncher";
+import { DeleteActionButton } from "./DeleteActionButton";
 import { StatusBadge } from "./StatusBadge";
 import { countBlogWords } from "../utils/countBlogWords";
 import { formatCountLabel } from "../utils/formatCountLabel";
 import { formatWorkspaceDate } from "../utils/formatWorkspaceDate";
 import type { BlogItem } from "../types/BlogItem";
+import type { DeleteBlog } from "../types/DeleteBlog";
 import type { DiscoverBlogRefreshIdeas } from "../types/DiscoverBlogRefreshIdeas";
 import type { SaveDiscoveryPlan } from "../types/SaveDiscoveryPlan";
 
 type BlogRowProps = {
   blog: BlogItem;
+  deleteBlog: DeleteBlog;
   discoverBlogRefreshIdeas: DiscoverBlogRefreshIdeas;
   isSelected: boolean;
+  previewBlog: (blogId: string) => void;
   savePlan: SaveDiscoveryPlan;
-  setSelectedBlogId: (blogId: string) => void;
 };
 
 export const BlogRow = ({
   blog,
+  deleteBlog,
   discoverBlogRefreshIdeas,
   isSelected,
+  previewBlog,
   savePlan,
-  setSelectedBlogId,
 }: BlogRowProps) => {
   const wordCount = countBlogWords(blog.mdx);
 
   return (
     <article
-      className={`grid gap-4 border-b border-black/10 bg-white p-4 text-black last:border-b-0 xl:grid-cols-[minmax(0,1.4fr)_minmax(160px,0.7fr)_120px_120px_250px] xl:items-center ${
+      className={`grid gap-4 border-b border-black/10 bg-white p-4 text-black last:border-b-0 xl:grid-cols-[minmax(0,1.4fr)_minmax(160px,0.7fr)_120px_120px_340px] xl:items-center ${
         isSelected ? "bg-black/5" : ""
       }`}
     >
       <button
         className="flex min-w-0 items-start gap-3 text-left text-black transition hover:opacity-70"
-        onClick={() => setSelectedBlogId(blog.id)}
+        onClick={() => previewBlog(blog.id)}
         type="button"
       >
         <span className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-black text-white">
@@ -83,6 +87,11 @@ export const BlogRow = ({
           blog={blog}
           discoverBlogRefreshIdeas={discoverBlogRefreshIdeas}
           savePlan={savePlan}
+        />
+        <DeleteActionButton
+          confirmMessage="Delete this article? This cannot be undone."
+          label="Delete"
+          onDelete={() => deleteBlog(blog.id)}
         />
       </div>
     </article>

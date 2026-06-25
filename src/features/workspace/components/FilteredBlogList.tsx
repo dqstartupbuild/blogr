@@ -13,12 +13,15 @@ import { filterBlogsByTopic } from "../utils/filterBlogsByTopic";
 import { getUniqueBlogTopics } from "../utils/getUniqueBlogTopics";
 import type { BlogItem } from "../types/BlogItem";
 import type { BlogStatusFilter } from "../types/BlogStatusFilter";
+import type { DeleteBlog } from "../types/DeleteBlog";
 import type { DiscoverBlogRefreshIdeas } from "../types/DiscoverBlogRefreshIdeas";
 import type { SaveDiscoveryPlan } from "../types/SaveDiscoveryPlan";
 
 type FilteredBlogListProps = {
   blogs: BlogItem[];
+  deleteBlog: DeleteBlog;
   discoverBlogRefreshIdeas: DiscoverBlogRefreshIdeas;
+  previewBlog: (blogId: string) => void;
   savePlan: SaveDiscoveryPlan;
   selectedBlogId: string;
   setSelectedBlogId: (blogId: string) => void;
@@ -26,7 +29,9 @@ type FilteredBlogListProps = {
 
 export const FilteredBlogList = ({
   blogs,
+  deleteBlog,
   discoverBlogRefreshIdeas,
+  previewBlog,
   savePlan,
   selectedBlogId,
   setSelectedBlogId,
@@ -94,10 +99,11 @@ export const FilteredBlogList = ({
       {filteredBlogs.length > 0 ? (
         <BlogList
           blogs={filteredBlogs}
+          deleteBlog={deleteBlog}
           discoverBlogRefreshIdeas={discoverBlogRefreshIdeas}
+          previewBlog={previewBlog}
           savePlan={savePlan}
           selectedBlogId={selectedBlogId}
-          setSelectedBlogId={setSelectedBlogId}
         />
       ) : (
         <EmptyState label="No blogs in this view." />
