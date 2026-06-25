@@ -39,7 +39,7 @@ Expected payload:
         "id": "blog-id",
         "title": "A Helpful Blog Title",
         "slug": "a-helpful-blog-title",
-        "meta_description": "A short plain-language summary.",
+        "meta_description": "A short summary.",
         "content_format": "mdx",
         "content_markdown": "# Article body",
         "content_mdx": "# Article body",

@@ -36,7 +36,7 @@ Required JSON shape:
       "difficulty": "low | medium | high",
       "sourceSignals": ["short signal from SERP"],
       "brief": {
-        "intent": "plain-language writing brief",
+        "intent": "writing brief",
         "sections": ["section to cover"],
         "weakSpots": ["weakness in ranking content"],
         "sources": [{"title":"source title","url":"https://example.com","reason":"why it helps"}]

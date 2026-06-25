@@ -24,7 +24,7 @@ export const demoTopicDiscoveryResult: TopicDiscoveryResult = {
     },
     {
       name: "Question-led posts",
-      purpose: "Answer common buying questions in plain language.",
+      purpose: "Answer common buying questions.",
       topicTitles: ["How Do Small Teams Keep Projects on Track?"],
     },
   ],

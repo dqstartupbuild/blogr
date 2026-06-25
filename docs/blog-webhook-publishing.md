@@ -75,7 +75,7 @@ The route sends this shape:
         "id": "blog-id",
         "title": "A Helpful Blog Title",
         "slug": "a-helpful-blog-title",
-        "meta_description": "A short plain-language summary.",
+        "meta_description": "A short summary.",
         "content_format": "mdx",
         "content_markdown": "---\\ntitle: ...",
         "content_mdx": "---\\ntitle: ...",
