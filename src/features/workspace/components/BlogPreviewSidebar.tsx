@@ -5,12 +5,14 @@ import { Eye, X } from "lucide-react";
 import { BlogPreviewPanel } from "./BlogPreviewPanel";
 import type { BlogItem } from "../types/BlogItem";
 import type { DeleteBlog } from "../types/DeleteBlog";
+import type { RegenerateBlogImage } from "../types/RegenerateBlogImage";
 
 type BlogPreviewSidebarProps = {
   blog?: BlogItem;
   deleteBlog?: DeleteBlog;
   isOpen?: boolean;
   onOpenChange?: (isOpen: boolean) => void;
+  regenerateImage?: RegenerateBlogImage;
   showTrigger?: boolean;
   triggerVisibility?: "all" | "desktop";
 };
@@ -20,6 +22,7 @@ export const BlogPreviewSidebar = ({
   deleteBlog,
   isOpen,
   onOpenChange,
+  regenerateImage,
   showTrigger = true,
   triggerVisibility = "all",
 }: BlogPreviewSidebarProps) => {
@@ -81,6 +84,7 @@ export const BlogPreviewSidebar = ({
                 blog={blog}
                 deleteBlog={deleteBlog}
                 onBlogDeleted={() => setDrawerOpen(false)}
+                regenerateImage={regenerateImage}
                 variant="drawer"
               />
             </div>

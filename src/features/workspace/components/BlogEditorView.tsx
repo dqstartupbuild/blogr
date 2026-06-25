@@ -52,9 +52,15 @@ export const BlogEditorView = ({
               state={editor.state}
               updateField={editor.updateField}
             />
-            <BlogEditorPreview blog={downloadBlog} />
+            <BlogEditorPreview
+              blog={downloadBlog}
+              regenerateImage={editor.regenerateImage}
+            />
           </div>
-          <BlogPreviewSidebar blog={downloadBlog} />
+          <BlogPreviewSidebar
+            blog={downloadBlog}
+            regenerateImage={editor.regenerateImage}
+          />
         </div>
       </main>
     </div>

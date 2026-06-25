@@ -481,6 +481,37 @@ export const useLiveWorkspace = (
     }
   };
 
+  const regenerateImage = async (
+    blogId: string,
+    options: {
+      alt: string;
+      imageIndex: number;
+      isFeatureImage?: boolean;
+      prompt: string;
+    },
+  ) => {
+    const response = await fetch(`/api/blogs/${blogId}/regenerate-image`, {
+      body: JSON.stringify({
+        alt: options.alt,
+        imageIndex: options.imageIndex,
+        isFeatureImage: options.isFeatureImage,
+        productId: activeProductId,
+        prompt: options.prompt,
+      }),
+      headers: {
+        "Content-Type": "application/json",
+      },
+      method: "POST",
+    });
+
+    if (!response.ok) {
+      const data = (await response
+        .json()
+        .catch(() => ({}))) as { error?: string };
+      throw new Error(data.error || "Could not refresh that image.");
+    }
+  };
+
   return {
     addTopic,
     blogGenerationSettings,
@@ -498,6 +529,7 @@ export const useLiveWorkspace = (
       isScanning: isScanningProduct,
       message: productScanMessage,
     },
+    regenerateImage,
     saveBlogGenerationSettings,
     saveBlogPublishingIntegration,
     scanProduct,

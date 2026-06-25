@@ -18,6 +18,7 @@ import type { DiscoverBlogRefreshIdeas } from "../types/DiscoverBlogRefreshIdeas
 import type { ProductProfile } from "../types/ProductProfile";
 import type { ProductScanState } from "../types/ProductScanState";
 import type { RefreshTopicBrief } from "../types/RefreshTopicBrief";
+import type { RegenerateBlogImage } from "../types/RegenerateBlogImage";
 import type { TopicItem } from "../types/TopicItem";
 import type { WriteBlogOptions } from "../types/WriteBlogOptions";
 import type { WorkspaceSwitcherState } from "../types/WorkspaceSwitcherState";
@@ -40,6 +41,7 @@ type WorkspaceContentProps = {
   publishingIntegrationStatusMessage: string;
   productScanState: ProductScanState;
   refreshTopicBrief: RefreshTopicBrief;
+  regenerateImage?: RegenerateBlogImage;
   saveBlogGenerationSettings: (
     settings: BlogGenerationSettings,
   ) => void | Promise<void>;
@@ -75,6 +77,7 @@ export const WorkspaceContent = ({
   publishingIntegrationStatusMessage,
   productScanState,
   refreshTopicBrief,
+  regenerateImage,
   saveBlogGenerationSettings,
   saveBlogPublishingIntegration,
   scanProduct,
@@ -171,6 +174,7 @@ export const WorkspaceContent = ({
             deleteBlog={deleteBlogAndClosePreview}
             isOpen={isBlogPreviewOpen}
             onOpenChange={setIsBlogPreviewOpen}
+            regenerateImage={regenerateImage}
             showTrigger={false}
           />
         ) : null}

@@ -14,6 +14,7 @@ import type * as blogs_listBlogs from "../blogs/listBlogs.js";
 import type * as blogs_markBlogPublished from "../blogs/markBlogPublished.js";
 import type * as blogs_refreshBlogImageUrls from "../blogs/refreshBlogImageUrls.js";
 import type * as blogs_updateBlogContent from "../blogs/updateBlogContent.js";
+import type * as blogs_updateBlogImage from "../blogs/updateBlogImage.js";
 import type * as blogs_upsertGeneratedBlog from "../blogs/upsertGeneratedBlog.js";
 import type * as identity_getPreviewUserId from "../identity/getPreviewUserId.js";
 import type * as identity_requireUserId from "../identity/requireUserId.js";
@@ -74,6 +75,7 @@ declare const fullApi: ApiFromModules<{
   "blogs/markBlogPublished": typeof blogs_markBlogPublished;
   "blogs/refreshBlogImageUrls": typeof blogs_refreshBlogImageUrls;
   "blogs/updateBlogContent": typeof blogs_updateBlogContent;
+  "blogs/updateBlogImage": typeof blogs_updateBlogImage;
   "blogs/upsertGeneratedBlog": typeof blogs_upsertGeneratedBlog;
   "identity/getPreviewUserId": typeof identity_getPreviewUserId;
   "identity/requireUserId": typeof identity_requireUserId;

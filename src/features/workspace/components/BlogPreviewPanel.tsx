@@ -1,4 +1,3 @@
-import Image from "next/image";
 import { Clock, Edit3 } from "lucide-react";
 import { ArticleStatsPanel } from "./ArticleStatsPanel";
 import { ArticleStatusPanel } from "./ArticleStatusPanel";
@@ -6,6 +5,7 @@ import { BlogPublishButton } from "./BlogPublishButton";
 import { BlogZipButton } from "./BlogZipButton";
 import { DeleteActionButton } from "./DeleteActionButton";
 import { MarkdownPreview } from "./MarkdownPreview";
+import { RegenerateableFeatureImage } from "./RegenerateableFeatureImage";
 import { SecondaryAnchor } from "./SecondaryAnchor";
 import { StatusBadge } from "./StatusBadge";
 import { countBlogWords } from "../utils/countBlogWords";
@@ -14,11 +14,13 @@ import { formatCountLabel } from "../utils/formatCountLabel";
 import { formatWorkspaceDate } from "../utils/formatWorkspaceDate";
 import type { BlogItem } from "../types/BlogItem";
 import type { DeleteBlog } from "../types/DeleteBlog";
+import type { RegenerateBlogImage } from "../types/RegenerateBlogImage";
 
 type BlogPreviewPanelProps = {
   blog?: BlogItem;
   deleteBlog?: DeleteBlog;
   onBlogDeleted?: () => void;
+  regenerateImage?: RegenerateBlogImage;
   variant?: "card" | "drawer";
 };
 
@@ -26,6 +28,7 @@ export const BlogPreviewPanel = ({
   blog,
   deleteBlog,
   onBlogDeleted,
+  regenerateImage,
   variant = "card",
 }: BlogPreviewPanelProps) => {
   const sectionClassName =
@@ -97,17 +100,22 @@ export const BlogPreviewPanel = ({
             {blog.excerpt}
           </p>
           {blog.featureImageUrl ? (
-            <div className="relative mt-6 aspect-video w-full overflow-hidden rounded-md">
-              <Image
-                alt=""
-                fill
-                src={blog.featureImageUrl}
-                className="object-cover"
-              />
-            </div>
+            <RegenerateableFeatureImage
+              alt={blog.title}
+              blogId={blog.id}
+              imageIndex={0}
+              prompt={blog.images[0]?.prompt}
+              regenerateImage={regenerateImage}
+              src={blog.featureImageUrl}
+            />
           ) : null}
           <div className={markdownClassName}>
-            <MarkdownPreview mdx={blog.mdx} />
+            <MarkdownPreview
+              blogId={blog.id}
+              images={blog.images}
+              mdx={blog.mdx}
+              regenerateImage={regenerateImage}
+            />
           </div>
         </article>
         <aside className="grid content-start gap-4">

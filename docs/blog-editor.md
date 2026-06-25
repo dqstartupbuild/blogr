@@ -6,6 +6,8 @@ Users can open a generated blog and edit the title, summary, and MDX. The previe
 
 The editor header also lets users publish the loaded draft to the configured webhook destination or download it as a zip.
 
+The preview also lets users refresh any image they don't like. A "Regenerate" button sits on top of every image in the preview, including the cover image. Clicking it swaps the image for a freshly generated one and updates the article body so the new image shows up everywhere the old one was used. See [blog-image-regeneration.md](blog-image-regeneration.md) for details.
+
 ## How It Works
 
 The editor route is `/blogs/[blogId]`.

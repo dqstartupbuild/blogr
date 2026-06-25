@@ -1,3 +1,4 @@
+import type { ImgHTMLAttributes } from "react";
 import { MarkdownPreviewLink } from "./MarkdownPreviewLink";
 import { RegenerateableImage } from "./RegenerateableImage";
 import type { BlogImageItem } from "../types/BlogImageItem";
@@ -21,8 +22,9 @@ export const buildMarkdownPreviewComponents = ({
 
   return {
     a: MarkdownPreviewLink,
-    img: ({ alt, src }: { alt?: string; src?: string }) => {
-      const imageIndex = findImageIndex(src);
+    img: ({ alt, src }: ImgHTMLAttributes<HTMLImageElement>) => {
+      const srcString = typeof src === "string" ? src : undefined;
+      const imageIndex = findImageIndex(srcString);
       const matchedImage =
         typeof imageIndex === "number" && imageIndex >= 0
           ? images?.[imageIndex]
@@ -36,7 +38,7 @@ export const buildMarkdownPreviewComponents = ({
           isFeatureImage={imageIndex === 0}
           prompt={matchedImage?.prompt}
           regenerateImage={regenerateImage}
-          src={src}
+          src={srcString}
         />
       );
     },

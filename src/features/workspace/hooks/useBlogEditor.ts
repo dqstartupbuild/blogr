@@ -210,12 +210,63 @@ export const useBlogEditor = ({
     setMessage("Plan added to draft.");
   };
 
+  const regenerateImage = async (
+    requestedBlogId: string,
+    options: {
+      alt: string;
+      imageIndex: number;
+      isFeatureImage?: boolean;
+      prompt: string;
+    },
+  ) => {
+    if (!blog || blog.id !== requestedBlogId) {
+      throw new Error("Blog not found.");
+    }
+
+    if (!isLive) {
+      setMessage("Image refreshed in preview.");
+      return;
+    }
+
+    if (!convexProductId) {
+      throw new Error("Choose a workspace first.");
+    }
+
+    setMessage("Refreshing image...");
+
+    const response = await fetch(`/api/blogs/${requestedBlogId}/regenerate-image`, {
+      body: JSON.stringify({
+        alt: options.alt,
+        imageIndex: options.imageIndex,
+        isFeatureImage: options.isFeatureImage,
+        productId: activeWorkspaceId,
+        prompt: options.prompt,
+      }),
+      headers: {
+        "Content-Type": "application/json",
+      },
+      method: "POST",
+    });
+
+    if (!response.ok) {
+      const data = (await response
+        .json()
+        .catch(() => ({}))) as { error?: string };
+      const message = data.error || "Could not refresh that image.";
+      setMessage(message);
+      throw new Error(message);
+    }
+
+    setMessage("Image refreshed.");
+  };
+
   return {
     applyRefreshPlan,
     discoverBlogRefreshIdeas,
     isSaving,
     blog,
     message,
+    regenerateImage,
     saveBlog,
     saveRefreshPlan,
     state: editorState,
