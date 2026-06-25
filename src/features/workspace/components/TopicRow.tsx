@@ -4,6 +4,7 @@ import { useState } from "react";
 import { StatusBadge } from "./StatusBadge";
 import { TopicBriefButton } from "./TopicBriefButton";
 import { TopicBriefDialog } from "./TopicBriefDialog";
+import { TopicDeleteButton } from "./TopicDeleteButton";
 import { TopicRepurposeButton } from "./TopicRepurposeButton";
 import { TopicRepurposeDialog } from "./TopicRepurposeDialog";
 import { TopicWriteButton } from "./TopicWriteButton";
@@ -12,6 +13,7 @@ import type { TopicItem } from "../types/TopicItem";
 import type { WriteBlogOptions } from "../types/WriteBlogOptions";
 
 type TopicRowProps = {
+  deleteTopic: (topicId: string) => Promise<void> | void;
   refreshTopicBrief: (topicId: string) => Promise<string>;
   topic: TopicItem;
   writeBlog: (
@@ -21,6 +23,7 @@ type TopicRowProps = {
 };
 
 export const TopicRow = ({
+  deleteTopic,
   refreshTopicBrief,
   topic,
   writeBlog,
@@ -32,7 +35,7 @@ export const TopicRow = ({
   const articleCount = countTopicArticles(topic);
 
   return (
-    <article className="grid gap-4 border-b border-black/10 bg-white p-4 last:border-b-0 lg:grid-cols-[minmax(0,1fr)_140px_110px_380px] lg:items-center">
+    <article className="grid gap-4 border-b border-black/10 bg-white p-4 last:border-b-0 xl:grid-cols-[minmax(0,1fr)_120px_90px_480px] xl:items-center">
       <div className="min-w-0">
         <p className="text-sm font-semibold leading-6 text-black">
           {topic.keyword}
@@ -44,18 +47,18 @@ export const TopicRow = ({
         ) : null}
       </div>
       <div>
-        <p className="mb-1 text-xs font-semibold text-black/50 lg:hidden">
+        <p className="mb-1 text-xs font-semibold text-black/50 xl:hidden">
           Status
         </p>
         <StatusBadge status={topic.status} />
       </div>
       <div>
-        <p className="mb-1 text-xs font-semibold text-black/50 lg:hidden">
+        <p className="mb-1 text-xs font-semibold text-black/50 xl:hidden">
           Articles
         </p>
         <p className="text-sm font-medium text-black">{articleCount}</p>
       </div>
-      <div className="flex flex-col gap-2 sm:flex-row lg:justify-end">
+      <div className="flex flex-col gap-2 sm:flex-row xl:justify-end">
         <TopicBriefButton
           disabled={isWriting}
           hasBrief={hasBrief}
@@ -70,6 +73,9 @@ export const TopicRow = ({
           onWrite={() => {
             void Promise.resolve(writeBlog(topic.id)).catch(() => undefined);
           }}
+        />
+        <TopicDeleteButton
+          onDelete={() => Promise.resolve(deleteTopic(topic.id))}
         />
       </div>
       {isBriefOpen ? (

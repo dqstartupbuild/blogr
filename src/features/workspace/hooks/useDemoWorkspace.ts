@@ -130,6 +130,15 @@ export const useDemoWorkspace = (initialMode: WorkspaceViewMode) => {
     }));
   };
 
+  const deleteTopic = (topicId: string) => {
+    setTopicsByWorkspace((current) => ({
+      ...current,
+      [activeWorkspaceId]: (current[activeWorkspaceId] || []).filter(
+        (topic) => topic.id !== topicId,
+      ),
+    }));
+  };
+
   const discoverTopicIdeas = async () => {
     return demoTopicDiscoveryResult;
   };
@@ -155,6 +164,24 @@ export const useDemoWorkspace = (initialMode: WorkspaceViewMode) => {
 
   const discoverBlogRefreshIdeas = async () => {
     return demoTopicDiscoveryResult;
+  };
+
+  const deleteBlog = (blogId: string) => {
+    setBlogsByWorkspace((current) => ({
+      ...current,
+      [activeWorkspaceId]: (current[activeWorkspaceId] || []).filter(
+        (blog) => blog.id !== blogId,
+      ),
+    }));
+    setTopicsByWorkspace((current) => ({
+      ...current,
+      [activeWorkspaceId]: (current[activeWorkspaceId] || []).map((topic) =>
+        topic.blogId === blogId
+          ? { ...topic, blogId: undefined, status: "saved" }
+          : topic,
+      ),
+    }));
+    setSelectedBlogId((current) => (current === blogId ? "" : current));
   };
 
   const writeBlog = (topicId: string, options?: WriteBlogOptions) => {
@@ -309,6 +336,8 @@ export const useDemoWorkspace = (initialMode: WorkspaceViewMode) => {
     },
     topics,
     blogs,
+    deleteBlog,
+    deleteTopic,
     selectedBlog,
     selectedBlogId,
     settingsStatusMessage,

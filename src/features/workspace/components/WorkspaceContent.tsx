@@ -1,6 +1,5 @@
 "use client";
 
-import { BlogPreviewSidebar } from "./BlogPreviewSidebar";
 import { BlogPublishingIntegrationPanel } from "./BlogPublishingIntegrationPanel";
 import { BlogsPanel } from "./BlogsPanel";
 import { DashboardPanel } from "./DashboardPanel";
@@ -26,6 +25,8 @@ type WorkspaceContentProps = {
   addTopic: (keyword: string, notes?: string) => void | Promise<void>;
   blogGenerationSettings: BlogGenerationSettings;
   blogs: BlogItem[];
+  deleteBlog: (blogId: string) => void | Promise<void>;
+  deleteTopic: (topicId: string) => void | Promise<void>;
   discoverBlogRefreshIdeas: DiscoverBlogRefreshIdeas;
   discoverTopicIdeas: DiscoverTopicIdeas;
   isSavingBlogPublishingIntegration: boolean;
@@ -42,11 +43,8 @@ type WorkspaceContentProps = {
     integration: BlogPublishingIntegrationDraft,
   ) => void | Promise<void>;
   scanProduct: (websiteUrl: string, niche: string) => void | Promise<void>;
-  selectedBlog?: BlogItem;
-  selectedBlogId: string;
   settingsStatusMessage: string;
   setMode: (mode: WorkspaceViewMode) => void;
-  setSelectedBlogId: (blogId: string) => void;
   topics: TopicItem[];
   workspaceSwitcher: WorkspaceSwitcherState;
   writeBlog: (
@@ -59,6 +57,8 @@ export const WorkspaceContent = ({
   addTopic,
   blogGenerationSettings,
   blogs,
+  deleteBlog,
+  deleteTopic,
   discoverBlogRefreshIdeas,
   discoverTopicIdeas,
   isSavingBlogPublishingIntegration,
@@ -71,11 +71,8 @@ export const WorkspaceContent = ({
   saveBlogGenerationSettings,
   saveBlogPublishingIntegration,
   scanProduct,
-  selectedBlog,
-  selectedBlogId,
   settingsStatusMessage,
   setMode,
-  setSelectedBlogId,
   topics,
   workspaceSwitcher,
   writeBlog,
@@ -94,6 +91,7 @@ export const WorkspaceContent = ({
           {mode === "topics" ? (
             <TopicsPanel
               addTopic={addTopic}
+              deleteTopic={deleteTopic}
               discoverTopicIdeas={discoverTopicIdeas}
               refreshTopicBrief={refreshTopicBrief}
               topics={topics}
@@ -104,9 +102,8 @@ export const WorkspaceContent = ({
             <BlogsPanel
               addTopic={addTopic}
               blogs={blogs}
+              deleteBlog={deleteBlog}
               discoverBlogRefreshIdeas={discoverBlogRefreshIdeas}
-              selectedBlogId={selectedBlogId}
-              setSelectedBlogId={setSelectedBlogId}
             />
           ) : null}
           {mode === "settings" ? (
@@ -143,9 +140,6 @@ export const WorkspaceContent = ({
             </div>
           ) : null}
         </main>
-        {mode === "settings" || mode === "dashboard" ? null : (
-          <BlogPreviewSidebar blog={selectedBlog} />
-        )}
       </div>
     </WorkspaceShell>
   );

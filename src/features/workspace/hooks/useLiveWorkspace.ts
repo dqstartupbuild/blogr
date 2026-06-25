@@ -2,8 +2,11 @@
 
 import { useMemo, useState } from "react";
 import { useMutation, useQuery } from "convex/react";
+import { castBlogId } from "@/server/convex/castBlogId";
 import { castProductId } from "@/server/convex/castProductId";
 import { createTopicMutation } from "@/server/convex/references/createTopicMutation";
+import { deleteBlogMutation } from "@/server/convex/references/deleteBlogMutation";
+import { deleteTopicMutation } from "@/server/convex/references/deleteTopicMutation";
 import { getCurrentProductQuery } from "@/server/convex/references/getCurrentProductQuery";
 import { listBlogsQuery } from "@/server/convex/references/listBlogsQuery";
 import { listTopicsQuery } from "@/server/convex/references/listTopicsQuery";
@@ -74,6 +77,8 @@ export const useLiveWorkspace = (
     convexProductId ? { productId: convexProductId } : "skip",
   );
   const createTopic = useMutation(createTopicMutation);
+  const deleteBlogMutationHandler = useMutation(deleteBlogMutation);
+  const deleteTopicMutationHandler = useMutation(deleteTopicMutation);
   const saveProductScan = useMutation(saveProductScanMutation);
   const updateBlogGenerationSettings = useMutation(
     updateBlogGenerationSettingsMutation,
@@ -175,6 +180,17 @@ export const useLiveWorkspace = (
       keyword,
       notes,
       productId: convexProductId,
+    });
+  };
+
+  const deleteTopic = async (topicId: string) => {
+    if (!convexProductId) {
+      return;
+    }
+
+    await deleteTopicMutationHandler({
+      productId: convexProductId,
+      topicId: castTopicId(topicId),
     });
   };
 
@@ -326,6 +342,19 @@ export const useLiveWorkspace = (
     return data.discovery;
   };
 
+  const deleteBlog = async (blogId: string) => {
+    if (!convexProductId) {
+      return;
+    }
+
+    await deleteBlogMutationHandler({
+      blogId: castBlogId(blogId),
+      productId: convexProductId,
+    });
+
+    setSelectedBlogId((current) => (current === blogId ? "" : current));
+  };
+
   const saveBlogGenerationSettings = async (
     settings: BlogGenerationSettings,
   ) => {
@@ -462,6 +491,8 @@ export const useLiveWorkspace = (
     addTopic,
     blogGenerationSettings,
     blogs,
+    deleteBlog,
+    deleteTopic,
     discoverBlogRefreshIdeas,
     discoverTopicIdeas,
     isSavingBlogPublishingIntegration,

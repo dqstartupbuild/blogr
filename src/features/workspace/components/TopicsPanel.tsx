@@ -10,6 +10,7 @@ import type { DiscoverTopicIdeas } from "../types/topicDiscovery/DiscoverTopicId
 type TopicsPanelProps = {
   topics: TopicItem[];
   addTopic: (keyword: string, notes?: string) => void | Promise<void>;
+  deleteTopic: (topicId: string) => void | Promise<void>;
   discoverTopicIdeas: DiscoverTopicIdeas;
   refreshTopicBrief: RefreshTopicBrief;
   writeBlog: (
@@ -21,6 +22,7 @@ type TopicsPanelProps = {
 export const TopicsPanel = ({
   topics,
   addTopic,
+  deleteTopic,
   discoverTopicIdeas,
   refreshTopicBrief,
   writeBlog,
@@ -41,6 +43,7 @@ export const TopicsPanel = ({
         <TopicCreator addTopic={addTopic} />
       </div>
       <FilteredTopicList
+        deleteTopic={deleteTopic}
         refreshTopicBrief={refreshTopicBrief}
         topics={topics}
         writeBlog={writeBlog}

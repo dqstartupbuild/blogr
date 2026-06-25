@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Edit3, FileText } from "lucide-react";
+import { BlogDeleteButton } from "./BlogDeleteButton";
 import { BlogRefreshLauncher } from "./BlogRefreshLauncher";
 import { StatusBadge } from "./StatusBadge";
 import { countBlogWords } from "../utils/countBlogWords";
@@ -11,31 +12,26 @@ import type { SaveDiscoveryPlan } from "../types/SaveDiscoveryPlan";
 
 type BlogRowProps = {
   blog: BlogItem;
+  deleteBlog: (blogId: string) => Promise<void> | void;
   discoverBlogRefreshIdeas: DiscoverBlogRefreshIdeas;
-  isSelected: boolean;
   savePlan: SaveDiscoveryPlan;
-  setSelectedBlogId: (blogId: string) => void;
 };
 
 export const BlogRow = ({
   blog,
+  deleteBlog,
   discoverBlogRefreshIdeas,
-  isSelected,
   savePlan,
-  setSelectedBlogId,
 }: BlogRowProps) => {
   const wordCount = countBlogWords(blog.mdx);
 
   return (
     <article
-      className={`grid gap-4 border-b border-black/10 bg-white p-4 text-black last:border-b-0 xl:grid-cols-[minmax(0,1.4fr)_minmax(160px,0.7fr)_120px_120px_250px] xl:items-center ${
-        isSelected ? "bg-black/5" : ""
-      }`}
+      className="grid gap-4 border-b border-black/10 bg-white p-4 text-black last:border-b-0 xl:grid-cols-[minmax(0,1.4fr)_minmax(150px,0.7fr)_110px_110px_360px] xl:items-center"
     >
-      <button
+      <Link
         className="flex min-w-0 items-start gap-3 text-left text-black transition hover:opacity-70"
-        onClick={() => setSelectedBlogId(blog.id)}
-        type="button"
+        href={`/blogs/${blog.id}`}
       >
         <span className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-black text-white">
           <FileText size={18} aria-hidden="true" />
@@ -48,7 +44,7 @@ export const BlogRow = ({
             {wordCount > 0 ? formatCountLabel(wordCount, "word") : "Draft"}
           </span>
         </span>
-      </button>
+      </Link>
       <div>
         <p className="mb-1 text-xs font-semibold text-black/50 xl:hidden">
           Topic
@@ -84,6 +80,7 @@ export const BlogRow = ({
           discoverBlogRefreshIdeas={discoverBlogRefreshIdeas}
           savePlan={savePlan}
         />
+        <BlogDeleteButton onDelete={() => Promise.resolve(deleteBlog(blog.id))} />
       </div>
     </article>
   );
