@@ -2,14 +2,14 @@
 
 ## What Changed
 
-The workspace now uses a sidebar layout with a dashboard, topic table, article table, and richer article editor surfaces. The app still uses the same workflow:
+The workspace now uses a sidebar layout with a dashboard, topic table, article table, and richer article preview surfaces. The app still uses the same workflow:
 
 1. Save or discover a topic.
 2. Write an article from that topic.
 3. Review or edit the article.
 4. Export or publish the article.
 
-Article and topic delete actions are available in each table row. Article deletion removes the article and returns its linked topic to a saved state when one exists. Opening an article is done by pressing the article title.
+No mockup-only actions were added. Article deletion and live article links are not shown because this app does not currently expose those actions or URLs.
 
 ## Main Files
 
@@ -24,9 +24,8 @@ Article and topic delete actions are available in each table row. Article deleti
 - `src/features/workspace/components/BlogsPanel.tsx` renders the updated article workspace.
 - `src/features/workspace/components/FilteredBlogList.tsx` handles article search, status filtering, and topic filtering.
 - `src/features/workspace/components/BlogList.tsx` and `src/features/workspace/components/BlogRow.tsx` render the article table.
+- `src/features/workspace/components/BlogPreviewPanel.tsx` renders the richer article preview drawer.
 - `src/features/workspace/components/BlogEditorView.tsx` renders the editor in the shared sidebar layout.
-- `src/features/workspace/components/BlogDeleteButton.tsx` renders the article delete action.
-- `src/features/workspace/components/TopicDeleteButton.tsx` renders the topic delete action.
 
 ## Derived Stats
 
@@ -49,7 +48,3 @@ The helpers live in `src/features/workspace/utils/` and are split by purpose.
 - `/blogs` opens the article workspace.
 - `/settings` opens settings.
 - `/blogs/[blogId]` keeps the existing editor workflow with the refreshed layout.
-
-## Delete Actions
-
-Topic deletion uses the existing Convex `topics/deleteTopic` mutation. Article deletion uses `blogs/deleteBlog`, which checks the current user and workspace before deleting. When the deleted article is linked to a topic, that topic is marked saved again so it can be used for a new article later.

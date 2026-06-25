@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { BlogList } from "./BlogList";
 import { EmptyState } from "./EmptyState";
 import { FilterBar } from "./FilterBar";
@@ -18,16 +18,18 @@ import type { SaveDiscoveryPlan } from "../types/SaveDiscoveryPlan";
 
 type FilteredBlogListProps = {
   blogs: BlogItem[];
-  deleteBlog: (blogId: string) => Promise<void> | void;
   discoverBlogRefreshIdeas: DiscoverBlogRefreshIdeas;
   savePlan: SaveDiscoveryPlan;
+  selectedBlogId: string;
+  setSelectedBlogId: (blogId: string) => void;
 };
 
 export const FilteredBlogList = ({
   blogs,
-  deleteBlog,
   discoverBlogRefreshIdeas,
   savePlan,
+  selectedBlogId,
+  setSelectedBlogId,
 }: FilteredBlogListProps) => {
   const [activeFilter, setActiveFilter] = useState<BlogStatusFilter>("all");
   const [searchQuery, setSearchQuery] = useState("");
@@ -50,6 +52,18 @@ export const FilteredBlogList = ({
       ),
     [activeFilter, blogs, searchQuery, topicFilter],
   );
+
+  useEffect(() => {
+    if (filteredBlogs.length === 0) {
+      return;
+    }
+
+    if (filteredBlogs.some((blog) => blog.id === selectedBlogId)) {
+      return;
+    }
+
+    setSelectedBlogId(filteredBlogs[0].id);
+  }, [filteredBlogs, selectedBlogId, setSelectedBlogId]);
 
   if (blogs.length === 0) {
     return <EmptyState label="No blogs yet." />;
@@ -80,9 +94,10 @@ export const FilteredBlogList = ({
       {filteredBlogs.length > 0 ? (
         <BlogList
           blogs={filteredBlogs}
-          deleteBlog={deleteBlog}
           discoverBlogRefreshIdeas={discoverBlogRefreshIdeas}
           savePlan={savePlan}
+          selectedBlogId={selectedBlogId}
+          setSelectedBlogId={setSelectedBlogId}
         />
       ) : (
         <EmptyState label="No blogs in this view." />

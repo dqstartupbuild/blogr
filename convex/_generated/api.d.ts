@@ -8,7 +8,6 @@
  * @module
  */
 
-import type * as blogs_deleteBlog from "../blogs/deleteBlog.js";
 import type * as blogs_getBlog from "../blogs/getBlog.js";
 import type * as blogs_listBlogs from "../blogs/listBlogs.js";
 import type * as blogs_markBlogPublished from "../blogs/markBlogPublished.js";
@@ -68,7 +67,6 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
-  "blogs/deleteBlog": typeof blogs_deleteBlog;
   "blogs/getBlog": typeof blogs_getBlog;
   "blogs/listBlogs": typeof blogs_listBlogs;
   "blogs/markBlogPublished": typeof blogs_markBlogPublished;

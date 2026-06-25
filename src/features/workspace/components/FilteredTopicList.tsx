@@ -14,7 +14,6 @@ import type { TopicStatusFilter } from "../types/TopicStatusFilter";
 import type { WriteBlogOptions } from "../types/WriteBlogOptions";
 
 type FilteredTopicListProps = {
-  deleteTopic: (topicId: string) => Promise<void> | void;
   refreshTopicBrief: (topicId: string) => Promise<string>;
   topics: TopicItem[];
   writeBlog: (
@@ -24,7 +23,6 @@ type FilteredTopicListProps = {
 };
 
 export const FilteredTopicList = ({
-  deleteTopic,
   refreshTopicBrief,
   topics,
   writeBlog,
@@ -58,7 +56,6 @@ export const FilteredTopicList = ({
       </FilterBar>
       {filteredTopics.length > 0 ? (
         <TopicList
-          deleteTopic={deleteTopic}
           refreshTopicBrief={refreshTopicBrief}
           topics={filteredTopics}
           writeBlog={writeBlog}
