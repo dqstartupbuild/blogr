@@ -227,12 +227,14 @@ export const useDemoWorkspace = (initialMode: WorkspaceViewMode) => {
     const sourceText = options?.sourceText?.trim();
     const blogId = `blog-${Date.now()}`;
     const title = `A Simple Guide to ${topic.keyword}`;
+    const seoTitle = `A Simple Guide to ${topic.keyword} With Practical Steps, Examples, and Common Mistakes`;
     const nextBlog: BlogItem = {
       id: blogId,
       keyword: topic.keyword,
       title,
+      seoTitle,
       slug: topic.keyword.toLowerCase().replace(/[^a-z0-9]+/g, "-"),
-      excerpt: `A clear, friendly draft about ${topic.keyword}.`,
+      excerpt: `A clear, friendly draft about ${topic.keyword}, with practical steps, useful examples, and simple next actions for readers.`,
       status: "ready",
       mdx: sourceText
         ? `# ${title}\n\nThis preview draft will use your pasted source as a starting point in the live AI workflow. Add your keys, scan your site, and the app will turn it into a fresh post for this product.\n\n## Source preview\n\n${sourceText.slice(

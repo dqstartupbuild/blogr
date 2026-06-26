@@ -10,6 +10,7 @@ export const coerceWriterDraft = (value: unknown): WriterDraft | null => {
   return {
     excerpt: typeof draft.excerpt === "string" ? draft.excerpt : undefined,
     mdx: typeof draft.mdx === "string" ? draft.mdx : undefined,
+    seoTitle: typeof draft.seoTitle === "string" ? draft.seoTitle : undefined,
     slug: typeof draft.slug === "string" ? draft.slug : undefined,
     title: typeof draft.title === "string" ? draft.title : undefined,
   };

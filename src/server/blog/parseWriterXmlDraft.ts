@@ -7,11 +7,12 @@ export const parseWriterXmlDraft = (text: string): WriterDraft | null => {
   const draft: WriterDraft = {
     excerpt: extractTaggedValue(trimmed, "excerpt"),
     mdx: extractTaggedValue(trimmed, "mdx"),
+    seoTitle: extractTaggedValue(trimmed, "seoTitle"),
     slug: extractTaggedValue(trimmed, "slug"),
     title: extractTaggedValue(trimmed, "title"),
   };
 
-  if (draft.title || draft.slug || draft.excerpt || draft.mdx) {
+  if (draft.title || draft.seoTitle || draft.slug || draft.excerpt || draft.mdx) {
     return draft;
   }
 

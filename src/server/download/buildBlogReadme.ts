@@ -9,5 +9,7 @@ Images are in the \`images\` folder. Any image that could not be downloaded stay
 
 Keyword: ${blog.keyword}
 Slug: ${blog.slug}
+SEO title: ${blog.seoTitle || blog.title}
+Meta description: ${blog.excerpt}
 `;
 };

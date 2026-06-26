@@ -5,9 +5,11 @@ export const demoBlogs: BlogItem[] = [
     id: "blog-team-priorities",
     keyword: "how to choose team priorities",
     title: "How to Choose Team Priorities Without Turning It Into a Meeting Marathon",
+    seoTitle:
+      "How to Choose Team Priorities Without Another Long Planning Meeting This Week",
     slug: "choose-team-priorities",
     excerpt:
-      "A simple way to pick what matters this week, keep the team focused, and stop every task from feeling urgent.",
+      "Learn a simple way to choose the few priorities that matter this week, keep the team focused, and stop every task from feeling urgent.",
     status: "ready",
     updatedAt: Date.now() - 1000 * 60 * 45,
     featureImageUrl: undefined,
@@ -32,7 +34,8 @@ export const demoBlogs: BlogItem[] = [
     ],
     mdx: `---
 title: "How to Choose Team Priorities Without Turning It Into a Meeting Marathon"
-description: "A simple way to pick what matters this week, keep the team focused, and stop every task from feeling urgent."
+seoTitle: "How to Choose Team Priorities Without Another Long Planning Meeting This Week"
+description: "Learn a simple way to choose the few priorities that matter this week, keep the team focused, and stop every task from feeling urgent."
 ---
 
 # How to Choose Team Priorities Without Turning It Into a Meeting Marathon
@@ -72,9 +75,11 @@ If a priority does not change what someone does today, it is probably too vague.
     id: "blog-weekly-team-check-ins",
     keyword: "weekly team check ins",
     title: "A Better Weekly Check-In for Busy Teams",
+    seoTitle:
+      "A Better Weekly Team Check-In Format for Busy Small Teams That Need Focus",
     slug: "better-weekly-team-check-in",
     excerpt:
-      "A short check-in format that helps everyone share what matters without dragging the week off track.",
+      "Use a short weekly check-in format that helps everyone share wins, blockers, and next steps without dragging the team off track.",
     status: "published",
     updatedAt: Date.now() - 1000 * 60 * 60 * 6,
     featureImageUrl: undefined,
@@ -89,7 +94,8 @@ If a priority does not change what someone does today, it is probably too vague.
     sources: [],
     mdx: `---
 title: "A Better Weekly Check-In for Busy Teams"
-description: "A short check-in format that helps everyone share what matters without dragging the week off track."
+seoTitle: "A Better Weekly Team Check-In Format for Busy Small Teams That Need Focus"
+description: "Use a short weekly check-in format that helps everyone share wins, blockers, and next steps without dragging the team off track."
 ---
 
 # A Better Weekly Check-In for Busy Teams

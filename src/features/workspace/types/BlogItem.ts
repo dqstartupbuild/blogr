@@ -14,6 +14,7 @@ export type BlogItem = {
   keyword: string;
   productId?: string;
   title: string;
+  seoTitle: string;
   slug: string;
   excerpt: string;
   status: BlogStatus;

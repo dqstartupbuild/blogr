@@ -40,9 +40,10 @@ export const buildBlogWriterPrompt = ({
 }: BuildBlogWriterPromptOptions) => {
   return `
 Return exactly this XML shape with no markdown fence and no extra text:
-<title>human blog title</title>
+<title>human article title for the page H1</title>
+<seoTitle>search result title, 70 to 110 characters</seoTitle>
 <slug>url-safe-slug</slug>
-<excerpt>short plain-English summary</excerpt>
+<excerpt>meta description, 110 to 160 characters</excerpt>
 <mdx>
 full MDX blog post
 </mdx>
@@ -85,7 +86,9 @@ Images to lace through the post:
 ${JSON.stringify(images, null, 2)}
 
 MDX rules:
-- Include frontmatter with title, description, targetKeyword, featureImage, and image alt text when available.
+- Include frontmatter with title, seoTitle, description, targetKeyword, featureImage, and image alt text when available.
+- The frontmatter description must match the excerpt and be 110 to 160 characters.
+- The seoTitle is for SEO metadata and search previews. Do not force it to be the H1 unless it also reads naturally as the article title.
 - Put the feature image URL in frontmatter as featureImage.
 - Use only image URLs listed in "Images to lace through the post".
 - Never use product context asset URLs or product screenshot URLs as article images.

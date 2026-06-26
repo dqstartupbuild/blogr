@@ -21,6 +21,7 @@ export const buildBlogPublishArticle = (
     id: blog.id,
     image_url: getBlogPublishImageUrl(blog),
     meta_description: blog.excerpt,
+    seo_title: blog.seoTitle || blog.title,
     slug: blog.slug,
     source: getBlogPublishSource(sourceName),
     tags: buildBlogPublishTags(blog),

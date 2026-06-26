@@ -3,6 +3,8 @@ import { buildBlogWriterPrompt } from "./buildBlogWriterPrompt";
 import { createFallbackMdx } from "./createFallbackMdx";
 import { insertMissingYoutubeVideos } from "./insertMissingYoutubeVideos";
 import { normalizeBlogMdxImages } from "./normalizeBlogMdxImages";
+import { normalizeMetaDescription } from "./normalizeMetaDescription";
+import { normalizeSeoTitle } from "./normalizeSeoTitle";
 import { normalizeYoutubeLinksInMdx } from "./normalizeYoutubeLinksInMdx";
 import { parseWriterDraft } from "./parseWriterDraft";
 import { slugify } from "./slugify";
@@ -64,15 +66,28 @@ export const writeBlogDraft = async ({
   });
   const draft = parseWriterDraft(text);
   const title = draft.title || `A Simple Guide to ${keyword}`;
+  const seoTitle = normalizeSeoTitle({
+    keyword,
+    productName: product.name,
+    seoTitle: draft.seoTitle,
+    title,
+  });
+  const excerpt = normalizeMetaDescription({
+    description: draft.excerpt,
+    keyword,
+    productName: product.name,
+  });
   const slug = draft.slug ? slugify(draft.slug) : slugify(title);
   const rawMdx =
     draft.mdx ||
     createFallbackMdx({
       associateBrandLinks,
+      description: excerpt,
       images,
       internalLinks,
       keyword,
       product,
+      seoTitle,
       settings,
       sources: sourceLinks,
       title,
@@ -90,12 +105,13 @@ export const writeBlogDraft = async ({
   });
 
   return {
-    excerpt: draft.excerpt || `A clear guide to ${keyword}.`,
+    excerpt,
     featureImageUrl: images[0]?.url,
     images,
     internalLinks,
     keyword,
     mdx,
+    seoTitle,
     slug,
     sources: sourceLinks,
     status: "ready",

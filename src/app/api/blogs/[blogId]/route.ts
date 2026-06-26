@@ -60,6 +60,7 @@ export async function PATCH(request: Request, context: BlogRouteContext) {
         blogId,
         excerpt: input.excerpt,
         mdx: input.mdx,
+        seoTitle: input.seoTitle,
         title: input.title,
       },
       { token },

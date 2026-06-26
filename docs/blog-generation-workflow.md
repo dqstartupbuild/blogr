@@ -69,11 +69,12 @@ as failed with a short error.
 The writer is asked for XML with:
 
 - `<title>`
+- `<seoTitle>`
 - `<slug>`
 - `<excerpt>`
 - `<mdx>`
 
-The MDX prompt asks for frontmatter, one H1, a direct answer, short paragraphs, useful examples, cited sources, natural internal links, associate brand links only when useful, and playable YouTube embeds only when helpful. Workspace settings can add a table of contents, change article voice, allow first-person writing, add or remove a call-to-action, and allow similar product comparisons.
+The MDX prompt asks for a visible article title, a separate SEO title between 70 and 110 characters, a meta description between 110 and 160 characters, frontmatter, one H1, a direct answer, short paragraphs, useful examples, cited sources, natural internal links, associate brand links only when useful, and playable YouTube embeds only when helpful. Workspace settings can add a table of contents, change article voice, allow first-person writing, add or remove a call-to-action, and allow similar product comparisons.
 
 When optional source text is provided, the writer is told to use it as a starting point, keep the useful ideas, and rewrite the piece into a fresh blog post for the active product and keyword.
 

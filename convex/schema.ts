@@ -78,6 +78,7 @@ export default defineSchema({
     topicId: v.optional(v.id("topics")),
     keyword: v.string(),
     title: v.string(),
+    seoTitle: v.optional(v.string()),
     slug: v.string(),
     excerpt: v.string(),
     status: v.union(

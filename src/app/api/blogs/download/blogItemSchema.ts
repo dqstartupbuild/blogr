@@ -14,6 +14,7 @@ export const blogItemSchema = z.object({
   productId: z.string().optional(),
   slug: z.string(),
   sources: z.array(linkItemSchema).default([]),
+  seoTitle: z.string().default(""),
   status: z.union([
     z.literal("draft"),
     z.literal("ready"),

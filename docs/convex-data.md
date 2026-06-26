@@ -15,13 +15,15 @@ The schema lives in `convex/schema.ts`.
 
 `products` are the workspace records. Each product can include `blogGenerationSettings`, which stores the article style, writing rules, internal link count, associate brand links, image choices, and article extras for that workspace.
 
-Each product can also include `blogPublishingIntegration`, which stores that product's webhook URL, access token, source name, enabled state, and update time. Public product queries sanitize this value and return `hasAccessToken` instead of the token.
+Each product can also include `blogPublishingIntegration`, which stores that product's webhook URL, access token, publisher label, enabled state, and update time. Public product queries sanitize this value and return `hasAccessToken` instead of the token. The publisher label is sent as the webhook payload's `source` value; it is not an article author.
 
 Product scan images store R2 object keys in `assetKeys` and `productImageKeys`.
 
 Product `siteLinks` include optional `isActive`. Missing values are active. Links marked inactive stay in the workspace but are excluded from topic discovery, blog writer context, and internal link selection.
 
 Generated blog images can include an `r2Key` beside the served image URL. Blog and product queries use those keys to return fresh signed URLs from the Convex R2 component.
+
+Generated blogs store a visible article title and can store a separate `seoTitle`. Existing blogs without `seoTitle` fall back to the visible title in the UI. New generated posts normalize SEO titles to 70 to 110 characters and meta descriptions to 110 to 160 characters.
 
 The Convex RAG component stores scanned product context in a namespace based on the product workspace ID. Rescanning a product replaces the existing product context entry for that namespace, so future blog generation searches the latest scanned website context.
 

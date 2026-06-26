@@ -7,6 +7,7 @@ export type BlogPublishArticle = {
   id: string;
   image_url: string;
   meta_description: string;
+  seo_title: string;
   slug: string;
   source: string;
   tags: string[];

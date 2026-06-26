@@ -38,7 +38,7 @@ The user enters:
 
 - Webhook URL
 - Access token
-- Source name
+- Publisher label
 
 The access token is saved server-side in Convex and is not returned to the browser. The settings screen only shows whether a token is already saved.
 
@@ -74,8 +74,9 @@ The route sends this shape:
       {
         "id": "blog-id",
         "title": "A Helpful Blog Title",
+        "seo_title": "A Helpful Blog Title for Search Results With Clear Next Steps and Examples",
         "slug": "a-helpful-blog-title",
-        "meta_description": "A short summary.",
+        "meta_description": "A helpful plain-English summary that tells readers what they will learn, why it matters, and what next step they can take.",
         "content_format": "mdx",
         "content_markdown": "---\\ntitle: ...",
         "content_mdx": "---\\ntitle: ...",
@@ -102,11 +103,15 @@ The receiving app should:
 - Compare the token to a server-only env var.
 - Validate `event_type`, `timestamp`, and article fields.
 - Upsert by `slug` so publishing the same blog again updates the existing post.
+- On every create or update, save the current title, SEO title, meta description, body, images, tags, source, and timestamps from the payload.
+- Store `seo_title` separately from the visible article title.
+- Keep `seo_title` between 70 and 110 characters and `meta_description` between 110 and 160 characters.
 - Store `content_mdx` or `content_markdown`.
 - Treat `image_url` and markdown image URLs as temporary source URLs.
 - Download article images during the webhook request, store them in the target app's durable object storage, and rewrite `image_url`, frontmatter `featureImage`, and markdown image URLs before saving the post.
 - Ask the user for database and object storage preferences if the target app does not already have durable systems, defaulting to Convex and Cloudflare R2 through `@convex-dev/r2` when the user wants the default.
 - Finish with a required setup handoff that names every variable and groups it by where it must be set, including hosting/server env vars, Convex deployment env vars, Cloudflare/R2 setup, database setup, Blogr Settings, optional follow-ups, and verification commands.
+- Treat the Blogr publisher label as the webhook payload's `source` value. It is a sending-app label, not the article author.
 - Render Blogr MDX features including frontmatter stripping, headings, links, lists, blockquotes, tables, code, markdown images, and YouTube iframe embeds or YouTube links.
 - Include webhook-published posts in sitemap/feed outputs and refresh cached blog pages after publishing.
 - Return a JSON response with `{ "message": "Published." }`.

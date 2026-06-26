@@ -1,12 +1,14 @@
 import { v } from "convex/values";
 import { mutation } from "../_generated/server";
 import { requireUserId } from "../identity/requireUserId";
+import { validateSeoContentLengths } from "./validateSeoContentLengths";
 
 export const updateBlogContent = mutation({
   args: {
     blogId: v.id("blogs"),
     productId: v.optional(v.id("products")),
     title: v.string(),
+    seoTitle: v.string(),
     excerpt: v.string(),
     mdx: v.string(),
   },
@@ -22,10 +24,16 @@ export const updateBlogContent = mutation({
       throw new Error("Blog not found in this workspace.");
     }
 
+    const seoTitle = args.seoTitle.trim();
+    const excerpt = args.excerpt.trim();
+
+    validateSeoContentLengths({ excerpt, seoTitle });
+
     await ctx.db.patch(args.blogId, {
       productId: blog.productId || args.productId,
       title: args.title.trim(),
-      excerpt: args.excerpt.trim(),
+      seoTitle,
+      excerpt,
       mdx: args.mdx,
       updatedAt: Date.now(),
     });

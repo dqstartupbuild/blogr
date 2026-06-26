@@ -7,10 +7,12 @@ import { buildYoutubeEmbedMdx } from "./buildYoutubeEmbedMdx";
 
 type CreateFallbackMdxOptions = {
   associateBrandLinks: AssociateBrandLink[];
+  description: string;
   images: BlogImage[];
   internalLinks: LinkItem[];
   keyword: string;
   product: StoredProduct;
+  seoTitle: string;
   settings: BlogGenerationSettings;
   sources: LinkItem[];
   title: string;
@@ -19,10 +21,12 @@ type CreateFallbackMdxOptions = {
 
 export const createFallbackMdx = ({
   associateBrandLinks,
+  description,
   images,
   internalLinks,
   keyword,
   product,
+  seoTitle,
   settings,
   sources,
   title,
@@ -79,7 +83,8 @@ export const createFallbackMdx = ({
 
   return `---
 title: "${title}"
-description: "A simple guide to ${keyword}."
+seoTitle: "${seoTitle}"
+description: "${description}"
 targetKeyword: "${keyword}"
 featureImage: "${featureImage}"
 ---

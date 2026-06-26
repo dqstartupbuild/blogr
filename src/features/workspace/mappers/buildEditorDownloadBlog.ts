@@ -23,6 +23,7 @@ export const buildEditorDownloadBlog = ({
     mdx: state.mdx,
     slug: baseBlog?.slug || safeClientFilename(state.title),
     sources: baseBlog?.sources || [],
+    seoTitle: state.seoTitle,
     status: baseBlog?.status || "ready",
     title: state.title,
     updatedAt: baseBlog?.updatedAt || Date.now(),

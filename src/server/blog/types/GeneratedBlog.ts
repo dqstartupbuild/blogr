@@ -4,6 +4,7 @@ import type { BlogImage } from "./BlogImage";
 export type GeneratedBlog = {
   keyword: string;
   title: string;
+  seoTitle: string;
   slug: string;
   excerpt: string;
   status: "draft" | "ready" | "failed";

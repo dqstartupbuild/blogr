@@ -6,8 +6,9 @@ export const blogPublishingPayloadExample = `{
       {
         "id": "blog-id",
         "title": "A Helpful Blog Title",
+        "seo_title": "A Helpful Blog Title for Search Results With Clear Next Steps and Examples",
         "slug": "a-helpful-blog-title",
-        "meta_description": "A short summary.",
+        "meta_description": "A helpful plain-English summary that tells readers what they will learn, why it matters, and what next step they can take.",
         "content_format": "mdx",
         "content_markdown": "# Article body",
         "content_mdx": "# Article body",

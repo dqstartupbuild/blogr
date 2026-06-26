@@ -9,6 +9,7 @@ export const blogPublishArticleValidator = v.object({
   id: v.string(),
   image_url: v.string(),
   meta_description: v.string(),
+  seo_title: v.string(),
   slug: v.string(),
   source: v.string(),
   tags: v.array(v.string()),

@@ -2,7 +2,9 @@
 
 ## What It Does
 
-Users can open a generated blog and edit the title, summary, and MDX. The preview renders the MDX as readable blog content.
+Users can open a generated blog and edit the article title, SEO title, meta description, and MDX. The preview renders the MDX as readable blog content.
+
+SEO titles should stay between 70 and 110 characters. Meta descriptions should stay between 110 and 160 characters.
 
 The editor header also lets users publish the loaded draft to the configured webhook destination or download it as a zip.
 

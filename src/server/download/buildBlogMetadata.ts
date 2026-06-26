@@ -8,6 +8,7 @@ export const buildBlogMetadata = (
   return JSON.stringify(
     {
       title: blog.title,
+      seoTitle: blog.seoTitle || blog.title,
       slug: blog.slug,
       keyword: blog.keyword,
       excerpt: blog.excerpt,

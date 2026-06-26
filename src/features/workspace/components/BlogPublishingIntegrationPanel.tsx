@@ -109,7 +109,7 @@ export const BlogPublishingIntegrationPanel = ({
               />
               <TextField
                 id="blog-publishing-source-name"
-                label="Source name"
+                label="Publisher label"
                 onChange={(event) =>
                   setDraft((current) => ({
                     ...current,
@@ -119,6 +119,10 @@ export const BlogPublishingIntegrationPanel = ({
                 placeholder="Blogr"
                 value={draft.sourceName}
               />
+              <p className="text-xs leading-5 text-black/60">
+                This is sent as the webhook payload source so the receiving app
+                knows Blogr sent it. It is not the article author.
+              </p>
             </div>
           </SettingsFormSection>
           <div className="flex flex-wrap items-center gap-3">

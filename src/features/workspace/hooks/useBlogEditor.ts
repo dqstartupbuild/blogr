@@ -60,6 +60,12 @@ export const useBlogEditor = ({
     () => ({
       excerpt: liveBlog?.excerpt || fallbackBlog?.excerpt || "",
       mdx: liveBlog?.mdx || fallbackBlog?.mdx || "",
+      seoTitle:
+        liveBlog?.seoTitle ||
+        liveBlog?.title ||
+        fallbackBlog?.seoTitle ||
+        fallbackBlog?.title ||
+        "",
       title: liveBlog?.title || fallbackBlog?.title || "",
     }),
     [fallbackBlog, liveBlog],
@@ -67,6 +73,7 @@ export const useBlogEditor = ({
   const [state, setState] = useState<BlogEditorState>({
     excerpt: fallbackBlog?.excerpt || "",
     mdx: fallbackBlog?.mdx || "",
+    seoTitle: fallbackBlog?.seoTitle || fallbackBlog?.title || "",
     title: fallbackBlog?.title || "",
   });
   const [isDirty, setIsDirty] = useState(false);
@@ -103,6 +110,7 @@ export const useBlogEditor = ({
         excerpt: editorState.excerpt,
         mdx: editorState.mdx,
         productId: convexProductId || undefined,
+        seoTitle: editorState.seoTitle,
         title: editorState.title,
       });
 

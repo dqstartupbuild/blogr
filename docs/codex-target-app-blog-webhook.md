@@ -38,8 +38,9 @@ Expected payload:
       {
         "id": "blog-id",
         "title": "A Helpful Blog Title",
+        "seo_title": "A Helpful Blog Title for Search Results With Clear Next Steps and Examples",
         "slug": "a-helpful-blog-title",
-        "meta_description": "A short summary.",
+        "meta_description": "A helpful plain-English summary that tells readers what they will learn, why it matters, and what next step they can take.",
         "content_format": "mdx",
         "content_markdown": "# Article body",
         "content_mdx": "# Article body",
@@ -62,11 +63,12 @@ Also support this single-article update shape for forward compatibility:
   "event_type": "update_article",
   "timestamp": "2026-06-23T16:05:00.000Z",
   "data": {
-    "article": {
-      "id": "blog-id",
-      "title": "Updated Title",
-      "slug": "a-helpful-blog-title",
-      "meta_description": "Updated summary.",
+      "article": {
+        "id": "blog-id",
+        "title": "Updated Title",
+        "seo_title": "Updated Title for Search Results With Clear Reader-Focused Next Steps and Examples",
+        "slug": "a-helpful-blog-title",
+        "meta_description": "An updated plain-English summary that tells readers what changed, why it matters, and what next step they can take.",
       "content_format": "mdx",
       "content_markdown": "# Updated body",
       "content_mdx": "# Updated body",
@@ -102,7 +104,8 @@ Do not implement production article or media storage with local writable files, 
 Create or reuse a blog post model with these fields:
 
 - `sourceId`: source article ID from Blogr.
-- `title`
+- `title`: visible article title.
+- `seoTitle`: from `seo_title`, used for SEO metadata and search previews.
 - `slug`
 - `description`: from `meta_description`.
 - `contentMdx`: prefer `content_mdx`, then `content_markdown`.
@@ -111,7 +114,9 @@ Create or reuse a blog post model with these fields:
 - `publishedAt`
 - `updatedAt`
 
-Upsert by `slug`. If a post with that slug already exists, update it. If not, create it.
+Upsert by `slug`. If a post with that slug already exists, update it. If not, create it. On every create or update, save the current `title`, `seo_title`, `meta_description`, content, images, tags, `source`, `created_at`, and `updated_at` values from the payload.
+
+Keep `seoTitle` between 70 and 110 characters. Keep `description` between 110 and 160 characters.
 
 When using the default Convex and R2 path:
 
@@ -227,6 +232,7 @@ Handle events this way:
 
 - `publish_articles`: upsert every article in `data.articles`.
 - `update_article`: upsert `data.article`.
+- Existing posts must update their visible title, SEO title, description, body, image URLs, tags, source, and timestamps from the new payload.
 - Unknown events: return `400` with a clear error.
 - Missing required fields: return `400`.
 - Image copy failures for required article images: return `400` with a clear error.
@@ -237,6 +243,7 @@ Handle events this way:
 - The webhook rejects requests without the bearer token.
 - The webhook accepts the Blogr payload.
 - Publishing the same slug twice updates one post instead of creating duplicates.
+- `update_article` refreshes the saved SEO title and description for the existing post.
 - The webhook copies `image_url` and markdown images into target-owned storage.
 - Saved article content uses target-owned image URLs, not Blogr URLs.
 - `/blog` lists the published post.
@@ -258,7 +265,7 @@ The final response must include a clear **Required setup** section with:
 - Convex deployment env vars, including `R2_TOKEN`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_ENDPOINT`, and `R2_BUCKET` when Convex R2 is used.
 - Database setup steps, including Convex project setup, schema deployment, migrations, seed steps, or commands the user must run.
 - Cloudflare/R2 setup steps, including bucket creation, API token creation, CORS policy, and any public access or signed URL behavior the implementation expects.
-- Blogr setup steps: webhook URL, access token, and source name to enter in Blogr Settings.
+- Blogr setup steps: webhook URL, access token, and publisher label to enter in Blogr Settings. The publisher label becomes the payload's `source` value and is not the article author.
 - Optional env vars or follow-up steps, clearly labeled optional.
 - Verification commands that were run and anything the user still needs to run after deployment.
 
@@ -272,6 +279,6 @@ Enter:
 
 - Webhook URL: `https://target-app-domain.com/api/webhooks/blog-publisher`
 - Access token: the same value saved in the target app as `BLOG_PUBLISH_WEBHOOK_TOKEN`
-- Source name: `Blogr`
+- Publisher label: `Blogr`
 
 Then open Blogr, choose a generated post, and click **Publish**.

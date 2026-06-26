@@ -27,6 +27,9 @@ Behavior:
 - Handle event_type "publish_articles" by saving every item in data.articles.
 - Also support event_type "update_article" with data.article for future updates.
 - Upsert posts by slug so publishing the same blog again updates the existing page.
+- On every create or update, save the current title, seo_title, meta_description, content, images, tags, source, created_at, and updated_at values from the payload.
+- Store seo_title as a separate SEO metadata title, not as the visible article title.
+- Keep seo_title between 70 and 110 characters and meta_description between 110 and 160 characters.
 - Store content_mdx as the source of truth, falling back to content_markdown.
 - Treat image_url and all image URLs inside content_mdx/content_markdown as temporary source URLs, not durable public URLs.
 - Before implementing storage, inspect the repo for an existing durable database and existing durable media/object storage.
@@ -54,7 +57,7 @@ Behavior:
 - Keep the token server-only. Do not expose it in browser code.
 - Return 200 with { "message": "Published." } after a successful publish.
 - Add focused docs for the webhook, env var, file tree, and how to test it.
-- Add tests for bearer auth, payload validation, slug upserts, image download/storage/rewrite, MDX rendering, YouTube embeds, and sitemap/feed inclusion.
+- Add tests for bearer auth, payload validation, slug upserts, update_article SEO field updates, image download/storage/rewrite, MDX rendering, YouTube embeds, and sitemap/feed inclusion.
 - Run lint, typecheck, and build before finishing.
 
 Before your final response, audit every required setup value and manual step. In your final response, include a clear "Required setup" section with:
@@ -62,7 +65,7 @@ Before your final response, audit every required setup value and manual step. In
 - Convex deployment env vars, including R2_TOKEN, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_ENDPOINT, and R2_BUCKET when Convex R2 is used.
 - Database setup steps, including Convex project setup, schema deployment, migrations, seed steps, or commands the user must run.
 - Cloudflare/R2 setup steps, including bucket creation, API token creation, CORS policy, and any public access or signed URL behavior the implementation expects.
-- Blogr setup steps: webhook URL, access token, and source name to enter in Blogr Settings.
+- Blogr setup steps: webhook URL, access token, and publisher label to enter in Blogr Settings. Explain that the publisher label becomes the payload's source value and is not the article author.
 - Any optional env vars or follow-up steps, clearly labeled optional.
 - The exact verification commands you ran and anything the user still needs to run after deployment.
 

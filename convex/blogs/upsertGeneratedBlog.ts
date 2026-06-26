@@ -1,6 +1,7 @@
 import { v } from "convex/values";
 import { mutation } from "../_generated/server";
 import { requireUserId } from "../identity/requireUserId";
+import { validateSeoContentLengths } from "./validateSeoContentLengths";
 
 const linkValidator = v.object({
   isActive: v.optional(v.boolean()),
@@ -22,6 +23,7 @@ export const upsertGeneratedBlog = mutation({
     topicId: v.optional(v.id("topics")),
     keyword: v.string(),
     title: v.string(),
+    seoTitle: v.string(),
     slug: v.string(),
     excerpt: v.string(),
     status: v.union(
@@ -41,6 +43,10 @@ export const upsertGeneratedBlog = mutation({
     const userId = await requireUserId(ctx);
     const now = Date.now();
     const product = await ctx.db.get(args.productId);
+    const seoTitle = args.seoTitle.trim();
+    const excerpt = args.excerpt.trim();
+
+    validateSeoContentLengths({ excerpt, seoTitle });
 
     if (!product || product.userId !== userId) {
       throw new Error("Workspace not found.");
@@ -72,6 +78,8 @@ export const upsertGeneratedBlog = mutation({
     ) {
       await ctx.db.patch(existing._id, {
         ...args,
+        excerpt,
+        seoTitle,
         updatedAt: now,
       });
 
@@ -89,6 +97,8 @@ export const upsertGeneratedBlog = mutation({
 
     const blogId = await ctx.db.insert("blogs", {
       ...args,
+      excerpt,
+      seoTitle,
       userId,
       createdAt: now,
       updatedAt: now,
