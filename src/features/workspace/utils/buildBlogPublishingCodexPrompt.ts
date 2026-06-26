@@ -29,8 +29,15 @@ Behavior:
 - Upsert posts by slug so publishing the same blog again updates the existing page.
 - Store content_mdx as the source of truth, falling back to content_markdown.
 - Treat image_url and all image URLs inside content_mdx/content_markdown as temporary source URLs, not durable public URLs.
+- Before implementing storage, inspect the repo for an existing durable database and existing durable media/object storage.
+- If both already exist, reuse the existing systems and follow their local patterns.
+- If either one is missing, ask the user which database and object storage they prefer before building that part. Present Convex for article records and Cloudflare R2 through the Convex R2 component as the recommended default.
+- If the user says to choose, does not care, or asks for the default, use Convex for blog article records and Cloudflare R2 through @convex-dev/r2 for object storage.
+- Never implement production article or media storage with local writable files, checked-in JSON, in-memory state, or any serverless/ephemeral filesystem path.
+- When using the Convex R2 component, install @convex-dev/r2, add it to convex/convex.config.ts with app.use(r2), create an R2 client from components.r2, store downloaded images from a Convex action with r2.store, save returned object keys on article records, and serve images by resolving keys with r2.getUrl.
+- Document required Convex/R2 env vars when that default is used: R2_TOKEN, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_ENDPOINT, and R2_BUCKET.
 - During the webhook request, download every article image the target app needs: image_url, markdown image URLs, and any frontmatter featureImage URL.
-- Store downloaded images in this app's own durable public storage, or in the existing media/object storage system if one already exists.
+- Store downloaded images in durable object storage, preferring the existing media/object storage system when one exists and otherwise the selected/default object storage above.
 - Rewrite image_url, frontmatter featureImage, and every markdown image URL in the saved body to the target app's stored image URLs before saving the post.
 - Preserve image alt text from markdown image syntax where possible.
 - Use safe server-side image fetching: allow only http/https URLs, verify image content types, set a timeout, enforce a reasonable file-size limit, and fail with a clear 400 if required images cannot be copied.
@@ -48,5 +55,16 @@ Behavior:
 - Return 200 with { "message": "Published." } after a successful publish.
 - Add focused docs for the webhook, env var, file tree, and how to test it.
 - Add tests for bearer auth, payload validation, slug upserts, image download/storage/rewrite, MDX rendering, YouTube embeds, and sitemap/feed inclusion.
-- Run lint, typecheck, and build before finishing.`;
+- Run lint, typecheck, and build before finishing.
+
+Before your final response, audit every required setup value and manual step. In your final response, include a clear "Required setup" section with:
+- Vercel/hosting/server env vars, including BLOG_PUBLISH_WEBHOOK_TOKEN and any site URL or framework-specific env vars needed by the implementation.
+- Convex deployment env vars, including R2_TOKEN, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_ENDPOINT, and R2_BUCKET when Convex R2 is used.
+- Database setup steps, including Convex project setup, schema deployment, migrations, seed steps, or commands the user must run.
+- Cloudflare/R2 setup steps, including bucket creation, API token creation, CORS policy, and any public access or signed URL behavior the implementation expects.
+- Blogr setup steps: webhook URL, access token, and source name to enter in Blogr Settings.
+- Any optional env vars or follow-up steps, clearly labeled optional.
+- The exact verification commands you ran and anything the user still needs to run after deployment.
+
+Do not finish with vague wording like "set the needed env vars." Name every variable and where it must be set.`;
 };

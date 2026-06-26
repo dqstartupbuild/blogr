@@ -32,7 +32,7 @@ Open **Settings** for the active product workspace, then use the **Publishing** 
 
 The panel starts with a **Setup guide**. It gives the user the full workflow, a copyable Codex prompt for the target app, the webhook path, the token env var, a sample payload, and a quick checklist for the receiving app.
 
-The copyable Codex prompt tells the target app to copy Blogr image URLs into the target app's own durable public storage, rewrite article image URLs before saving, render Blogr's MDX and YouTube embeds, and include webhook-published posts in sitemap/feed discovery outputs.
+The copyable Codex prompt tells the target app to inspect its existing database and object storage first. If durable storage is missing, it tells Codex to ask the user for a preference while recommending Convex article records and Cloudflare R2 through the Convex R2 component as the default. It also tells the target app to copy Blogr image URLs into durable object storage, rewrite article image URLs before saving, render Blogr's MDX and YouTube embeds, and include webhook-published posts in sitemap/feed discovery outputs.
 
 The user enters:
 
@@ -104,7 +104,9 @@ The receiving app should:
 - Upsert by `slug` so publishing the same blog again updates the existing post.
 - Store `content_mdx` or `content_markdown`.
 - Treat `image_url` and markdown image URLs as temporary source URLs.
-- Download article images during the webhook request, store them in the target app's durable public storage, and rewrite `image_url`, frontmatter `featureImage`, and markdown image URLs before saving the post.
+- Download article images during the webhook request, store them in the target app's durable object storage, and rewrite `image_url`, frontmatter `featureImage`, and markdown image URLs before saving the post.
+- Ask the user for database and object storage preferences if the target app does not already have durable systems, defaulting to Convex and Cloudflare R2 through `@convex-dev/r2` when the user wants the default.
+- Finish with a required setup handoff that names every variable and groups it by where it must be set, including hosting/server env vars, Convex deployment env vars, Cloudflare/R2 setup, database setup, Blogr Settings, optional follow-ups, and verification commands.
 - Render Blogr MDX features including frontmatter stripping, headings, links, lists, blockquotes, tables, code, markdown images, and YouTube iframe embeds or YouTube links.
 - Include webhook-published posts in sitemap/feed outputs and refresh cached blog pages after publishing.
 - Return a JSON response with `{ "message": "Published." }`.

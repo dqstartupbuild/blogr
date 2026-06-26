@@ -83,6 +83,22 @@ Also support this single-article update shape for forward compatibility:
 
 ## Storage
 
+Before implementing storage, inspect the target repo for:
+
+- an existing durable database or content model
+- an existing durable media/object storage system
+
+If both already exist, reuse them and follow the repo's local patterns.
+
+If either one is missing, ask the user which database and object storage they prefer before building that part. Present this as the recommended default:
+
+- Database: Convex article records.
+- Object storage: Cloudflare R2 through the Convex R2 component, `@convex-dev/r2`.
+
+If the user says to choose, does not care, or asks for the default, use Convex for blog article records and Cloudflare R2 through `@convex-dev/r2` for downloaded article images.
+
+Do not implement production article or media storage with local writable files, checked-in JSON, in-memory state, or any serverless/ephemeral filesystem path.
+
 Create or reuse a blog post model with these fields:
 
 - `sourceId`: source article ID from Blogr.
@@ -97,6 +113,17 @@ Create or reuse a blog post model with these fields:
 
 Upsert by `slug`. If a post with that slug already exists, update it. If not, create it.
 
+When using the default Convex and R2 path:
+
+- Install `convex` when the app does not already use it.
+- Install `@convex-dev/r2`.
+- Add the R2 component in `convex/convex.config.ts` with `app.use(r2)`.
+- Create an R2 client from `components.r2`.
+- Store downloaded images from a Convex action with `r2.store`.
+- Save the returned R2 object keys on article records.
+- Serve images by resolving keys with `r2.getUrl`.
+- Document these Convex env vars: `R2_TOKEN`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_ENDPOINT`, and `R2_BUCKET`.
+
 ## Image Ingestion
 
 Blogr image URLs are source URLs for ingestion, not durable public URLs for the target blog.
@@ -108,13 +135,13 @@ During the webhook request:
   - markdown image URLs in `content_mdx` and `content_markdown`
   - `featureImage` in YAML frontmatter when present
 - Download those images server-side before saving the article.
-- Store the images in the target app's own durable public storage, or reuse the target app's existing media/object storage system.
+- Store the images in durable object storage, preferring the existing media/object storage system when one exists and otherwise the selected/default object storage from the storage decision above.
 - Rewrite `image_url`, frontmatter `featureImage`, and every markdown image URL in the saved body to the target app's stored image URLs.
 - Preserve markdown image alt text where possible.
 - Use safe fetching: allow only `http` and `https`, verify image content types, set a timeout, enforce a reasonable file-size limit, and return a clear `400` if required images cannot be copied.
 - Avoid hotlinking Blogr URLs in public pages because those URLs can expire or return `400`.
 
-If the target app cannot store images yet, add the storage needed for this workflow instead of leaving Blogr URLs in the saved post.
+If the target app cannot store images yet, ask for the user's storage preference and default to Convex plus Cloudflare R2 through `@convex-dev/r2` when the user wants the default. Do not leave Blogr URLs in the saved post.
 
 ## MDX And Embeds
 
@@ -169,6 +196,16 @@ Use server-only env vars:
 BLOG_PUBLISH_WEBHOOK_TOKEN=replace-with-the-same-token-used-in-blogr
 ```
 
+If the target app uses the default Convex R2 storage path, also set these in Convex:
+
+```bash
+npx convex env set R2_TOKEN <token>
+npx convex env set R2_ACCESS_KEY_ID <access-key-id>
+npx convex env set R2_SECRET_ACCESS_KEY <secret-access-key>
+npx convex env set R2_ENDPOINT <endpoint>
+npx convex env set R2_BUCKET <bucket>
+```
+
 Keep helper files focused. Suggested file tree:
 
 ```text
@@ -207,7 +244,25 @@ Handle events this way:
 - Sitemap and feed outputs include webhook-published posts.
 - Cached blog routes and discovery outputs refresh after publishing.
 - The target app documents the webhook env var and endpoint.
+- The implementation handoff names every required variable and groups them by where they must be set: hosting/server env, Convex deployment env, Cloudflare/R2, database setup, and Blogr Settings.
+- The implementation handoff lists every manual setup step still required after code is merged.
 - Lint, typecheck, and build pass.
+
+## Final Handoff Requirements
+
+Before finishing, audit every setup value and manual step the target app needs.
+
+The final response must include a clear **Required setup** section with:
+
+- Vercel, hosting, or server env vars, including `BLOG_PUBLISH_WEBHOOK_TOKEN` and any site URL or framework-specific env vars needed by the implementation.
+- Convex deployment env vars, including `R2_TOKEN`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_ENDPOINT`, and `R2_BUCKET` when Convex R2 is used.
+- Database setup steps, including Convex project setup, schema deployment, migrations, seed steps, or commands the user must run.
+- Cloudflare/R2 setup steps, including bucket creation, API token creation, CORS policy, and any public access or signed URL behavior the implementation expects.
+- Blogr setup steps: webhook URL, access token, and source name to enter in Blogr Settings.
+- Optional env vars or follow-up steps, clearly labeled optional.
+- Verification commands that were run and anything the user still needs to run after deployment.
+
+Do not finish with vague wording like "set the needed env vars." Name every variable and where it must be set.
 
 ## Blogr Setup After Target App Is Deployed
 
