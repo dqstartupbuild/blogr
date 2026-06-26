@@ -1,5 +1,10 @@
 export const defaultBlogGenerationSettings = {
   articleStyle: "Informative",
+  associateBrandLinks: [] as {
+    description: string;
+    title: string;
+    url: string;
+  }[],
   globalArticleInstructions: "",
   internalLinksPerArticle: 5,
   imageStyle: "Realistic",

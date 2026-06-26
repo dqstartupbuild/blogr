@@ -5,6 +5,7 @@ import { BlogPreviewSidebar } from "./BlogPreviewSidebar";
 import { BlogPublishingIntegrationPanel } from "./BlogPublishingIntegrationPanel";
 import { BlogsPanel } from "./BlogsPanel";
 import { DashboardPanel } from "./DashboardPanel";
+import { ProductLinksPanel } from "./ProductLinksPanel";
 import { ProductSetupPanel } from "./ProductSetupPanel";
 import { TopicsPanel } from "./TopicsPanel";
 import { WorkspaceSettingsPanel } from "./WorkspaceSettingsPanel";
@@ -16,9 +17,12 @@ import type { DeleteBlog } from "../types/DeleteBlog";
 import type { DeleteTopic } from "../types/DeleteTopic";
 import type { DiscoverBlogRefreshIdeas } from "../types/DiscoverBlogRefreshIdeas";
 import type { ProductProfile } from "../types/ProductProfile";
+import type { ProductLinksState } from "../types/ProductLinksState";
 import type { ProductScanState } from "../types/ProductScanState";
+import type { RefreshProductLinks } from "../types/RefreshProductLinks";
 import type { RefreshTopicBrief } from "../types/RefreshTopicBrief";
 import type { RegenerateBlogImage } from "../types/RegenerateBlogImage";
+import type { SetProductLinkActive } from "../types/SetProductLinkActive";
 import type { TopicItem } from "../types/TopicItem";
 import type { WriteBlogOptions } from "../types/WriteBlogOptions";
 import type { WorkspaceSwitcherState } from "../types/WorkspaceSwitcherState";
@@ -38,9 +42,11 @@ type WorkspaceContentProps = {
   isSavingBlogGenerationSettings: boolean;
   mode: WorkspaceViewMode;
   product: ProductProfile;
+  productLinksState: ProductLinksState;
   publishingIntegrationStatusMessage: string;
   productScanState: ProductScanState;
   refreshTopicBrief: RefreshTopicBrief;
+  refreshProductLinks: RefreshProductLinks;
   regenerateImage?: RegenerateBlogImage;
   saveBlogGenerationSettings: (
     settings: BlogGenerationSettings,
@@ -52,6 +58,7 @@ type WorkspaceContentProps = {
   selectedBlog?: BlogItem;
   selectedBlogId: string;
   settingsStatusMessage: string;
+  setProductLinkActive: SetProductLinkActive;
   setMode: (mode: WorkspaceViewMode) => void;
   setSelectedBlogId: (blogId: string) => void;
   topics: TopicItem[];
@@ -74,9 +81,11 @@ export const WorkspaceContent = ({
   isSavingBlogGenerationSettings,
   mode,
   product,
+  productLinksState,
   publishingIntegrationStatusMessage,
   productScanState,
   refreshTopicBrief,
+  refreshProductLinks,
   regenerateImage,
   saveBlogGenerationSettings,
   saveBlogPublishingIntegration,
@@ -84,6 +93,7 @@ export const WorkspaceContent = ({
   selectedBlog,
   selectedBlogId,
   settingsStatusMessage,
+  setProductLinkActive,
   setMode,
   setSelectedBlogId,
   topics,
@@ -145,6 +155,12 @@ export const WorkspaceContent = ({
                 product={product}
                 productScanState={productScanState}
                 scanProduct={scanProduct}
+              />
+              <ProductLinksPanel
+                links={product.siteLinks}
+                productLinksState={productLinksState}
+                refreshProductLinks={refreshProductLinks}
+                setProductLinkActive={setProductLinkActive}
               />
               <BlogPublishingIntegrationPanel
                 integration={product.blogPublishingIntegration}

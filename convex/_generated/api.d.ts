@@ -41,6 +41,7 @@ import type * as products_saveProductScan from "../products/saveProductScan.js";
 import type * as products_setActiveProductWorkspace from "../products/setActiveProductWorkspace.js";
 import type * as products_updateBlogGenerationSettings from "../products/updateBlogGenerationSettings.js";
 import type * as products_updateBlogPublishingIntegration from "../products/updateBlogPublishingIntegration.js";
+import type * as products_updateProductSiteLinks from "../products/updateProductSiteLinks.js";
 import type * as r2_buildR2ImageKey from "../r2/buildR2ImageKey.js";
 import type * as r2_client from "../r2/client.js";
 import type * as r2_getImageExtensionFromContentType from "../r2/getImageExtensionFromContentType.js";
@@ -102,6 +103,7 @@ declare const fullApi: ApiFromModules<{
   "products/setActiveProductWorkspace": typeof products_setActiveProductWorkspace;
   "products/updateBlogGenerationSettings": typeof products_updateBlogGenerationSettings;
   "products/updateBlogPublishingIntegration": typeof products_updateBlogPublishingIntegration;
+  "products/updateProductSiteLinks": typeof products_updateProductSiteLinks;
   "r2/buildR2ImageKey": typeof r2_buildR2ImageKey;
   "r2/client": typeof r2_client;
   "r2/getImageExtensionFromContentType": typeof r2_getImageExtensionFromContentType;

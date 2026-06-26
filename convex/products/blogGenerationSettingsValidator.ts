@@ -1,5 +1,11 @@
 import { v } from "convex/values";
 
+const associateBrandLinkValidator = v.object({
+  description: v.string(),
+  title: v.string(),
+  url: v.string(),
+});
+
 export const blogGenerationSettingsValidator = v.object({
   articleStyle: v.union(
     v.literal("Informative"),
@@ -15,6 +21,7 @@ export const blogGenerationSettingsValidator = v.object({
     v.literal("Analytical"),
     v.literal("Narrative"),
   ),
+  associateBrandLinks: v.optional(v.array(associateBrandLinkValidator)),
   globalArticleInstructions: v.string(),
   internalLinksPerArticle: v.union(
     v.literal(0),

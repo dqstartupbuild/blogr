@@ -8,6 +8,7 @@ import { runBlogResearch } from "./runBlogResearch";
 import { storeGeneratedBlogImages } from "./storeGeneratedBlogImages";
 import { writeBlogDraft } from "./writeBlogDraft";
 import { normalizeBlogGenerationSettings } from "@/features/workspace/utils/normalizeBlogGenerationSettings";
+import { filterActiveLinks } from "@/features/workspace/utils/filterActiveLinks";
 import type { BlogGenerationSettings } from "@/features/workspace/types/BlogGenerationSettings";
 import { searchProductRagContext } from "../rag/searchProductRagContext";
 import type { GeneratedBlog } from "./types/GeneratedBlog";
@@ -46,13 +47,15 @@ export const generateBlogForKeyword = async ({
       token: convexAuthToken,
     }),
   ]);
+  const activeSiteLinks = filterActiveLinks(product.siteLinks || []);
   const internalLinks = chooseInternalLinks({
     keyword,
-    links: product.siteLinks || [],
+    links: activeSiteLinks,
     limit: settings.internalLinksPerArticle,
   });
   const sourceLinks = buildSourceLinks(sources);
   const textBlog = await writeBlogDraft({
+    associateBrandLinks: settings.associateBrandLinks,
     images: [],
     internalLinks,
     keyword,

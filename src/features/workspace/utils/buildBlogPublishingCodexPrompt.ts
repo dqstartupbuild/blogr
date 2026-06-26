@@ -7,7 +7,7 @@ export const buildBlogPublishingCodexPrompt = (productName: string) => {
 
   return `Build a blog publishing receiver for ${productLabel}.
 
-Blogger will send finished posts when I click Publish. Add a public, token-protected webhook endpoint at:
+Blogr will send finished posts when I click Publish. Add a public, token-protected webhook endpoint at:
 
 POST ${blogPublishingReceiverEndpoint}
 
@@ -34,12 +34,12 @@ Behavior:
 - Rewrite image_url, frontmatter featureImage, and every markdown image URL in the saved body to the target app's stored image URLs before saving the post.
 - Preserve image alt text from markdown image syntax where possible.
 - Use safe server-side image fetching: allow only http/https URLs, verify image content types, set a timeout, enforce a reasonable file-size limit, and fail with a clear 400 if required images cannot be copied.
-- Do not hotlink Blogger image URLs in public pages; Blogger image URLs can be signed and expire.
-- Render Blogger's MDX/markdown body well: strip YAML frontmatter from visible content, support headings, paragraphs, bold/italic, links, lists, blockquotes, tables, horizontal rules, inline code, fenced code blocks, and markdown images.
+- Do not hotlink Blogr image URLs in public pages; Blogr image URLs can be signed and expire.
+- Render Blogr's MDX/markdown body well: strip YAML frontmatter from visible content, support headings, paragraphs, bold/italic, links, lists, blockquotes, tables, horizontal rules, inline code, fenced code blocks, and markdown images.
 - Make every heading (H2, H3, etc.) anchor-friendly: add a stable, URL-safe ID attribute to each heading (e.g., slugify the heading text) so links like #my-heading work.
 - Implement smooth scroll-to-section when users click any table-of-contents anchor or any link with a hash fragment href (e.g., <a href="#my-heading"> or the browser's auto-generated anchor links). Use scrollIntoView with behavior: 'smooth' and block: 'start'. The scroll should work on client-side navigation (React Router/Navigation) and on full page loads alike — on full page loads, read window.location.hash and scroll after the page renders.
 - Include a generated table-of-contents component or markup at the top of each article (before the first heading) so readers can jump to any section with one click. Link each TOC entry to the corresponding heading ID via hash href.
-- Support Blogger's YouTube output. Render raw iframe embeds that use youtube.com/embed or youtube-nocookie.com/embed safely, and convert standalone YouTube markdown links or watch URLs into embedded players.
+- Support Blogr's YouTube output. Render raw iframe embeds that use youtube.com/embed or youtube-nocookie.com/embed safely, and convert standalone YouTube markdown links or watch URLs into embedded players.
 - Sanitize rendered content so unsafe scripts or arbitrary event handlers cannot run.
 - Add or reuse /blog and /blog/[slug] pages so published posts are visible.
 - Make webhook-published posts part of SEO/discovery outputs: sitemap lastmod entries, RSS/feed output if the app has one, and any existing blog index/search/static params metadata flow.

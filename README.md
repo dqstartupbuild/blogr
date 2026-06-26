@@ -1,6 +1,6 @@
-# Blogger
+# Blogr
 
-Blogger is a simple Next.js workspace for turning saved keywords into longform MDX blog posts for a user's niche.
+Blogr is a simple Next.js workspace for turning saved keywords into longform MDX blog posts for a user's niche.
 
 The app uses Clerk for auth, Convex for data, Firecrawl for website and web research, Apify for Google topic discovery, Replicate for the writer and image models, Cloudflare R2 for stored images, and OpenAI embeddings for product context retrieval.
 
@@ -64,9 +64,11 @@ npx convex env set R2_BUCKET <bucket>
 ## Feature Docs
 
 - [Product website ingestion](docs/product-website-ingestion.md)
+- [Product link management](docs/product-link-management.md)
 - [Topic workspace](docs/topic-workspace.md)
 - [Topic discovery](docs/topic-discovery.md)
 - [Blog generation workflow](docs/blog-generation-workflow.md)
+- [Associate brand links](docs/associate-brand-links.md)
 - [Article image planning agent](docs/article-image-planning-agent.md)
 - [RAG product context](docs/rag-product-context.md)
 - [Blog generation reliability](docs/blog-generation-reliability.md)

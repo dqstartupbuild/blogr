@@ -2,6 +2,7 @@ import type { BlogGenerationSettings } from "../types/BlogGenerationSettings";
 
 export const defaultBlogGenerationSettings: BlogGenerationSettings = {
   articleStyle: "Informative",
+  associateBrandLinks: [],
   globalArticleInstructions: "",
   internalLinksPerArticle: 5,
   imageStyle: "Realistic",

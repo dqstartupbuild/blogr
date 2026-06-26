@@ -13,11 +13,13 @@ Convex stores product workspaces, blog generation settings, blog publishing inte
 
 The schema lives in `convex/schema.ts`.
 
-`products` are the workspace records. Each product can include `blogGenerationSettings`, which stores the article style, writing rules, internal link count, image choices, and article extras for that workspace.
+`products` are the workspace records. Each product can include `blogGenerationSettings`, which stores the article style, writing rules, internal link count, associate brand links, image choices, and article extras for that workspace.
 
 Each product can also include `blogPublishingIntegration`, which stores that product's webhook URL, access token, source name, enabled state, and update time. Public product queries sanitize this value and return `hasAccessToken` instead of the token.
 
 Product scan images store R2 object keys in `assetKeys` and `productImageKeys`.
+
+Product `siteLinks` include optional `isActive`. Missing values are active. Links marked inactive stay in the workspace but are excluded from topic discovery, blog writer context, and internal link selection.
 
 Generated blog images can include an `r2Key` beside the served image URL. Blog and product queries use those keys to return fresh signed URLs from the Convex R2 component.
 

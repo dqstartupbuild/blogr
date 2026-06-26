@@ -16,6 +16,10 @@ export const updateBlogGenerationSettings = mutation({
       throw new Error("Workspace not found.");
     }
 
+    if ((args.settings.associateBrandLinks || []).length > 5) {
+      throw new Error("Add up to 5 associate brand links.");
+    }
+
     await ctx.db.patch(args.productId, {
       blogGenerationSettings: args.settings,
       updatedAt: Date.now(),

@@ -7,6 +7,7 @@ import { productRag } from "./client";
 import { productRagKey } from "./productRagKey";
 
 const linkValidator = v.object({
+  isActive: v.optional(v.boolean()),
   title: v.string(),
   url: v.string(),
   reason: v.optional(v.string()),

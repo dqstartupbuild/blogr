@@ -1,10 +1,12 @@
 import type { BlogImage } from "./types/BlogImage";
 import type { StoredProduct } from "./types/StoredProduct";
+import type { AssociateBrandLink } from "@/features/workspace/types/AssociateBrandLink";
 import type { BlogGenerationSettings } from "@/features/workspace/types/BlogGenerationSettings";
 import type { LinkItem } from "@/features/workspace/types/LinkItem";
 import { buildYoutubeEmbedMdx } from "./buildYoutubeEmbedMdx";
 
 type CreateFallbackMdxOptions = {
+  associateBrandLinks: AssociateBrandLink[];
   images: BlogImage[];
   internalLinks: LinkItem[];
   keyword: string;
@@ -16,6 +18,7 @@ type CreateFallbackMdxOptions = {
 };
 
 export const createFallbackMdx = ({
+  associateBrandLinks,
   images,
   internalLinks,
   keyword,
@@ -30,6 +33,15 @@ export const createFallbackMdx = ({
     .slice(0, 3)
     .map((link) => `- [${link.title}](${link.url})`)
     .join("\n");
+  const associateLinks = associateBrandLinks
+    .slice(0, 5)
+    .map((link) => {
+      const label = link.title || link.url;
+      const description = link.description ? `, ${link.description}` : "";
+
+      return `- [${label}](${link.url})${description}`;
+    })
+    .join("\n");
   const citations = sources
     .slice(0, 4)
     .map((source) => `- [${source.title}](${source.url})`)
@@ -40,6 +52,9 @@ export const createFallbackMdx = ({
     .filter(Boolean)
     .join("\n\n");
   const usefulLinks = links ? `## Useful Links\n\n${links}` : "";
+  const helpfulBrandLinks = associateLinks
+    ? `## Helpful Brand Links\n\n${associateLinks}`
+    : "";
   const helpfulVideos = videos ? `## Helpful Videos\n\n${videos}` : "";
   const sourceSection = citations ? `## Sources\n\n${citations}` : "";
   const callToAction =
@@ -50,6 +65,7 @@ export const createFallbackMdx = ({
     ? [
         "- [Direct Answer](#direct-answer)",
         links ? "- [Useful Links](#useful-links)" : "",
+        associateLinks ? "- [Helpful Brand Links](#helpful-brand-links)" : "",
         videos ? "- [Helpful Videos](#helpful-videos)" : "",
         citations ? "- [Sources](#sources)" : "",
         callToAction ? "- [Next Step](#next-step)" : "",
@@ -81,6 +97,8 @@ ${tableOfContentsSection}
 Start with the reader's real problem, explain the simple path forward, and connect each idea to something they can try today.
 
 ${usefulLinks}
+
+${helpfulBrandLinks}
 
 ${helpfulVideos}
 

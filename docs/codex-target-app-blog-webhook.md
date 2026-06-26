@@ -1,16 +1,16 @@
 # Codex Target App Blog Webhook Brief
 
-Copy this brief into Codex inside any target app that should receive blogs from Blogger.
+Copy this brief into Codex inside any target app that should receive blogs from Blogr.
 
 ## Prompt
 
 Build a blog publishing receiver for this app.
 
-The source app is Blogger. It sends generated blog posts to a webhook when a user clicks **Publish**.
+The source app is Blogr. It sends generated blog posts to a webhook when a user clicks **Publish**.
 
 Create a public, token-protected webhook endpoint and a simple blog system that can store and render those posts.
 
-The target app must own the public blog content after a publish. Do not store Blogger image URLs as permanent public image URLs. Blogger can send signed image URLs that are only temporary.
+The target app must own the public blog content after a publish. Do not store Blogr image URLs as permanent public image URLs. Blogr can send signed image URLs that are only temporary.
 
 ## Incoming Webhook
 
@@ -46,7 +46,7 @@ Expected payload:
         "content_html": "",
         "image_url": "https://example.com/image.jpg",
         "tags": ["keyword"],
-        "source": "Blogger",
+        "source": "Blogr",
         "created_at": "2026-06-23T15:30:00.000Z",
         "updated_at": "2026-06-23T15:45:00.000Z"
       }
@@ -73,7 +73,7 @@ Also support this single-article update shape for forward compatibility:
       "content_html": "",
       "image_url": "https://example.com/image.jpg",
       "tags": ["keyword"],
-      "source": "Blogger",
+      "source": "Blogr",
       "created_at": "2026-06-23T15:30:00.000Z",
       "updated_at": "2026-06-23T16:05:00.000Z"
     }
@@ -85,7 +85,7 @@ Also support this single-article update shape for forward compatibility:
 
 Create or reuse a blog post model with these fields:
 
-- `sourceId`: source article ID from Blogger.
+- `sourceId`: source article ID from Blogr.
 - `title`
 - `slug`
 - `description`: from `meta_description`.
@@ -99,7 +99,7 @@ Upsert by `slug`. If a post with that slug already exists, update it. If not, cr
 
 ## Image Ingestion
 
-Blogger image URLs are source URLs for ingestion, not durable public URLs for the target blog.
+Blogr image URLs are source URLs for ingestion, not durable public URLs for the target blog.
 
 During the webhook request:
 
@@ -112,13 +112,13 @@ During the webhook request:
 - Rewrite `image_url`, frontmatter `featureImage`, and every markdown image URL in the saved body to the target app's stored image URLs.
 - Preserve markdown image alt text where possible.
 - Use safe fetching: allow only `http` and `https`, verify image content types, set a timeout, enforce a reasonable file-size limit, and return a clear `400` if required images cannot be copied.
-- Avoid hotlinking Blogger URLs in public pages because those URLs can expire or return `400`.
+- Avoid hotlinking Blogr URLs in public pages because those URLs can expire or return `400`.
 
-If the target app cannot store images yet, add the storage needed for this workflow instead of leaving Blogger URLs in the saved post.
+If the target app cannot store images yet, add the storage needed for this workflow instead of leaving Blogr URLs in the saved post.
 
 ## MDX And Embeds
 
-Blogger sends `content_format: "mdx"` and keeps the full article body in `content_mdx`. The target app should render the formats Blogger writes, not only plain paragraphs.
+Blogr sends `content_format: "mdx"` and keeps the full article body in `content_mdx`. The target app should render the formats Blogr writes, not only plain paragraphs.
 
 Support at least:
 
@@ -166,7 +166,7 @@ src/app/api/webhooks/blog-publisher/route.ts
 Use server-only env vars:
 
 ```bash
-BLOG_PUBLISH_WEBHOOK_TOKEN=replace-with-the-same-token-used-in-blogger
+BLOG_PUBLISH_WEBHOOK_TOKEN=replace-with-the-same-token-used-in-blogr
 ```
 
 Keep helper files focused. Suggested file tree:
@@ -198,10 +198,10 @@ Handle events this way:
 ## Acceptance Checklist
 
 - The webhook rejects requests without the bearer token.
-- The webhook accepts the Blogger payload.
+- The webhook accepts the Blogr payload.
 - Publishing the same slug twice updates one post instead of creating duplicates.
 - The webhook copies `image_url` and markdown images into target-owned storage.
-- Saved article content uses target-owned image URLs, not Blogger URLs.
+- Saved article content uses target-owned image URLs, not Blogr URLs.
 - `/blog` lists the published post.
 - `/blog/[slug]` renders the post body, feature image, inline images, tables, code blocks, and YouTube videos.
 - Sitemap and feed outputs include webhook-published posts.
@@ -209,14 +209,14 @@ Handle events this way:
 - The target app documents the webhook env var and endpoint.
 - Lint, typecheck, and build pass.
 
-## Blogger Setup After Target App Is Deployed
+## Blogr Setup After Target App Is Deployed
 
-Open Blogger, choose the product workspace, then go to **Settings** and use the **Publishing** panel.
+Open Blogr, choose the product workspace, then go to **Settings** and use the **Publishing** panel.
 
 Enter:
 
 - Webhook URL: `https://target-app-domain.com/api/webhooks/blog-publisher`
 - Access token: the same value saved in the target app as `BLOG_PUBLISH_WEBHOOK_TOKEN`
-- Source name: `Blogger`
+- Source name: `Blogr`
 
-Then open Blogger, choose a generated post, and click **Publish**.
+Then open Blogr, choose a generated post, and click **Publish**.

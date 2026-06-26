@@ -19,7 +19,7 @@ export const updateBlogPublishingIntegration = mutation({
     }
 
     const webhookUrl = args.webhookUrl.trim();
-    const sourceName = args.sourceName.trim() || "Blogger";
+    const sourceName = args.sourceName.trim() || "Blogr";
     const existingAccessToken =
       product.blogPublishingIntegration?.accessToken || "";
     const accessToken = args.accessToken?.trim() || existingAccessToken;

@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 const linkItemSchema = z.object({
+  isActive: z.boolean().optional(),
   reason: z.string().optional(),
   title: z.string(),
   url: z.string(),

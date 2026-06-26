@@ -1,3 +1,4 @@
+import { filterActiveLinks } from "@/features/workspace/utils/filterActiveLinks";
 import type { StoredProduct } from "./types/StoredProduct";
 
 export const buildBlogWriterProductContext = (product: StoredProduct) => {
@@ -10,7 +11,7 @@ export const buildBlogWriterProductContext = (product: StoredProduct) => {
       name: product.name,
       niche: product.niche,
       rawContext: product.rawContext,
-      siteLinks: product.siteLinks,
+      siteLinks: filterActiveLinks(product.siteLinks),
       websiteUrl: product.websiteUrl,
     },
     null,

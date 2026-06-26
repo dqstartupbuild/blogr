@@ -12,6 +12,7 @@ import { listBlogsQuery } from "@/server/convex/references/listBlogsQuery";
 import { listTopicsQuery } from "@/server/convex/references/listTopicsQuery";
 import { saveProductScanMutation } from "@/server/convex/references/saveProductScanMutation";
 import { updateBlogPublishingIntegrationMutation } from "@/server/convex/references/updateBlogPublishingIntegrationMutation";
+import { updateProductSiteLinksMutation } from "@/server/convex/references/updateProductSiteLinksMutation";
 import { updateTopicNotesMutation } from "@/server/convex/references/updateTopicNotesMutation";
 import { updateTopicStatusMutation } from "@/server/convex/references/updateTopicStatusMutation";
 import { updateBlogGenerationSettingsMutation } from "@/server/convex/references/updateBlogGenerationSettingsMutation";
@@ -24,11 +25,15 @@ import { mapConvexTopic } from "../mappers/mapConvexTopic";
 import { mapProductScanResult } from "../mappers/mapProductScanResult";
 import { buildBlogRefreshSeedKeyword } from "../utils/buildBlogRefreshSeedKeyword";
 import { buildExistingTopicBriefNotes } from "../utils/buildExistingTopicBriefNotes";
+import { filterActiveLinks } from "../utils/filterActiveLinks";
+import { mergeProductLinkStates } from "../utils/mergeProductLinkStates";
 import { normalizeBlogGenerationSettings } from "../utils/normalizeBlogGenerationSettings";
+import { setProductLinkActiveState } from "../utils/setProductLinkActiveState";
 import type { BlogGenerateResponse } from "../types/BlogGenerateResponse";
 import type { BlogGenerationSettings } from "../types/BlogGenerationSettings";
 import type { BlogItem } from "../types/BlogItem";
 import type { ProductProfile } from "../types/ProductProfile";
+import type { ProductLinksRefreshResponse } from "../types/ProductLinksRefreshResponse";
 import type { ProductScanResponse } from "../types/ProductScanResponse";
 import type { WriteBlogOptions } from "../types/WriteBlogOptions";
 import type { WorkspaceSwitcherState } from "../types/WorkspaceSwitcherState";
@@ -49,6 +54,9 @@ export const useLiveWorkspace = (
   } | null>(null);
   const [productScanMessage, setProductScanMessage] = useState("");
   const [isScanningProduct, setIsScanningProduct] = useState(false);
+  const [productLinksMessage, setProductLinksMessage] = useState("");
+  const [isRefreshingProductLinks, setIsRefreshingProductLinks] =
+    useState(false);
   const [settingsStatusMessage, setSettingsStatusMessage] = useState("");
   const [
     publishingIntegrationStatusMessage,
@@ -80,6 +88,7 @@ export const useLiveWorkspace = (
   const deleteBlogRecord = useMutation(deleteBlogMutation);
   const deleteTopicRecord = useMutation(deleteTopicMutation);
   const saveProductScan = useMutation(saveProductScanMutation);
+  const updateProductSiteLinks = useMutation(updateProductSiteLinksMutation);
   const updateBlogGenerationSettings = useMutation(
     updateBlogGenerationSettingsMutation,
   );
@@ -148,12 +157,17 @@ export const useLiveWorkspace = (
       }
 
       if (data.product) {
+        const siteLinks = mergeProductLinkStates({
+          currentLinks: product.siteLinks,
+          refreshedLinks: data.product.siteLinks,
+        });
         const savedProductId = await saveProductScan({
           ...data.product,
+          siteLinks,
           productId: convexProductId || undefined,
         });
         setScannedProduct({
-          product: mapProductScanResult(data.product),
+          product: mapProductScanResult({ ...data.product, siteLinks }),
           productId: savedProductId,
         });
       }
@@ -168,6 +182,96 @@ export const useLiveWorkspace = (
       );
     } finally {
       setIsScanningProduct(false);
+    }
+  };
+
+  const refreshProductLinks = async () => {
+    if (!convexProductId) {
+      setProductLinksMessage("Choose a workspace first.");
+      return;
+    }
+
+    if (!product.websiteUrl.trim()) {
+      setProductLinksMessage("Add your website first.");
+      return;
+    }
+
+    setIsRefreshingProductLinks(true);
+    setProductLinksMessage("Refreshing links.");
+
+    try {
+      const response = await fetch("/api/product/links/refresh", {
+        body: JSON.stringify({ websiteUrl: product.websiteUrl }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+        method: "POST",
+      });
+      const data = (await response
+        .json()
+        .catch(() => ({}))) as ProductLinksRefreshResponse;
+
+      if (!response.ok || !data.siteLinks) {
+        throw new Error(data.error || "Could not refresh links yet.");
+      }
+
+      const siteLinks = mergeProductLinkStates({
+        currentLinks: product.siteLinks,
+        refreshedLinks: data.siteLinks,
+      });
+
+      await updateProductSiteLinks({
+        productId: convexProductId,
+        siteLinks,
+      });
+      setScannedProduct({
+        product: {
+          ...product,
+          siteLinks,
+        },
+        productId: activeProductId,
+      });
+      setProductLinksMessage("Links refreshed.");
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "Could not refresh links yet.";
+      setProductLinksMessage(message);
+    } finally {
+      setIsRefreshingProductLinks(false);
+    }
+  };
+
+  const setProductLinkActive = async (url: string, isActive: boolean) => {
+    if (!convexProductId) {
+      setProductLinksMessage("Choose a workspace first.");
+      return;
+    }
+
+    const siteLinks = setProductLinkActiveState({
+      isActive,
+      links: product.siteLinks,
+      url,
+    });
+
+    try {
+      await updateProductSiteLinks({
+        productId: convexProductId,
+        siteLinks,
+      });
+      setScannedProduct({
+        product: {
+          ...product,
+          siteLinks,
+        },
+        productId: activeProductId,
+      });
+      setProductLinksMessage(
+        isActive ? "Link turned back on." : "Link paused.",
+      );
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "Could not save that link.";
+      setProductLinksMessage(message);
     }
   };
 
@@ -195,10 +299,13 @@ export const useLiveWorkspace = (
           name: productResult.name,
           niche: productResult.niche,
           rawContext: productResult.rawContext,
-          siteLinks: productResult.siteLinks,
+          siteLinks: filterActiveLinks(productResult.siteLinks),
           websiteUrl: productResult.websiteUrl,
         }
-      : product;
+      : {
+          ...product,
+          siteLinks: filterActiveLinks(product.siteLinks),
+        };
 
     if (
       !seedKeyword?.trim() &&
@@ -294,10 +401,13 @@ export const useLiveWorkspace = (
           name: productResult.name,
           niche: productResult.niche,
           rawContext: productResult.rawContext,
-          siteLinks: productResult.siteLinks,
+          siteLinks: filterActiveLinks(productResult.siteLinks),
           websiteUrl: productResult.websiteUrl,
         }
-      : product;
+      : {
+          ...product,
+          siteLinks: filterActiveLinks(product.siteLinks),
+        };
     const searchKeyword =
       seedKeyword?.trim() || buildBlogRefreshSeedKeyword(blog);
 
@@ -526,12 +636,17 @@ export const useLiveWorkspace = (
     isSavingBlogGenerationSettings,
     mode,
     product,
+    productLinksState: {
+      isRefreshing: isRefreshingProductLinks,
+      message: productLinksMessage,
+    },
     publishingIntegrationStatusMessage,
     productScanState: {
       isScanning: isScanningProduct,
       message: productScanMessage,
     },
     regenerateImage,
+    refreshProductLinks,
     saveBlogGenerationSettings,
     saveBlogPublishingIntegration,
     scanProduct,
@@ -539,6 +654,7 @@ export const useLiveWorkspace = (
     selectedBlogId: activeSelectedBlogId,
     settingsStatusMessage,
     refreshTopicBrief,
+    setProductLinkActive,
     setMode,
     setSelectedBlogId,
     topics,

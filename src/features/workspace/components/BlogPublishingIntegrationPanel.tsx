@@ -33,7 +33,7 @@ export const BlogPublishingIntegrationPanel = ({
   const [draft, setDraft] = useState<BlogPublishingIntegrationDraft>({
     accessToken: "",
     enabled: integration.enabled,
-    sourceName: integration.sourceName || "Blogger",
+    sourceName: integration.sourceName || "Blogr",
     webhookUrl: integration.webhookUrl,
   });
 
@@ -41,13 +41,13 @@ export const BlogPublishingIntegrationPanel = ({
     await saveIntegration({
       accessToken: "",
       enabled: false,
-      sourceName: draft.sourceName || "Blogger",
+      sourceName: draft.sourceName || "Blogr",
       webhookUrl: "",
     });
     setDraft({
       accessToken: "",
       enabled: false,
-      sourceName: "Blogger",
+      sourceName: "Blogr",
       webhookUrl: "",
     });
   };
@@ -116,7 +116,7 @@ export const BlogPublishingIntegrationPanel = ({
                     sourceName: event.target.value,
                   }))
                 }
-                placeholder="Blogger"
+                placeholder="Blogr"
                 value={draft.sourceName}
               />
             </div>

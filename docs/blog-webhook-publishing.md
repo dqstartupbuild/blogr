@@ -20,7 +20,7 @@ Each product workspace can have its own publishing integration. This lets one ac
 8. If the product does not have a saved integration, the route falls back to the deployment env vars.
 9. The webhook request is sent with `Authorization: Bearer <token>`.
 10. The target app copies article images into its own durable public storage, rewrites the saved article image URLs, and creates or updates the public blog post by `slug`.
-11. After a successful webhook response, Blogger marks the saved blog as `published`.
+11. After a successful webhook response, Blogr marks the saved blog as `published`.
 
 Publishing uses the currently loaded draft. In the editor, that means a user can publish the text they are looking at after making changes.
 
@@ -32,7 +32,7 @@ Open **Settings** for the active product workspace, then use the **Publishing** 
 
 The panel starts with a **Setup guide**. It gives the user the full workflow, a copyable Codex prompt for the target app, the webhook path, the token env var, a sample payload, and a quick checklist for the receiving app.
 
-The copyable Codex prompt tells the target app to copy Blogger image URLs into the target app's own durable public storage, rewrite article image URLs before saving, render Blogger's MDX and YouTube embeds, and include webhook-published posts in sitemap/feed discovery outputs.
+The copyable Codex prompt tells the target app to copy Blogr image URLs into the target app's own durable public storage, rewrite article image URLs before saving, render Blogr's MDX and YouTube embeds, and include webhook-published posts in sitemap/feed discovery outputs.
 
 The user enters:
 
@@ -50,16 +50,16 @@ If a user clicks **Publish** before connecting a product, the publish message in
 
 Product settings are the normal setup path. Env vars still work as a fallback for demos, previews, or single-destination deployments.
 
-Set these env vars on the Blogger deployment:
+Set these env vars on the Blogr deployment:
 
 ```bash
 BLOG_PUBLISH_WEBHOOK_URL=https://your-target-app.com/api/webhooks/blog-publisher
 BLOG_PUBLISH_WEBHOOK_TOKEN=replace-with-a-long-secret
-BLOG_PUBLISH_SOURCE_NAME=Blogger
+BLOG_PUBLISH_SOURCE_NAME=Blogr
 BLOG_PUBLISH_TIMEOUT_MS=15000
 ```
 
-`BLOG_PUBLISH_SOURCE_NAME` defaults to `Blogger`. `BLOG_PUBLISH_TIMEOUT_MS` defaults to 15000 and is capped at 60000.
+`BLOG_PUBLISH_SOURCE_NAME` defaults to `Blogr`. `BLOG_PUBLISH_TIMEOUT_MS` defaults to 15000 and is capped at 60000.
 
 ## Webhook Payload
 
@@ -82,7 +82,7 @@ The route sends this shape:
         "content_html": "",
         "image_url": "https://example.com/image.jpg",
         "tags": ["keyword"],
-        "source": "Blogger",
+        "source": "Blogr",
         "created_at": "2026-06-23T15:30:00.000Z",
         "updated_at": "2026-06-23T15:45:00.000Z"
       }
@@ -91,7 +91,7 @@ The route sends this shape:
 }
 ```
 
-MDX is the source of truth. `content_html` is intentionally blank because this app stores and edits articles as MDX. Blogger can include YAML frontmatter, markdown images, tables, code blocks, and YouTube iframe embeds in the MDX body.
+MDX is the source of truth. `content_html` is intentionally blank because this app stores and edits articles as MDX. Blogr can include YAML frontmatter, markdown images, tables, code blocks, and YouTube iframe embeds in the MDX body.
 
 ## Target App Expectations
 
@@ -105,7 +105,7 @@ The receiving app should:
 - Store `content_mdx` or `content_markdown`.
 - Treat `image_url` and markdown image URLs as temporary source URLs.
 - Download article images during the webhook request, store them in the target app's durable public storage, and rewrite `image_url`, frontmatter `featureImage`, and markdown image URLs before saving the post.
-- Render Blogger MDX features including frontmatter stripping, headings, links, lists, blockquotes, tables, code, markdown images, and YouTube iframe embeds or YouTube links.
+- Render Blogr MDX features including frontmatter stripping, headings, links, lists, blockquotes, tables, code, markdown images, and YouTube iframe embeds or YouTube links.
 - Include webhook-published posts in sitemap/feed outputs and refresh cached blog pages after publishing.
 - Return a JSON response with `{ "message": "Published." }`.
 

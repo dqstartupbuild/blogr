@@ -10,6 +10,7 @@ export const buildSiteLinkItems = (links: string[]): LinkItem[] => {
       .replace(/[-_]/g, " ");
 
     return {
+      isActive: true,
       title: label || parsed.hostname.replace(/^www\./i, ""),
       url,
     };

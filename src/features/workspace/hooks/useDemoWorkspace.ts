@@ -8,8 +8,11 @@ import { demoTopicDiscoveryResult } from "../constants/demoTopicDiscoveryResult"
 import { demoTopics } from "../constants/demoTopics";
 import { defaultBlogGenerationSettings } from "../constants/defaultBlogGenerationSettings";
 import { emptyProduct } from "../constants/emptyProduct";
+import { buildInitialProductLink } from "../mappers/buildInitialProductLink";
 import { buildProductWorkspaceName } from "../mappers/buildProductWorkspaceName";
 import { buildExistingTopicBriefNotes } from "../utils/buildExistingTopicBriefNotes";
+import { filterActiveLinks } from "../utils/filterActiveLinks";
+import { setProductLinkActiveState } from "../utils/setProductLinkActiveState";
 import type { BlogItem } from "../types/BlogItem";
 import type { BlogGenerationSettings } from "../types/BlogGenerationSettings";
 import type { CreateProductWorkspaceInput } from "../types/CreateProductWorkspaceInput";
@@ -35,6 +38,7 @@ export const useDemoWorkspace = (initialMode: WorkspaceViewMode) => {
   });
   const [productScanMessage, setProductScanMessage] = useState("");
   const [isScanningProduct, setIsScanningProduct] = useState(false);
+  const [productLinksMessage, setProductLinksMessage] = useState("");
   const [topicsByWorkspace, setTopicsByWorkspace] = useState<
     Record<string, TopicItem[]>
   >({
@@ -106,6 +110,48 @@ export const useDemoWorkspace = (initialMode: WorkspaceViewMode) => {
     });
     setProductScanMessage("Saved in preview.");
     setIsScanningProduct(false);
+  };
+
+  const refreshProductLinks = () => {
+    setProductsByWorkspace((current) => {
+      const product = current[activeWorkspaceId] || emptyProduct;
+      const siteLinks =
+        product.siteLinks.length > 0
+          ? product.siteLinks
+          : product.websiteUrl
+            ? [buildInitialProductLink(product.websiteUrl)]
+            : [];
+
+      return {
+        ...current,
+        [activeWorkspaceId]: {
+          ...product,
+          siteLinks,
+        },
+      };
+    });
+    setProductLinksMessage("Links refreshed in preview.");
+  };
+
+  const setProductLinkActive = (url: string, isActive: boolean) => {
+    setProductsByWorkspace((current) => {
+      const product = current[activeWorkspaceId] || emptyProduct;
+
+      return {
+        ...current,
+        [activeWorkspaceId]: {
+          ...product,
+          siteLinks: setProductLinkActiveState({
+            isActive,
+            links: product.siteLinks,
+            url,
+          }),
+        },
+      };
+    });
+    setProductLinksMessage(
+      isActive ? "Link turned back on in preview." : "Link paused in preview.",
+    );
   };
 
   const addTopic = (keyword: string, notes?: string) => {
@@ -196,7 +242,7 @@ export const useDemoWorkspace = (initialMode: WorkspaceViewMode) => {
         : `# ${title}\n\nThis draft is ready for the live AI workflow. Add your keys, scan your site, and the app will replace this with the full researched post.`,
       images: [],
       updatedAt: Date.now(),
-      internalLinks: product.siteLinks.slice(
+      internalLinks: filterActiveLinks(product.siteLinks).slice(
         0,
         blogGenerationSettings.internalLinksPerArticle,
       ),
@@ -269,7 +315,7 @@ export const useDemoWorkspace = (initialMode: WorkspaceViewMode) => {
                 integration.accessToken ||
                   product.blogPublishingIntegration?.hasAccessToken,
               ),
-            sourceName: integration.sourceName.trim() || "Blogger",
+            sourceName: integration.sourceName.trim() || "Blogr",
             updatedAt: Date.now(),
             webhookUrl: integration.enabled ? integration.webhookUrl.trim() : "",
           },
@@ -344,6 +390,10 @@ export const useDemoWorkspace = (initialMode: WorkspaceViewMode) => {
     isSavingBlogPublishingIntegration: false,
     isSavingBlogGenerationSettings: false,
     product,
+    productLinksState: {
+      isRefreshing: false,
+      message: productLinksMessage,
+    },
     publishingIntegrationStatusMessage,
     productScanState: {
       isScanning: isScanningProduct,
@@ -362,8 +412,10 @@ export const useDemoWorkspace = (initialMode: WorkspaceViewMode) => {
     deleteBlog,
     deleteTopic,
     refreshTopicBrief,
+    refreshProductLinks,
     saveBlogGenerationSettings,
     saveBlogPublishingIntegration,
+    setProductLinkActive,
     workspaceSwitcher: {
       activeWorkspace,
       activeWorkspaceId,

@@ -10,10 +10,12 @@ import type { BlogImage } from "./types/BlogImage";
 import type { GeneratedBlog } from "./types/GeneratedBlog";
 import type { ResearchSource } from "./types/ResearchSource";
 import type { StoredProduct } from "./types/StoredProduct";
+import type { AssociateBrandLink } from "@/features/workspace/types/AssociateBrandLink";
 import type { BlogGenerationSettings } from "@/features/workspace/types/BlogGenerationSettings";
 import type { LinkItem } from "@/features/workspace/types/LinkItem";
 
 type WriteBlogDraftOptions = {
+  associateBrandLinks: AssociateBrandLink[];
   images: BlogImage[];
   internalLinks: LinkItem[];
   keyword: string;
@@ -28,6 +30,7 @@ type WriteBlogDraftOptions = {
 };
 
 export const writeBlogDraft = async ({
+  associateBrandLinks,
   images,
   internalLinks,
   keyword,
@@ -41,6 +44,7 @@ export const writeBlogDraft = async ({
   youtubeVideos,
 }: WriteBlogDraftOptions): Promise<GeneratedBlog> => {
   const prompt = buildBlogWriterPrompt({
+    associateBrandLinks,
     images,
     internalLinks,
     keyword,
@@ -64,6 +68,7 @@ export const writeBlogDraft = async ({
   const rawMdx =
     draft.mdx ||
     createFallbackMdx({
+      associateBrandLinks,
       images,
       internalLinks,
       keyword,

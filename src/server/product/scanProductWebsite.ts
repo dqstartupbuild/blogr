@@ -1,19 +1,16 @@
 import { buildRawProductContext } from "./buildRawProductContext";
 import { buildSiteLinkItems } from "./buildSiteLinkItems";
+import { collectProductSiteLinkUrls } from "./collectProductSiteLinkUrls";
 import { extractProductProfile } from "./extractProductProfile";
 import { extractBrandingAssets } from "../firecrawl/extractBrandingAssets";
 import { extractBrandingColors } from "../firecrawl/extractBrandingColors";
 import { extractHtmlColorCandidates } from "../firecrawl/extractHtmlColorCandidates";
 import { fetchDetailMarkdown } from "../firecrawl/fetchDetailMarkdown";
-import { fetchFirecrawlCrawlLinks } from "../firecrawl/fetchFirecrawlCrawlLinks";
 import { fetchPrimaryScrape } from "../firecrawl/fetchPrimaryScrape";
-import { fetchSitemapLinks } from "../firecrawl/fetchSitemapLinks";
 import { getFirecrawlApiKey } from "../firecrawl/getFirecrawlApiKey";
 import { mergeUniqueColors } from "../firecrawl/mergeUniqueColors";
-import { normalizeSiteLink } from "../firecrawl/normalizeSiteLink";
 import { normalizeUrl } from "../firecrawl/normalizeUrl";
 import { pickDetailLinks } from "../firecrawl/pickDetailLinks";
-import { readScrapeLinks } from "../firecrawl/readScrapeLinks";
 import type { ProductScanResult } from "./types/ProductScanResult";
 
 type ScanProductWebsiteOptions = {
@@ -31,23 +28,11 @@ export const scanProductWebsite = async ({
   const apiKey = getFirecrawlApiKey();
   const scrapeData = await fetchPrimaryScrape({ apiKey, url: normalizedUrl });
   const homepageMarkdown = scrapeData?.markdown || "";
-  const sitemapLinks = await fetchSitemapLinks(normalizedUrl);
-  const crawlLinks =
-    sitemapLinks.length === 0
-      ? await fetchFirecrawlCrawlLinks({ apiKey, url: normalizedUrl })
-      : [];
-  const baseHost = new URL(normalizedUrl).hostname.replace(/^www\./i, "");
-  const siteLinkSet = new Set<string>();
-
-  siteLinkSet.add(normalizeSiteLink(normalizedUrl, baseHost) || normalizedUrl);
-  sitemapLinks.forEach((link) => siteLinkSet.add(link));
-  crawlLinks.forEach((link) => siteLinkSet.add(link));
-  readScrapeLinks(scrapeData).forEach((link) => {
-    const normalized = normalizeSiteLink(link, baseHost);
-    if (normalized) siteLinkSet.add(normalized);
+  const siteLinks = await collectProductSiteLinkUrls({
+    apiKey,
+    normalizedUrl,
+    scrapeData,
   });
-
-  const siteLinks = Array.from(siteLinkSet);
   const detailLinks = pickDetailLinks(siteLinks, normalizedUrl);
   const detailPages = await fetchDetailMarkdown({ apiKey, links: detailLinks });
   const colors = mergeUniqueColors(

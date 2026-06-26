@@ -7,11 +7,13 @@ import { imageStyleOptions } from "../constants/imageStyleOptions";
 import { imagesPerArticleOptions } from "../constants/imagesPerArticleOptions";
 import { internalLinkCountOptions } from "../constants/internalLinkCountOptions";
 import { settingsToggleOptions } from "../constants/settingsToggleOptions";
+import { normalizeAssociateBrandLinks } from "../utils/normalizeAssociateBrandLinks";
 import type { ArticleStyle } from "../types/ArticleStyle";
 import type { BlogGenerationSettings } from "../types/BlogGenerationSettings";
 import type { ImageStyle } from "../types/ImageStyle";
 import type { ImagesPerArticle } from "../types/ImagesPerArticle";
 import type { InternalLinksPerArticle } from "../types/InternalLinksPerArticle";
+import { AssociateBrandLinksSection } from "./AssociateBrandLinksSection";
 import { PrimaryButton } from "./PrimaryButton";
 import { SectionTitle } from "./SectionTitle";
 import { SettingsFormSection } from "./SettingsFormSection";
@@ -45,7 +47,12 @@ export const WorkspaceSettingsPanel = ({
         className="mt-4 grid gap-5"
         onSubmit={async (event) => {
           event.preventDefault();
-          await saveSettings(draft);
+          await saveSettings({
+            ...draft,
+            associateBrandLinks: normalizeAssociateBrandLinks(
+              draft.associateBrandLinks,
+            ),
+          });
         }}
       >
         <SettingsFormSection
@@ -106,6 +113,15 @@ export const WorkspaceSettingsPanel = ({
             value={draft.internalLinksPerArticle}
           />
         </SettingsFormSection>
+        <AssociateBrandLinksSection
+          links={draft.associateBrandLinks}
+          onChange={(associateBrandLinks) =>
+            setDraft((current) => ({
+              ...current,
+              associateBrandLinks,
+            }))
+          }
+        />
         <SettingsFormSection
           description="Set the look for article images, including the feature image."
           title="Image style"

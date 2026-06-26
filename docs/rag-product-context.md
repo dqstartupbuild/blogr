@@ -6,6 +6,8 @@ Product website scans are indexed with the Convex RAG component. When a blog is 
 
 This helps the article mention the product, audience, examples, and site details more accurately without forcing every scan detail into every prompt.
 
+Only active scanned links are included when link lists are rebuilt for RAG text and writer context. Links marked "do not use" stay saved on the workspace but are not selected as internal links.
+
 ## How It Works
 
 1. The workspace creates or updates the product workspace before the slow website scan starts.

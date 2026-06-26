@@ -4,7 +4,7 @@
 
 The workflow turns a saved keyword into a longform MDX blog post. A user can also paste existing text into a topic's repurpose flow so the writer has a starting point.
 
-It researches the topic, applies the active workspace settings, retrieves product context from the scanned website, chooses internal links from the scanned product site, finds YouTube videos when enabled, collects sources, asks the configured Replicate writer model to write or repurpose the post, reviews the finished post for image-worthy sections, generates those images, and copies generated images into R2.
+It researches the topic, applies the active workspace settings, retrieves product context from the scanned website, chooses active internal links from the scanned product site, includes associate brand links when they are relevant, finds YouTube videos when enabled, collects sources, asks the configured Replicate writer model to write or repurpose the post, reviews the finished post for image-worthy sections, generates those images, and copies generated images into R2.
 
 ## How It Works
 
@@ -13,17 +13,18 @@ It researches the topic, applies the active workspace settings, retrieves produc
 3. The workspace sends the selected keyword, current product profile, current blog generation settings, and optional pasted source text to the route.
 4. Firecrawl Search collects source pages.
 5. The workflow searches the active product workspace's RAG namespace for context that matches the keyword.
-6. Internal links are scored against the keyword, then limited by the workspace setting.
-7. YouTube videos are found only when the workspace setting is on. The YouTube Data API is used when `YOUTUBE_API_KEY` exists. Otherwise the workflow searches YouTube video pages through Exa when `EXA_API_KEY` exists, then Firecrawl when `FIRECRAWL_API_KEY` exists.
-8. Replicate writer generation uses the article style, writing rules, retrieved product context, optional repurposing source, toggles, and no image list before returning blog metadata and MDX in a simple XML shape.
-9. The image-planning reviewer uses `REPLICATE_IMAGE_PLANNER_MODEL`, defaulting to `openai/gpt-5-mini`, to pick the sections that need visuals and write section-specific image prompts.
-10. Replicate image generation creates the number of images chosen in settings when `REPLICATE_API_TOKEN` exists. Multiple images are generated one after another so every requested image gets its own model run.
-11. The generated image URLs are downloaded into R2. The route uses the Convex R2 action when a Convex token is available, and otherwise writes directly to the same R2 bucket with the signed-in user's ID.
-12. The MDX cleanup updates the feature image, inserts generated images near section headings, converts YouTube markdown links into playable iframe embeds, and adds found YouTube videos when the writer did not include them.
-13. The workspace saves the blog and image R2 keys through `upsertGeneratedBlog`, which marks the topic as written.
+6. Active internal links are scored against the keyword, then limited by the workspace setting. Links marked "do not use" are ignored.
+7. Associate brand links from workspace settings are passed to the writer as optional links that should only appear when they help the reader.
+8. YouTube videos are found only when the workspace setting is on. The YouTube Data API is used when `YOUTUBE_API_KEY` exists. Otherwise the workflow searches YouTube video pages through Exa when `EXA_API_KEY` exists, then Firecrawl when `FIRECRAWL_API_KEY` exists.
+9. Replicate writer generation uses the article style, writing rules, retrieved product context, selected internal links, associate brand links, optional repurposing source, toggles, and no image list before returning blog metadata and MDX in a simple XML shape.
+10. The image-planning reviewer uses `REPLICATE_IMAGE_PLANNER_MODEL`, defaulting to `openai/gpt-5-mini`, to pick the sections that need visuals and write section-specific image prompts.
+11. Replicate image generation creates the number of images chosen in settings when `REPLICATE_API_TOKEN` exists. Multiple images are generated one after another so every requested image gets its own model run.
+12. The generated image URLs are downloaded into R2. The route uses the Convex R2 action when a Convex token is available, and otherwise writes directly to the same R2 bucket with the signed-in user's ID.
+13. The MDX cleanup updates the feature image, inserts generated images near section headings, converts YouTube markdown links into playable iframe embeds, and adds found YouTube videos when the writer did not include them.
+14. The workspace saves the blog and image R2 keys through `upsertGeneratedBlog`, which marks the topic as written.
 
 If research search is unavailable, the writer still uses the saved product
-profile and internal links. If an image fails, the blog still finishes with the
+profile, active internal links, and associate brand links. If an image fails, the blog still finishes with the
 images that did work. If the writer itself fails, the workspace marks the topic
 as failed with a short error.
 
@@ -33,6 +34,7 @@ as failed with a short error.
 - `src/features/workspace/hooks/useLiveWorkspace.ts`
 - `src/server/blog/generateBlogForKeyword.ts`
 - `src/server/blog/buildBlogGenerationSettingsPrompt.ts`
+- `src/server/blog/buildAssociateBrandLinksPrompt.ts`
 - `src/server/blog/buildRepurposedSourcePrompt.ts`
 - `src/server/blog/buildProductRagContextPrompt.ts`
 - `src/server/blog/runBlogResearch.ts`
@@ -71,7 +73,7 @@ The writer is asked for XML with:
 - `<excerpt>`
 - `<mdx>`
 
-The MDX prompt asks for frontmatter, one H1, a direct answer, short paragraphs, useful examples, cited sources, natural internal links, and playable YouTube embeds only when helpful. Workspace settings can add a table of contents, change article voice, allow first-person writing, add or remove a call-to-action, and allow similar product comparisons.
+The MDX prompt asks for frontmatter, one H1, a direct answer, short paragraphs, useful examples, cited sources, natural internal links, associate brand links only when useful, and playable YouTube embeds only when helpful. Workspace settings can add a table of contents, change article voice, allow first-person writing, add or remove a call-to-action, and allow similar product comparisons.
 
 When optional source text is provided, the writer is told to use it as a starting point, keep the useful ideas, and rewrite the piece into a fresh blog post for the active product and keyword.
 

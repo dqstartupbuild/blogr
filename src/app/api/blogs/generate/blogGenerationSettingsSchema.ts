@@ -2,9 +2,11 @@ import { z } from "zod";
 import { articleStyleValues } from "@/features/workspace/constants/articleStyleValues";
 import { imageStyleValues } from "@/features/workspace/constants/imageStyleValues";
 import { imagesPerArticleValues } from "@/features/workspace/constants/imagesPerArticleValues";
+import { associateBrandLinkSchema } from "./associateBrandLinkSchema";
 
 export const blogGenerationSettingsSchema = z.object({
   articleStyle: z.enum(articleStyleValues),
+  associateBrandLinks: z.array(associateBrandLinkSchema).max(5).default([]),
   globalArticleInstructions: z.string(),
   internalLinksPerArticle: z.union([
     z.literal(0),

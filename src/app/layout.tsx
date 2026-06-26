@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Blogger",
+  title: "Blogr",
   description: "Write clear longform blog posts for your niche.",
 };
 

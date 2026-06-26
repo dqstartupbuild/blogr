@@ -3,6 +3,7 @@ import { mutation } from "../_generated/server";
 import { requireUserId } from "../identity/requireUserId";
 
 const linkValidator = v.object({
+  isActive: v.optional(v.boolean()),
   title: v.string(),
   url: v.string(),
   reason: v.optional(v.string()),

@@ -3,6 +3,6 @@ import type { BlogPublishingIntegration } from "../types/integrations/BlogPublis
 export const emptyBlogPublishingIntegration: BlogPublishingIntegration = {
   enabled: false,
   hasAccessToken: false,
-  sourceName: "Blogger",
+  sourceName: "Blogr",
   webhookUrl: "",
 };

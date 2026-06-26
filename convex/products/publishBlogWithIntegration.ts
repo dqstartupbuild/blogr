@@ -36,7 +36,7 @@ export const publishBlogWithIntegration = action({
 
     const payload = applyBlogPublishingSourceName(
       args.payload,
-      integration.sourceName || "Blogger",
+      integration.sourceName || "Blogr",
     );
     const response: Response = await fetch(integration.webhookUrl, {
       body: JSON.stringify(payload),

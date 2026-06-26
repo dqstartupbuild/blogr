@@ -1,4 +1,5 @@
 type LinkItem = {
+  isActive?: boolean;
   title: string;
   url: string;
   reason?: string;
@@ -26,6 +27,7 @@ export const buildProductRagText = ({
   websiteUrl,
 }: BuildProductRagTextOptions) => {
   const linkText = siteLinks
+    .filter((link) => link.isActive !== false)
     .map((link) =>
       [`Title: ${link.title}`, `URL: ${link.url}`, link.reason || ""]
         .filter(Boolean)

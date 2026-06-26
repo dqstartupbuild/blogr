@@ -3,6 +3,7 @@ import { defaultBlogGenerationSettings } from "../constants/defaultBlogGeneratio
 import { imageStyleValues } from "../constants/imageStyleValues";
 import { imagesPerArticleValues } from "../constants/imagesPerArticleValues";
 import { internalLinkCountOptions } from "../constants/internalLinkCountOptions";
+import { normalizeAssociateBrandLinks } from "./normalizeAssociateBrandLinks";
 import type { ArticleStyle } from "../types/ArticleStyle";
 import type { BlogGenerationSettings } from "../types/BlogGenerationSettings";
 import type { ImageStyle } from "../types/ImageStyle";
@@ -47,6 +48,9 @@ export const normalizeBlogGenerationSettings = (
     imageStyle,
     imagesPerArticle,
     internalLinksPerArticle,
+    associateBrandLinks: normalizeAssociateBrandLinks(
+      settings?.associateBrandLinks,
+    ),
     globalArticleInstructions:
       settings?.globalArticleInstructions?.trim() ||
       defaultBlogGenerationSettings.globalArticleInstructions,

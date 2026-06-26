@@ -1,15 +1,18 @@
 import type { BlogImage } from "./types/BlogImage";
 import type { ResearchSource } from "./types/ResearchSource";
 import type { StoredProduct } from "./types/StoredProduct";
+import { buildAssociateBrandLinksPrompt } from "./buildAssociateBrandLinksPrompt";
 import { buildBlogGenerationSettingsPrompt } from "./buildBlogGenerationSettingsPrompt";
 import { buildBlogWriterProductContext } from "./buildBlogWriterProductContext";
 import { buildProductRagContextPrompt } from "./buildProductRagContextPrompt";
 import { buildRepurposedSourcePrompt } from "./buildRepurposedSourcePrompt";
 import { buildTopicBriefPrompt } from "./buildTopicBriefPrompt";
+import type { AssociateBrandLink } from "@/features/workspace/types/AssociateBrandLink";
 import type { BlogGenerationSettings } from "@/features/workspace/types/BlogGenerationSettings";
 import type { LinkItem } from "@/features/workspace/types/LinkItem";
 
 type BuildBlogWriterPromptOptions = {
+  associateBrandLinks: AssociateBrandLink[];
   images: BlogImage[];
   internalLinks: LinkItem[];
   keyword: string;
@@ -23,6 +26,7 @@ type BuildBlogWriterPromptOptions = {
 };
 
 export const buildBlogWriterPrompt = ({
+  associateBrandLinks,
   images,
   internalLinks,
   keyword,
@@ -72,6 +76,8 @@ ${JSON.stringify(sources, null, 2)}
 Internal links to include naturally:
 ${JSON.stringify(internalLinks, null, 2)}
 
+${buildAssociateBrandLinksPrompt(associateBrandLinks)}
+
 YouTube videos to mention only if they fit naturally:
 ${JSON.stringify(youtubeVideos, null, 2)}
 
@@ -97,7 +103,8 @@ MDX rules:
 - Cite sources as normal markdown links inside relevant sections.
 - When YouTube videos are provided and useful, render them as playable iframe embeds, not as plain links.
 - Use YouTube embed URLs in this shape: https://www.youtube.com/embed/{videoId}.
-- Include the provided internal links naturally, not as a list unless it truly fits.
+- Include the provided internal links and associate brand links naturally, not as a list unless it truly fits.
+- Only link to URLs from the internal links, associate brand links, research sources, and YouTube videos sections.
 - Write one complete MDX file, not an outline and not separate files.
 - Aim for 3,000 to 3,600 words when the topic can support it.
 - Never use em-dashes (—). Replace every em-dash with a comma, semicolon, period, or rephrase the sentence to avoid it. For example, change "Readers — especially beginners — often ask" to "Readers, especially beginners, often ask" or "Readers often ask, especially beginners."
