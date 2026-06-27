@@ -52,6 +52,7 @@ export default defineSchema({
     userId: v.string(),
     productId: v.optional(v.id("products")),
     keyword: v.string(),
+    searchText: v.optional(v.string()),
     notes: v.optional(v.string()),
     status: v.union(
       v.literal("saved"),
@@ -70,13 +71,18 @@ export default defineSchema({
       "userId",
       "productId",
       "createdAt",
-    ]),
+    ])
+    .searchIndex("search_user_topics", {
+      searchField: "searchText",
+      filterFields: ["userId"],
+    }),
 
   blogs: defineTable({
     userId: v.string(),
     productId: v.optional(v.id("products")),
     topicId: v.optional(v.id("topics")),
     keyword: v.string(),
+    searchText: v.optional(v.string()),
     title: v.string(),
     seoTitle: v.optional(v.string()),
     slug: v.string(),
@@ -89,6 +95,7 @@ export default defineSchema({
     ),
     mdx: v.string(),
     featureImageUrl: v.optional(v.string()),
+    tags: v.optional(v.array(v.string())),
     images: v.array(imageValidator),
     internalLinks: v.array(linkValidator),
     youtubeVideos: v.array(linkValidator),
@@ -103,5 +110,9 @@ export default defineSchema({
       "productId",
       "updatedAt",
     ])
-    .index("by_topicId", ["topicId"]),
+    .index("by_topicId", ["topicId"])
+    .searchIndex("search_user_blogs", {
+      searchField: "searchText",
+      filterFields: ["userId"],
+    }),
 });

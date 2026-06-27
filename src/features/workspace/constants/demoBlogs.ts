@@ -10,6 +10,7 @@ export const demoBlogs: BlogItem[] = [
     slug: "choose-team-priorities",
     excerpt:
       "Learn a simple way to choose the few priorities that matter this week, keep the team focused, and stop every task from feeling urgent.",
+    tags: ["team priorities", "weekly planning", "team focus"],
     status: "ready",
     updatedAt: Date.now() - 1000 * 60 * 45,
     featureImageUrl: undefined,
@@ -80,6 +81,7 @@ If a priority does not change what someone does today, it is probably too vague.
     slug: "better-weekly-team-check-in",
     excerpt:
       "Use a short weekly check-in format that helps everyone share wins, blockers, and next steps without dragging the team off track.",
+    tags: ["weekly check ins", "team updates", "meeting planning"],
     status: "published",
     updatedAt: Date.now() - 1000 * 60 * 60 * 6,
     featureImageUrl: undefined,

@@ -6,7 +6,9 @@ The workspace lets a user paste a keyword, save it as a topic, come back later, 
 
 The Topics tab can also find search-informed topic ideas. Users review suggested ideas in a checkbox queue before saving them, and saved discovered topics carry a writing brief in topic notes.
 
-Users can filter the topic list by status: all, saved, writing, written, or failed. Users can also filter blogs by all, unpublished, or published.
+Users can filter the topic list by status: all, saved, writing, written, or failed. Users can also filter blogs by all, unpublished, published, or topic.
+
+The Topics and Articles tabs load 10 rows per page. Previous and Next controls move through matching rows without loading the whole list into the tab.
 
 Each topic row can show or refresh its saved search brief. Manual topics can get a brief later with **Find brief**.
 
@@ -30,11 +32,11 @@ With Clerk and Convex keys, `LiveWorkspaceView` waits for Clerk and Convex auth 
 - `setActiveProductWorkspace`
 - `createProductWorkspace`
 
-The user can create or switch product workspaces, scan a product site, save topics, start writing, browse generated blogs, and open the editor. Topic and blog queries include the active product ID, so each workspace keeps its own records.
+The user can create or switch product workspaces, scan a product site, save topics, start writing, browse generated blogs, and open the editor. Topic and blog list queries include the active product ID, current filters, search text, and Convex pagination options, so each workspace keeps its own records and the tab only receives the current page.
 
 Topic discovery calls `POST /api/topics/discover`, runs Apify Google Search Scraper, turns SERP signals into topic ideas and briefs, and saves selected ideas through the same `createTopic` mutation.
 
-The discovery dialog also exposes non-topic insights as planning rows. Users can save People Also Ask questions, content gaps, comparison ideas, clusters, refresh suggestions, AI answer notes, and difficulty notes as topics with notes.
+The discovery dialog also exposes non-topic insights as planning rows. Users can save People Also Ask questions, content gaps, comparison ideas, clusters, refresh suggestions, AI answer notes, and difficulty notes as topics with notes. Content gap rows save the actual gap title as the topic, while the row badge shows that it came from a gap.
 
 Blog rows and the blog editor expose **Find refresh ideas** for existing blogs. In the blog list, users can filter unpublished and published posts, then save a refresh plan as a topic. In the editor, users can save the plan or add it directly to the draft.
 
@@ -63,12 +65,12 @@ The Settings tab includes product setup, article settings, and a **Publishing** 
 - `src/features/workspace/components/BlogPublishingIntegrationPanel.tsx`
 - `src/features/workspace/components/BlogPublishButton.tsx`
 - `src/features/workspace/components/FilteredBlogList.tsx`
-- `src/features/workspace/components/BlogStatusFilterTabs.tsx`
 - `src/features/workspace/components/FilteredTopicList.tsx`
-- `src/features/workspace/components/TopicStatusFilterTabs.tsx`
+- `src/features/workspace/components/ListPaginationControls.tsx`
 - `src/app/api/topics/discover/route.ts`
 - `src/server/topics/generateTopicIdeas.ts`
 - `src/server/apify/runGoogleSearchScraper.ts`
+- `src/features/workspace/hooks/useCursorPagination.ts`
 - `src/features/workspace/hooks/useLiveWorkspaceSwitcher.ts`
 - `src/features/workspace/hooks/useDemoWorkspace.ts`
 - `src/features/workspace/hooks/useLiveWorkspace.ts`
@@ -77,6 +79,9 @@ The Settings tab includes product setup, article settings, and a **Publishing** 
 - `convex/products/createProductWorkspace.ts`
 - `convex/topics/createTopic.ts`
 - `convex/topics/listTopics.ts`
+- `convex/blogs/listBlogs.ts`
+- `convex/blogs/listBlogTopicKeywords.ts`
+- `convex/workspaces/getWorkspaceSummary.ts`
 
 ## Use Cases
 
@@ -86,6 +91,7 @@ The Settings tab includes product setup, article settings, and a **Publishing** 
 - Save search gaps, refresh notes, AI answer notes, and difficulty notes as planning topics.
 - Filter topics by status.
 - Filter blogs by published status.
+- Browse topics and blogs in pages of 10.
 - Find or refresh a search brief for a saved topic.
 - Find refresh ideas for a saved blog.
 - Add a refresh plan to an existing blog draft.
@@ -113,4 +119,6 @@ src/server/topics/
 convex/products/
 convex/workspaceSelections/
 convex/topics/
+convex/blogs/
+convex/workspaces/
 ```

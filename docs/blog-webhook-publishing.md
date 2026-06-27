@@ -14,7 +14,7 @@ Each product workspace can have its own publishing integration. This lets one ac
 2. The client calls `POST /api/blogs/publish` with the loaded blog draft.
 3. The route checks the signed-in user with `requireRouteUserId`.
 4. The route validates the blog payload with the shared blog item schema.
-5. `buildBlogPublishPayload` turns the blog into a `publish_articles` webhook payload.
+5. `buildBlogPublishPayload` turns the blog into a `publish_articles` webhook payload with clean article tags.
 6. If the blog belongs to a product workspace, the route calls the Convex `publishBlogWithIntegration` action.
 7. The Convex action reads the saved publishing integration for that product without returning the token to the browser.
 8. If the product does not have a saved integration, the route falls back to the deployment env vars.
@@ -25,6 +25,8 @@ Each product workspace can have its own publishing integration. This lets one ac
 Publishing uses the currently loaded draft. In the editor, that means a user can publish the text they are looking at after making changes.
 
 Published blogs keep their `published` status in the Blogs tab, so users can filter published posts away from drafts that still need to be sent.
+
+Tags come from the saved blog tag list when it exists. Older blogs get clean fallback tags from the current keyword, title, SEO title, and meta description. Internal planning phrases are removed before the tags are sent.
 
 ## Settings Workflow
 
@@ -82,7 +84,7 @@ The route sends this shape:
         "content_mdx": "---\\ntitle: ...",
         "content_html": "",
         "image_url": "https://example.com/image.jpg",
-        "tags": ["keyword"],
+        "tags": ["content planning", "team priorities", "weekly planning"],
         "source": "Blogr",
         "created_at": "2026-06-23T15:30:00.000Z",
         "updated_at": "2026-06-23T15:45:00.000Z"
@@ -136,6 +138,7 @@ Bearer auth is enough for the first version because this is a server-to-server w
 - `src/app/api/blogs/publish/markPublishedBlogStatus.ts`
 - `src/app/api/blogs/publish/schema.ts`
 - `src/server/publishing/getBlogPublishEnvironmentDestination.ts`
+- `src/server/publishing/buildBlogPublishTags.ts`
 - `src/server/publishing/buildBlogPublishPayload.ts`
 - `src/server/publishing/buildBlogPublishArticle.ts`
 - `src/server/publishing/sendBlogPublishWebhook.ts`
@@ -162,6 +165,7 @@ convex/blogs/markBlogPublished.ts
 convex/products/*BlogPublishing*
 convex/products/publishBlogWithIntegration.ts
 docs/blog-webhook-publishing.md
+docs/blog-tags.md
 docs/blog-published-status-filter.md
 docs/codex-target-app-blog-webhook.md
 ```

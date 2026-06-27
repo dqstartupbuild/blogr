@@ -25,6 +25,7 @@ export const buildEditorDownloadBlog = ({
     sources: baseBlog?.sources || [],
     seoTitle: state.seoTitle,
     status: baseBlog?.status || "ready",
+    tags: baseBlog?.tags || [],
     title: state.title,
     updatedAt: baseBlog?.updatedAt || Date.now(),
     youtubeVideos: baseBlog?.youtubeVideos || [],

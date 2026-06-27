@@ -8,6 +8,7 @@ import { normalizeSeoTitle } from "./normalizeSeoTitle";
 import { normalizeYoutubeLinksInMdx } from "./normalizeYoutubeLinksInMdx";
 import { parseWriterDraft } from "./parseWriterDraft";
 import { slugify } from "./slugify";
+import { buildBlogTags } from "./tags/buildBlogTags";
 import type { BlogImage } from "./types/BlogImage";
 import type { GeneratedBlog } from "./types/GeneratedBlog";
 import type { ResearchSource } from "./types/ResearchSource";
@@ -115,6 +116,13 @@ export const writeBlogDraft = async ({
     slug,
     sources: sourceLinks,
     status: "ready",
+    tags: buildBlogTags({
+      excerpt,
+      keyword,
+      seoTitle,
+      title,
+      topicBrief,
+    }),
     title,
     youtubeVideos,
   };

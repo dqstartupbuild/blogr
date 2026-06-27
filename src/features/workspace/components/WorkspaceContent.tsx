@@ -13,6 +13,7 @@ import { WorkspacePageHeader } from "./WorkspacePageHeader";
 import { WorkspaceShell } from "./WorkspaceShell";
 import type { BlogItem } from "../types/BlogItem";
 import type { BlogGenerationSettings } from "../types/BlogGenerationSettings";
+import type { BlogListViewState } from "../types/BlogListViewState";
 import type { DeleteBlog } from "../types/DeleteBlog";
 import type { DeleteTopic } from "../types/DeleteTopic";
 import type { DiscoverBlogRefreshIdeas } from "../types/DiscoverBlogRefreshIdeas";
@@ -24,8 +25,10 @@ import type { RefreshTopicBrief } from "../types/RefreshTopicBrief";
 import type { RegenerateBlogImage } from "../types/RegenerateBlogImage";
 import type { SetProductLinkActive } from "../types/SetProductLinkActive";
 import type { TopicItem } from "../types/TopicItem";
+import type { TopicListViewState } from "../types/TopicListViewState";
 import type { WriteBlogOptions } from "../types/WriteBlogOptions";
 import type { WorkspaceSwitcherState } from "../types/WorkspaceSwitcherState";
+import type { WorkspaceSummary } from "../types/WorkspaceSummary";
 import type { WorkspaceViewMode } from "../types/WorkspaceViewMode";
 import type { BlogPublishingIntegrationDraft } from "../types/integrations/BlogPublishingIntegrationDraft";
 import type { DiscoverTopicIdeas } from "../types/topicDiscovery/DiscoverTopicIdeas";
@@ -33,6 +36,7 @@ import type { DiscoverTopicIdeas } from "../types/topicDiscovery/DiscoverTopicId
 type WorkspaceContentProps = {
   addTopic: (keyword: string, notes?: string) => void | Promise<void>;
   blogGenerationSettings: BlogGenerationSettings;
+  blogListState: BlogListViewState;
   blogs: BlogItem[];
   deleteBlog: DeleteBlog;
   deleteTopic: DeleteTopic;
@@ -62,6 +66,8 @@ type WorkspaceContentProps = {
   setMode: (mode: WorkspaceViewMode) => void;
   setSelectedBlogId: (blogId: string) => void;
   topics: TopicItem[];
+  topicListState: TopicListViewState;
+  workspaceSummary?: WorkspaceSummary;
   workspaceSwitcher: WorkspaceSwitcherState;
   writeBlog: (
     topicId: string,
@@ -72,6 +78,7 @@ type WorkspaceContentProps = {
 export const WorkspaceContent = ({
   addTopic,
   blogGenerationSettings,
+  blogListState,
   blogs,
   deleteBlog,
   deleteTopic,
@@ -97,6 +104,8 @@ export const WorkspaceContent = ({
   setMode,
   setSelectedBlogId,
   topics,
+  topicListState,
+  workspaceSummary,
   workspaceSwitcher,
   writeBlog,
 }: WorkspaceContentProps) => {
@@ -121,13 +130,18 @@ export const WorkspaceContent = ({
       <div className="grid gap-5">
         <main className="space-y-5">
           {mode === "dashboard" ? (
-            <DashboardPanel blogs={blogs} topics={topics} />
+            <DashboardPanel
+              blogs={blogs}
+              summary={workspaceSummary}
+              topics={topics}
+            />
           ) : null}
           {mode === "topics" ? (
             <TopicsPanel
               addTopic={addTopic}
               deleteTopic={deleteTopic}
               discoverTopicIdeas={discoverTopicIdeas}
+              listState={topicListState}
               refreshTopicBrief={refreshTopicBrief}
               topics={topics}
               writeBlog={writeBlog}
@@ -139,6 +153,7 @@ export const WorkspaceContent = ({
               blogs={blogs}
               deleteBlog={deleteBlogAndClosePreview}
               discoverBlogRefreshIdeas={discoverBlogRefreshIdeas}
+              listState={blogListState}
               previewBlog={previewBlog}
               selectedBlogId={selectedBlogId}
               setSelectedBlogId={setSelectedBlogId}

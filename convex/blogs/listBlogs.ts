@@ -1,3 +1,4 @@
+import { paginationOptsValidator } from "convex/server";
 import { v } from "convex/values";
 import { query } from "../_generated/server";
 import { requireUserId } from "../identity/requireUserId";
@@ -6,38 +7,61 @@ import { refreshBlogImageUrls } from "./refreshBlogImageUrls";
 
 export const listBlogs = query({
   args: {
+    paginationOpts: paginationOptsValidator,
     productId: v.optional(v.id("products")),
+    searchQuery: v.optional(v.string()),
+    status: v.optional(v.union(v.literal("published"), v.literal("unpublished"))),
+    topicKeyword: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const userId = await requireUserId(ctx);
     const productId = await resolveActiveProductId(ctx, userId, args.productId);
+    const searchQuery = args.searchQuery?.trim();
+    const topicKeyword = args.topicKeyword?.trim();
 
-    if (!productId) {
-      const blogs = await ctx.db
-        .query("blogs")
-        .withIndex("by_userId_updatedAt", (q) => q.eq("userId", userId))
-        .order("desc")
-        .collect();
+    let blogsQuery = searchQuery
+      ? ctx.db
+          .query("blogs")
+          .withSearchIndex("search_user_blogs", (q) =>
+            q.search("searchText", searchQuery).eq("userId", userId),
+          )
+      : ctx.db
+          .query("blogs")
+          .withIndex("by_userId_updatedAt", (q) => q.eq("userId", userId))
+          .order("desc");
 
-      return await Promise.all(blogs.map(refreshBlogImageUrls));
+    if (productId) {
+      blogsQuery = blogsQuery.filter((q) =>
+        q.or(
+          q.eq(q.field("productId"), productId),
+          q.eq(q.field("productId"), undefined),
+        ),
+      );
     }
 
-    const scopedBlogs = await ctx.db
-      .query("blogs")
-      .withIndex("by_userId_productId_updatedAt", (q) =>
-        q.eq("userId", userId).eq("productId", productId),
-      )
-      .order("desc")
-      .collect();
-    const legacyBlogs = await ctx.db
-      .query("blogs")
-      .withIndex("by_userId_updatedAt", (q) => q.eq("userId", userId))
-      .order("desc")
-      .collect();
+    if (args.status === "published") {
+      blogsQuery = blogsQuery.filter((q) =>
+        q.eq(q.field("status"), "published"),
+      );
+    }
 
-    const blogs = [...scopedBlogs, ...legacyBlogs.filter((blog) => !blog.productId)]
-      .sort((left, right) => right.updatedAt - left.updatedAt);
+    if (args.status === "unpublished") {
+      blogsQuery = blogsQuery.filter((q) =>
+        q.neq(q.field("status"), "published"),
+      );
+    }
 
-    return await Promise.all(blogs.map(refreshBlogImageUrls));
+    if (topicKeyword) {
+      blogsQuery = blogsQuery.filter((q) =>
+        q.eq(q.field("keyword"), topicKeyword),
+      );
+    }
+
+    const result = await blogsQuery.paginate(args.paginationOpts);
+
+    return {
+      ...result,
+      page: await Promise.all(result.page.map(refreshBlogImageUrls)),
+    };
   },
 });

@@ -1,6 +1,7 @@
 import { v } from "convex/values";
 import { mutation } from "../_generated/server";
 import { requireUserId } from "../identity/requireUserId";
+import { buildBlogSearchText } from "./buildBlogSearchText";
 import { validateSeoContentLengths } from "./validateSeoContentLengths";
 
 export const updateBlogContent = mutation({
@@ -34,6 +35,12 @@ export const updateBlogContent = mutation({
       title: args.title.trim(),
       seoTitle,
       excerpt,
+      searchText: buildBlogSearchText({
+        excerpt,
+        keyword: blog.keyword,
+        seoTitle,
+        title: args.title,
+      }),
       mdx: args.mdx,
       updatedAt: Date.now(),
     });

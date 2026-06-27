@@ -25,4 +25,5 @@ export type BlogItem = {
   internalLinks: LinkItem[];
   youtubeVideos: LinkItem[];
   sources: LinkItem[];
+  tags: string[];
 };

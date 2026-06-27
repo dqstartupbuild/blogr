@@ -41,7 +41,7 @@ When a user clicks **Add topics**, the selected topic titles are saved through t
 
 When the user writes a blog from that topic, `useLiveWorkspace` sends the saved notes as `topicBrief` to `/api/blogs/generate`. The blog writer uses that brief to match search intent, answer useful questions, cover weak spots, and shape titles and meta descriptions.
 
-When a user clicks **Save plan** on a non-topic insight, the app saves that insight as a topic with its source context in notes. That gives users a simple way to turn gaps, refresh ideas, comparison angles, AI answer notes, and difficulty notes into work they can write or plan from later.
+When a user clicks **Save plan** on a non-topic insight, the app saves that insight as a topic with its source context in notes. That gives users a simple way to turn gaps, refresh ideas, comparison angles, AI answer notes, and difficulty notes into work they can write or plan from later. Content gap plans save the actual gap title instead of an internal instruction like `Cover this gap`.
 
 Existing topics also have a **Find brief** or **View brief** action. Users can review the saved notes, refresh the brief from a new search, and then write the topic with that brief.
 

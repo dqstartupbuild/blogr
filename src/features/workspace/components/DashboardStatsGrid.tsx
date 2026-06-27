@@ -1,18 +1,18 @@
 import { CheckCircle2, FileText, ImageIcon, ListChecks } from "lucide-react";
 import { WorkspaceStatCard } from "./WorkspaceStatCard";
-import { countPublishedBlogs } from "../utils/countPublishedBlogs";
-import { countWorkspaceImages } from "../utils/countWorkspaceImages";
-import type { BlogItem } from "../types/BlogItem";
-import type { TopicItem } from "../types/TopicItem";
 
 type DashboardStatsGridProps = {
-  blogs: BlogItem[];
-  topics: TopicItem[];
+  blogCount: number;
+  imageCount: number;
+  publishedBlogCount: number;
+  topicCount: number;
 };
 
 export const DashboardStatsGrid = ({
-  blogs,
-  topics,
+  blogCount,
+  imageCount,
+  publishedBlogCount,
+  topicCount,
 }: DashboardStatsGridProps) => {
   return (
     <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
@@ -20,25 +20,25 @@ export const DashboardStatsGrid = ({
         icon={ListChecks}
         label="Topics"
         supportingText="Saved ideas"
-        value={topics.length}
+        value={topicCount}
       />
       <WorkspaceStatCard
         icon={FileText}
         label="Articles"
         supportingText="Generated posts"
-        value={blogs.length}
+        value={blogCount}
       />
       <WorkspaceStatCard
         icon={CheckCircle2}
         label="Published"
         supportingText="Live posts"
-        value={countPublishedBlogs(blogs)}
+        value={publishedBlogCount}
       />
       <WorkspaceStatCard
         icon={ImageIcon}
         label="Images"
         supportingText="Ready for exports"
-        value={countWorkspaceImages(blogs)}
+        value={imageCount}
       />
     </div>
   );

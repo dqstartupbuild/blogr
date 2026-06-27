@@ -1,21 +1,21 @@
 "use client";
 
-import { useState } from "react";
 import { EmptyState } from "./EmptyState";
 import { FilterBar } from "./FilterBar";
 import { FilterSelect } from "./FilterSelect";
+import { ListPaginationControls } from "./ListPaginationControls";
 import { SearchField } from "./SearchField";
 import { TopicList } from "./TopicList";
 import { topicStatusFilterOptions } from "../constants/topicStatusFilterOptions";
-import { filterTopicsBySearch } from "../utils/filterTopicsBySearch";
-import { filterTopicsByStatus } from "../utils/filterTopicsByStatus";
 import type { DeleteTopic } from "../types/DeleteTopic";
 import type { TopicItem } from "../types/TopicItem";
+import type { TopicListViewState } from "../types/TopicListViewState";
 import type { TopicStatusFilter } from "../types/TopicStatusFilter";
 import type { WriteBlogOptions } from "../types/WriteBlogOptions";
 
 type FilteredTopicListProps = {
   deleteTopic: DeleteTopic;
+  listState: TopicListViewState;
   refreshTopicBrief: (topicId: string) => Promise<string>;
   topics: TopicItem[];
   writeBlog: (
@@ -26,47 +26,42 @@ type FilteredTopicListProps = {
 
 export const FilteredTopicList = ({
   deleteTopic,
+  listState,
   refreshTopicBrief,
   topics,
   writeBlog,
 }: FilteredTopicListProps) => {
-  const [activeFilter, setActiveFilter] = useState<TopicStatusFilter>("saved");
-  const [searchQuery, setSearchQuery] = useState("");
-  const filteredTopics = filterTopicsBySearch(
-    filterTopicsByStatus(topics, activeFilter),
-    searchQuery,
-  );
-
-  if (topics.length === 0) {
-    return <EmptyState label="No topics yet." />;
-  }
-
   return (
     <div className="space-y-4">
       <FilterBar>
         <SearchField
           label="Search topics"
-          onChange={setSearchQuery}
+          onChange={listState.setSearchQuery}
           placeholder="Search topics..."
-          value={searchQuery}
+          value={listState.searchQuery}
         />
         <FilterSelect
           label="Status"
-          onChange={(value) => setActiveFilter(value as TopicStatusFilter)}
+          onChange={(value) =>
+            listState.setActiveFilter(value as TopicStatusFilter)
+          }
           options={topicStatusFilterOptions}
-          value={activeFilter}
+          value={listState.activeFilter}
         />
       </FilterBar>
-      {filteredTopics.length > 0 ? (
+      {listState.pagination.isLoading ? (
+        <EmptyState label="Loading topics." />
+      ) : topics.length > 0 ? (
         <TopicList
           deleteTopic={deleteTopic}
           refreshTopicBrief={refreshTopicBrief}
-          topics={filteredTopics}
+          topics={topics}
           writeBlog={writeBlog}
         />
       ) : (
         <EmptyState label="No topics in this view." />
       )}
+      <ListPaginationControls pagination={listState.pagination} />
     </div>
   );
 };

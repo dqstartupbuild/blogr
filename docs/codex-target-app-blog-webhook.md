@@ -46,7 +46,7 @@ Expected payload:
         "content_mdx": "# Article body",
         "content_html": "",
         "image_url": "https://example.com/image.jpg",
-        "tags": ["keyword"],
+        "tags": ["content planning", "team priorities", "weekly planning"],
         "source": "Blogr",
         "created_at": "2026-06-23T15:30:00.000Z",
         "updated_at": "2026-06-23T15:45:00.000Z"
@@ -74,7 +74,7 @@ Also support this single-article update shape for forward compatibility:
       "content_mdx": "# Updated body",
       "content_html": "",
       "image_url": "https://example.com/image.jpg",
-      "tags": ["keyword"],
+      "tags": ["content planning", "team priorities", "weekly planning"],
       "source": "Blogr",
       "created_at": "2026-06-23T15:30:00.000Z",
       "updated_at": "2026-06-23T16:05:00.000Z"

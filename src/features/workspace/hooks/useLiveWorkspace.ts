@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery } from "convex/react";
 import { castBlogId } from "@/server/convex/castBlogId";
 import { castProductId } from "@/server/convex/castProductId";
@@ -8,6 +8,8 @@ import { createTopicMutation } from "@/server/convex/references/createTopicMutat
 import { deleteBlogMutation } from "@/server/convex/references/deleteBlogMutation";
 import { deleteTopicMutation } from "@/server/convex/references/deleteTopicMutation";
 import { getCurrentProductQuery } from "@/server/convex/references/getCurrentProductQuery";
+import { getWorkspaceSummaryQuery } from "@/server/convex/references/getWorkspaceSummaryQuery";
+import { listBlogTopicKeywordsQuery } from "@/server/convex/references/listBlogTopicKeywordsQuery";
 import { listBlogsQuery } from "@/server/convex/references/listBlogsQuery";
 import { listTopicsQuery } from "@/server/convex/references/listTopicsQuery";
 import { saveProductScanMutation } from "@/server/convex/references/saveProductScanMutation";
@@ -18,6 +20,8 @@ import { updateTopicStatusMutation } from "@/server/convex/references/updateTopi
 import { updateBlogGenerationSettingsMutation } from "@/server/convex/references/updateBlogGenerationSettingsMutation";
 import { upsertGeneratedBlogMutation } from "@/server/convex/references/upsertGeneratedBlogMutation";
 import { castTopicId } from "@/server/convex/castTopicId";
+import { workspaceListPageSize } from "../constants/workspaceListPageSize";
+import { useCursorPagination } from "./useCursorPagination";
 import { buildInitialProductScanProduct } from "../mappers/buildInitialProductScanProduct";
 import { mapConvexBlog } from "../mappers/mapConvexBlog";
 import { mapConvexProduct } from "../mappers/mapConvexProduct";
@@ -31,11 +35,16 @@ import { normalizeBlogGenerationSettings } from "../utils/normalizeBlogGeneratio
 import { setProductLinkActiveState } from "../utils/setProductLinkActiveState";
 import type { BlogGenerateResponse } from "../types/BlogGenerateResponse";
 import type { BlogGenerationSettings } from "../types/BlogGenerationSettings";
+import type { BlogListViewState } from "../types/BlogListViewState";
 import type { BlogItem } from "../types/BlogItem";
+import type { BlogStatusFilter } from "../types/BlogStatusFilter";
 import type { ProductProfile } from "../types/ProductProfile";
 import type { ProductLinksRefreshResponse } from "../types/ProductLinksRefreshResponse";
 import type { ProductScanResponse } from "../types/ProductScanResponse";
 import type { WriteBlogOptions } from "../types/WriteBlogOptions";
+import type { TopicListViewState } from "../types/TopicListViewState";
+import type { TopicStatusFilter } from "../types/TopicStatusFilter";
+import type { WorkspaceSummary } from "../types/WorkspaceSummary";
 import type { WorkspaceSwitcherState } from "../types/WorkspaceSwitcherState";
 import type { WorkspaceViewMode } from "../types/WorkspaceViewMode";
 import type { BlogPublishingIntegrationDraft } from "../types/integrations/BlogPublishingIntegrationDraft";
@@ -68,6 +77,29 @@ export const useLiveWorkspace = (
     isSavingBlogPublishingIntegration,
     setIsSavingBlogPublishingIntegration,
   ] = useState(false);
+  const [topicStatusFilter, setTopicStatusFilter] =
+    useState<TopicStatusFilter>("saved");
+  const [topicSearchQuery, setTopicSearchQuery] = useState("");
+  const [blogStatusFilter, setBlogStatusFilter] =
+    useState<BlogStatusFilter>("unpublished");
+  const [blogSearchQuery, setBlogSearchQuery] = useState("");
+  const [blogTopicFilter, setBlogTopicFilter] = useState("all");
+  const {
+    canGoPrevious: canGoToPreviousTopicPage,
+    goToNextPage: goToNextTopicPage,
+    goToPreviousPage: goToPreviousTopicPage,
+    pageCursor: topicPageCursor,
+    pageNumber: topicPageNumber,
+    resetPagination: resetTopicPagination,
+  } = useCursorPagination();
+  const {
+    canGoPrevious: canGoToPreviousBlogPage,
+    goToNextPage: goToNextBlogPage,
+    goToPreviousPage: goToPreviousBlogPage,
+    pageCursor: blogPageCursor,
+    pageNumber: blogPageNumber,
+    resetPagination: resetBlogPagination,
+  } = useCursorPagination();
   const activeProductId = workspaceSwitcher.activeWorkspaceId;
   const convexProductId = activeProductId
     ? castProductId(activeProductId)
@@ -78,11 +110,46 @@ export const useLiveWorkspace = (
   );
   const topicResults = useQuery(
     listTopicsQuery,
-    convexProductId ? { productId: convexProductId } : "skip",
+    convexProductId && mode === "topics"
+      ? {
+          paginationOpts: {
+            cursor: topicPageCursor,
+            numItems: workspaceListPageSize,
+          },
+          productId: convexProductId,
+          searchQuery: topicSearchQuery.trim(),
+          ...(topicStatusFilter === "all" ? {} : { status: topicStatusFilter }),
+        }
+      : "skip",
   );
   const blogResults = useQuery(
     listBlogsQuery,
-    convexProductId ? { productId: convexProductId } : "skip",
+    convexProductId && mode === "blogs"
+      ? {
+          paginationOpts: {
+            cursor: blogPageCursor,
+            numItems: workspaceListPageSize,
+          },
+          productId: convexProductId,
+          searchQuery: blogSearchQuery.trim(),
+          ...(blogStatusFilter === "all" ? {} : { status: blogStatusFilter }),
+          ...(blogTopicFilter === "all"
+            ? {}
+            : { topicKeyword: blogTopicFilter }),
+        }
+      : "skip",
+  );
+  const blogTopicKeywordResults = useQuery(
+    listBlogTopicKeywordsQuery,
+    convexProductId && mode === "blogs"
+      ? { productId: convexProductId }
+      : "skip",
+  );
+  const workspaceSummaryResult = useQuery(
+    getWorkspaceSummaryQuery,
+    convexProductId && mode === "dashboard"
+      ? { productId: convexProductId }
+      : "skip",
   );
   const createTopic = useMutation(createTopicMutation);
   const deleteBlogRecord = useMutation(deleteBlogMutation);
@@ -98,6 +165,26 @@ export const useLiveWorkspace = (
   const updateTopicNotes = useMutation(updateTopicNotesMutation);
   const updateTopicStatus = useMutation(updateTopicStatusMutation);
   const upsertGeneratedBlog = useMutation(upsertGeneratedBlogMutation);
+
+  useEffect(() => {
+    resetTopicPagination();
+  }, [
+    activeProductId,
+    resetTopicPagination,
+    topicSearchQuery,
+    topicStatusFilter,
+  ]);
+
+  useEffect(() => {
+    resetBlogPagination();
+  }, [
+    activeProductId,
+    blogSearchQuery,
+    blogStatusFilter,
+    blogTopicFilter,
+    resetBlogPagination,
+  ]);
+
   const visibleScannedProduct =
     scannedProduct?.productId === activeProductId ? scannedProduct.product : null;
   const product = visibleScannedProduct || mapConvexProduct(productResult);
@@ -105,12 +192,102 @@ export const useLiveWorkspace = (
     productResult?.blogGenerationSettings,
   );
   const topics = useMemo(
-    () => (topicResults || []).map(mapConvexTopic),
+    () => (topicResults?.page || []).map(mapConvexTopic),
     [topicResults],
   );
   const blogs: BlogItem[] = useMemo(
-    () => (blogResults || []).map(mapConvexBlog),
+    () => (blogResults?.page || []).map(mapConvexBlog),
     [blogResults],
+  );
+  const blogTopicOptions = useMemo(
+    () => [
+      { label: "All topics", value: "all" },
+      ...(blogTopicKeywordResults || []).map((topic) => ({
+        label: topic,
+        value: topic,
+      })),
+    ],
+    [blogTopicKeywordResults],
+  );
+  const workspaceSummary: WorkspaceSummary | undefined = useMemo(
+    () =>
+      workspaceSummaryResult
+        ? {
+            blogCount: workspaceSummaryResult.blogCount,
+            imageCount: workspaceSummaryResult.imageCount,
+            publishedBlogCount: workspaceSummaryResult.publishedBlogCount,
+            recentBlogs: workspaceSummaryResult.recentBlogs.map(mapConvexBlog),
+            topicCount: workspaceSummaryResult.topicCount,
+          }
+        : undefined,
+    [workspaceSummaryResult],
+  );
+  const topicListState: TopicListViewState = useMemo(
+    () => ({
+      activeFilter: topicStatusFilter,
+      pagination: {
+        canGoNext: Boolean(topicResults && !topicResults.isDone),
+        canGoPrevious: canGoToPreviousTopicPage,
+        goToNextPage: () => {
+          if (topicResults && !topicResults.isDone) {
+            goToNextTopicPage(topicResults.continueCursor);
+          }
+        },
+        goToPreviousPage: goToPreviousTopicPage,
+        isLoading: Boolean(convexProductId && mode === "topics" && !topicResults),
+        pageNumber: topicPageNumber,
+      },
+      searchQuery: topicSearchQuery,
+      setActiveFilter: setTopicStatusFilter,
+      setSearchQuery: setTopicSearchQuery,
+    }),
+    [
+      convexProductId,
+      canGoToPreviousTopicPage,
+      goToNextTopicPage,
+      goToPreviousTopicPage,
+      mode,
+      topicPageNumber,
+      topicResults,
+      topicSearchQuery,
+      topicStatusFilter,
+    ],
+  );
+  const blogListState: BlogListViewState = useMemo(
+    () => ({
+      activeFilter: blogStatusFilter,
+      pagination: {
+        canGoNext: Boolean(blogResults && !blogResults.isDone),
+        canGoPrevious: canGoToPreviousBlogPage,
+        goToNextPage: () => {
+          if (blogResults && !blogResults.isDone) {
+            goToNextBlogPage(blogResults.continueCursor);
+          }
+        },
+        goToPreviousPage: goToPreviousBlogPage,
+        isLoading: Boolean(convexProductId && mode === "blogs" && !blogResults),
+        pageNumber: blogPageNumber,
+      },
+      searchQuery: blogSearchQuery,
+      setActiveFilter: setBlogStatusFilter,
+      setSearchQuery: setBlogSearchQuery,
+      setTopicFilter: setBlogTopicFilter,
+      topicFilter: blogTopicFilter,
+      topicOptions: blogTopicOptions,
+    }),
+    [
+      canGoToPreviousBlogPage,
+      blogPageNumber,
+      blogResults,
+      blogSearchQuery,
+      blogStatusFilter,
+      blogTopicFilter,
+      blogTopicOptions,
+      convexProductId,
+      goToNextBlogPage,
+      goToPreviousBlogPage,
+      mode,
+    ],
   );
   const activeSelectedBlogId =
     blogs.find((blog) => blog.id === selectedBlogId)?.id || blogs[0]?.id || "";
@@ -285,6 +462,7 @@ export const useLiveWorkspace = (
       notes,
       productId: convexProductId,
     });
+    resetTopicPagination();
   };
 
   const discoverTopicIdeas = async ({
@@ -381,6 +559,7 @@ export const useLiveWorkspace = (
       productId: convexProductId || undefined,
       topicId: castTopicId(topicId),
     });
+    resetTopicPagination();
   };
 
   const discoverBlogRefreshIdeas = async (
@@ -567,6 +746,7 @@ export const useLiveWorkspace = (
       });
 
       setSelectedBlogId(blogId);
+      resetBlogPagination();
       setMode("blogs");
     } catch (error) {
       const message =
@@ -585,6 +765,7 @@ export const useLiveWorkspace = (
       blogId: castBlogId(blogId),
       productId: convexProductId || undefined,
     });
+    resetBlogPagination();
 
     if (selectedBlogId === blogId) {
       setSelectedBlogId("");
@@ -627,6 +808,7 @@ export const useLiveWorkspace = (
   return {
     addTopic,
     blogGenerationSettings,
+    blogListState,
     blogs,
     deleteBlog,
     deleteTopic,
@@ -658,6 +840,8 @@ export const useLiveWorkspace = (
     setMode,
     setSelectedBlogId,
     topics,
+    topicListState,
+    workspaceSummary,
     workspaceSwitcher,
     writeBlog,
   };

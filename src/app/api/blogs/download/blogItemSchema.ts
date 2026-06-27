@@ -21,6 +21,7 @@ export const blogItemSchema = z.object({
     z.literal("failed"),
     z.literal("published"),
   ]),
+  tags: z.array(z.string()).default([]),
   title: z.string(),
   updatedAt: z.number(),
   youtubeVideos: z.array(linkItemSchema).default([]),

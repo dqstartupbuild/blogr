@@ -1,6 +1,7 @@
 import { v } from "convex/values";
 import { mutation } from "../_generated/server";
 import { requireUserId } from "../identity/requireUserId";
+import { buildTopicSearchText } from "./buildTopicSearchText";
 
 export const updateTopicNotes = mutation({
   args: {
@@ -26,6 +27,10 @@ export const updateTopicNotes = mutation({
     }
 
     await ctx.db.patch(args.topicId, {
+      searchText: buildTopicSearchText({
+        keyword: topic.keyword,
+        notes,
+      }),
       notes: notes || undefined,
       productId: topic.productId || args.productId,
       updatedAt: Date.now(),

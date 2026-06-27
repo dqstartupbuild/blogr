@@ -1,12 +1,23 @@
 import type { BlogItem } from "@/features/workspace/types/BlogItem";
+import { buildBlogTags } from "@/server/blog/tags/buildBlogTags";
+import { appendBlogTag } from "@/server/blog/tags/appendBlogTag";
+import { maxBlogTagCount } from "@/server/blog/tags/constants/blogTagLimits";
 
 export const buildBlogPublishTags = (blog: BlogItem) => {
-  const tags = new Set<string>();
-  const keyword = blog.keyword.trim();
+  const tags: string[] = [];
 
-  if (keyword) {
-    tags.add(keyword);
+  for (const tag of blog.tags) {
+    appendBlogTag(tags, tag);
   }
 
-  return Array.from(tags);
+  for (const tag of buildBlogTags({
+    excerpt: blog.excerpt,
+    keyword: blog.keyword,
+    seoTitle: blog.seoTitle,
+    title: blog.title,
+  })) {
+    appendBlogTag(tags, tag);
+  }
+
+  return tags.slice(0, maxBlogTagCount);
 };

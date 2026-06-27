@@ -36,7 +36,7 @@ export const buildTopicDiscoveryPlanItems = (
       relatedTopicTitles: ideaTitles.slice(0, 4),
       sourceType: "gap",
       summary: gap.reason,
-      title: `Cover this gap: ${gap.title}`,
+      title: gap.title,
     }),
   );
   const comparisonItems: TopicDiscoveryPlanItem[] =

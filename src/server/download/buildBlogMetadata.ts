@@ -11,6 +11,7 @@ export const buildBlogMetadata = (
       seoTitle: blog.seoTitle || blog.title,
       slug: blog.slug,
       keyword: blog.keyword,
+      tags: blog.tags,
       excerpt: blog.excerpt,
       images: downloadedImages.map((image) => ({
         contentType: image.contentType,

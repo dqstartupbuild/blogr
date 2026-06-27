@@ -1,17 +1,15 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect } from "react";
 import { BlogList } from "./BlogList";
 import { EmptyState } from "./EmptyState";
 import { FilterBar } from "./FilterBar";
 import { FilterSelect } from "./FilterSelect";
+import { ListPaginationControls } from "./ListPaginationControls";
 import { SearchField } from "./SearchField";
 import { blogStatusFilterOptions } from "../constants/blogStatusFilterOptions";
-import { filterBlogsBySearch } from "../utils/filterBlogsBySearch";
-import { filterBlogsByStatus } from "../utils/filterBlogsByStatus";
-import { filterBlogsByTopic } from "../utils/filterBlogsByTopic";
-import { getUniqueBlogTopics } from "../utils/getUniqueBlogTopics";
 import type { BlogItem } from "../types/BlogItem";
+import type { BlogListViewState } from "../types/BlogListViewState";
 import type { BlogStatusFilter } from "../types/BlogStatusFilter";
 import type { DeleteBlog } from "../types/DeleteBlog";
 import type { DiscoverBlogRefreshIdeas } from "../types/DiscoverBlogRefreshIdeas";
@@ -21,6 +19,7 @@ type FilteredBlogListProps = {
   blogs: BlogItem[];
   deleteBlog: DeleteBlog;
   discoverBlogRefreshIdeas: DiscoverBlogRefreshIdeas;
+  listState: BlogListViewState;
   previewBlog: (blogId: string) => void;
   savePlan: SaveDiscoveryPlan;
   selectedBlogId: string;
@@ -31,74 +30,53 @@ export const FilteredBlogList = ({
   blogs,
   deleteBlog,
   discoverBlogRefreshIdeas,
+  listState,
   previewBlog,
   savePlan,
   selectedBlogId,
   setSelectedBlogId,
 }: FilteredBlogListProps) => {
-  const [activeFilter, setActiveFilter] = useState<BlogStatusFilter>("unpublished");
-  const [searchQuery, setSearchQuery] = useState("");
-  const [topicFilter, setTopicFilter] = useState("all");
-  const topicOptions = useMemo(
-    () => [
-      { label: "All topics", value: "all" },
-      ...getUniqueBlogTopics(blogs).map((topic) => ({
-        label: topic,
-        value: topic,
-      })),
-    ],
-    [blogs],
-  );
-  const filteredBlogs = useMemo(
-    () =>
-      filterBlogsBySearch(
-        filterBlogsByTopic(filterBlogsByStatus(blogs, activeFilter), topicFilter),
-        searchQuery,
-      ),
-    [activeFilter, blogs, searchQuery, topicFilter],
-  );
-
   useEffect(() => {
-    if (filteredBlogs.length === 0) {
+    if (blogs.length === 0) {
       return;
     }
 
-    if (filteredBlogs.some((blog) => blog.id === selectedBlogId)) {
+    if (blogs.some((blog) => blog.id === selectedBlogId)) {
       return;
     }
 
-    setSelectedBlogId(filteredBlogs[0].id);
-  }, [filteredBlogs, selectedBlogId, setSelectedBlogId]);
-
-  if (blogs.length === 0) {
-    return <EmptyState label="No blogs yet." />;
-  }
+    setSelectedBlogId(blogs[0].id);
+  }, [blogs, selectedBlogId, setSelectedBlogId]);
 
   return (
     <div className="space-y-4">
       <FilterBar>
         <SearchField
           label="Search articles"
-          onChange={setSearchQuery}
+          onChange={listState.setSearchQuery}
           placeholder="Search articles..."
-          value={searchQuery}
+          value={listState.searchQuery}
         />
         <FilterSelect
           label="Status"
-          onChange={(value) => setActiveFilter(value as BlogStatusFilter)}
+          onChange={(value) =>
+            listState.setActiveFilter(value as BlogStatusFilter)
+          }
           options={blogStatusFilterOptions}
-          value={activeFilter}
+          value={listState.activeFilter}
         />
         <FilterSelect
           label="Topic"
-          onChange={setTopicFilter}
-          options={topicOptions}
-          value={topicFilter}
+          onChange={listState.setTopicFilter}
+          options={listState.topicOptions}
+          value={listState.topicFilter}
         />
       </FilterBar>
-      {filteredBlogs.length > 0 ? (
+      {listState.pagination.isLoading ? (
+        <EmptyState label="Loading articles." />
+      ) : blogs.length > 0 ? (
         <BlogList
-          blogs={filteredBlogs}
+          blogs={blogs}
           deleteBlog={deleteBlog}
           discoverBlogRefreshIdeas={discoverBlogRefreshIdeas}
           previewBlog={previewBlog}
@@ -108,6 +86,7 @@ export const FilteredBlogList = ({
       ) : (
         <EmptyState label="No blogs in this view." />
       )}
+      <ListPaginationControls pagination={listState.pagination} />
     </div>
   );
 };

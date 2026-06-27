@@ -14,4 +14,5 @@ export type GeneratedBlog = {
   internalLinks: LinkItem[];
   youtubeVideos: LinkItem[];
   sources: LinkItem[];
+  tags: string[];
 };

@@ -3,6 +3,7 @@ import { chooseInternalLinks } from "./chooseInternalLinks";
 import { applyBlogImagesToMdx } from "./applyBlogImagesToMdx";
 import { findYoutubeVideos } from "./findYoutubeVideos";
 import { generateBlogImages } from "./generateBlogImages";
+import { normalizeBlogKeyword } from "./normalizeBlogKeyword";
 import { planBlogImagePrompts } from "./planBlogImagePrompts";
 import { runBlogResearch } from "./runBlogResearch";
 import { storeGeneratedBlogImages } from "./storeGeneratedBlogImages";
@@ -35,21 +36,24 @@ export const generateBlogForKeyword = async ({
   topicBrief,
   userId,
 }: GenerateBlogForKeywordOptions): Promise<GeneratedBlog> => {
+  const normalizedKeyword = normalizeBlogKeyword(keyword) || keyword.trim();
   const settings = normalizeBlogGenerationSettings(
     blogGenerationSettings || product.blogGenerationSettings,
   );
   const [sources, youtubeVideos, productRagContext] = await Promise.all([
-    runBlogResearch(keyword),
-    settings.youtubeVideo ? findYoutubeVideos(keyword) : Promise.resolve([]),
+    runBlogResearch(normalizedKeyword),
+    settings.youtubeVideo
+      ? findYoutubeVideos(normalizedKeyword)
+      : Promise.resolve([]),
     searchProductRagContext({
       productId,
-      query: keyword,
+      query: normalizedKeyword,
       token: convexAuthToken,
     }),
   ]);
   const activeSiteLinks = filterActiveLinks(product.siteLinks || []);
   const internalLinks = chooseInternalLinks({
-    keyword,
+    keyword: normalizedKeyword,
     links: activeSiteLinks,
     limit: settings.internalLinksPerArticle,
   });
@@ -58,7 +62,7 @@ export const generateBlogForKeyword = async ({
     associateBrandLinks: settings.associateBrandLinks,
     images: [],
     internalLinks,
-    keyword,
+    keyword: normalizedKeyword,
     product,
     productRagContext,
     settings,
@@ -69,7 +73,7 @@ export const generateBlogForKeyword = async ({
     youtubeVideos,
   });
   const imagePrompts = await planBlogImagePrompts({
-    keyword,
+    keyword: normalizedKeyword,
     mdx: textBlog.mdx,
     product,
     settings,

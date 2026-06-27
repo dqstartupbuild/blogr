@@ -1,6 +1,7 @@
 import { FilteredBlogList } from "./FilteredBlogList";
 import { WorkspacePageHeader } from "./WorkspacePageHeader";
 import type { BlogItem } from "../types/BlogItem";
+import type { BlogListViewState } from "../types/BlogListViewState";
 import type { DeleteBlog } from "../types/DeleteBlog";
 import type { DiscoverBlogRefreshIdeas } from "../types/DiscoverBlogRefreshIdeas";
 import type { SaveDiscoveryPlan } from "../types/SaveDiscoveryPlan";
@@ -10,6 +11,7 @@ type BlogsPanelProps = {
   blogs: BlogItem[];
   deleteBlog: DeleteBlog;
   discoverBlogRefreshIdeas: DiscoverBlogRefreshIdeas;
+  listState: BlogListViewState;
   previewBlog: (blogId: string) => void;
   selectedBlogId: string;
   setSelectedBlogId: (blogId: string) => void;
@@ -20,6 +22,7 @@ export const BlogsPanel = ({
   blogs,
   deleteBlog,
   discoverBlogRefreshIdeas,
+  listState,
   previewBlog,
   selectedBlogId,
   setSelectedBlogId,
@@ -36,6 +39,7 @@ export const BlogsPanel = ({
         blogs={blogs}
         deleteBlog={deleteBlog}
         discoverBlogRefreshIdeas={discoverBlogRefreshIdeas}
+        listState={listState}
         previewBlog={previewBlog}
         savePlan={savePlan}
         selectedBlogId={selectedBlogId}

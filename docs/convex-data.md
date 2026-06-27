@@ -2,7 +2,7 @@
 
 ## What It Does
 
-Convex stores product workspaces, blog generation settings, blog publishing integrations, R2 image keys, active workspace selections, saved topics, generated blogs, and component-managed product context embeddings.
+Convex stores product workspaces, blog generation settings, blog publishing integrations, R2 image keys, active workspace selections, saved topics, generated blogs, list search metadata, blog tags, and component-managed product context embeddings.
 
 ## Tables
 
@@ -23,11 +23,15 @@ Product `siteLinks` include optional `isActive`. Missing values are active. Link
 
 Generated blog images can include an `r2Key` beside the served image URL. Blog and product queries use those keys to return fresh signed URLs from the Convex R2 component.
 
+Topics and blogs can store `searchText` so list search can use Convex search indexes while still returning one paginated page at a time.
+
 Generated blogs store a visible article title and can store a separate `seoTitle`. Existing blogs without `seoTitle` fall back to the visible title in the UI. New generated posts normalize SEO titles to 70 to 110 characters and meta descriptions to 110 to 160 characters.
+
+Generated blogs can store `tags`. Older blogs can omit this field, and publishing rebuilds clean fallback tags from the current blog fields.
 
 The Convex RAG component stores scanned product context in a namespace based on the product workspace ID. Rescanning a product replaces the existing product context entry for that namespace, so future blog generation searches the latest scanned website context.
 
-`workspaceSelections` stores one active product workspace per user. New topic and blog records include `productId`, and list queries use product-scoped indexes so one workspace does not read another workspace's records.
+`workspaceSelections` stores one active product workspace per user. New topic and blog records include `productId`. Topic and blog list queries use user indexes, product filters, search indexes, and Convex pagination options so the UI can load 10 rows at a time.
 
 Rows created before product workspaces can be backfilled with:
 

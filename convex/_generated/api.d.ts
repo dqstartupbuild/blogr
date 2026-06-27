@@ -8,8 +8,11 @@
  * @module
  */
 
+import type * as blogs_buildBlogSearchText from "../blogs/buildBlogSearchText.js";
+import type * as blogs_countBlogImageUrls from "../blogs/countBlogImageUrls.js";
 import type * as blogs_deleteBlog from "../blogs/deleteBlog.js";
 import type * as blogs_getBlog from "../blogs/getBlog.js";
+import type * as blogs_listBlogTopicKeywords from "../blogs/listBlogTopicKeywords.js";
 import type * as blogs_listBlogs from "../blogs/listBlogs.js";
 import type * as blogs_markBlogPublished from "../blogs/markBlogPublished.js";
 import type * as blogs_refreshBlogImageUrls from "../blogs/refreshBlogImageUrls.js";
@@ -57,13 +60,16 @@ import type * as rag_client from "../rag/client.js";
 import type * as rag_indexProductContext from "../rag/indexProductContext.js";
 import type * as rag_productRagKey from "../rag/productRagKey.js";
 import type * as rag_searchProductContext from "../rag/searchProductContext.js";
+import type * as topics_buildTopicSearchText from "../topics/buildTopicSearchText.js";
 import type * as topics_createTopic from "../topics/createTopic.js";
 import type * as topics_deleteTopic from "../topics/deleteTopic.js";
 import type * as topics_getTopic from "../topics/getTopic.js";
 import type * as topics_listTopics from "../topics/listTopics.js";
+import type * as topics_normalizeTopicKeyword from "../topics/normalizeTopicKeyword.js";
 import type * as topics_updateTopicNotes from "../topics/updateTopicNotes.js";
 import type * as topics_updateTopicStatus from "../topics/updateTopicStatus.js";
 import type * as workspaceSelections_saveWorkspaceSelection from "../workspaceSelections/saveWorkspaceSelection.js";
+import type * as workspaces_getWorkspaceSummary from "../workspaces/getWorkspaceSummary.js";
 
 import type {
   ApiFromModules,
@@ -72,8 +78,11 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  "blogs/buildBlogSearchText": typeof blogs_buildBlogSearchText;
+  "blogs/countBlogImageUrls": typeof blogs_countBlogImageUrls;
   "blogs/deleteBlog": typeof blogs_deleteBlog;
   "blogs/getBlog": typeof blogs_getBlog;
+  "blogs/listBlogTopicKeywords": typeof blogs_listBlogTopicKeywords;
   "blogs/listBlogs": typeof blogs_listBlogs;
   "blogs/markBlogPublished": typeof blogs_markBlogPublished;
   "blogs/refreshBlogImageUrls": typeof blogs_refreshBlogImageUrls;
@@ -121,13 +130,16 @@ declare const fullApi: ApiFromModules<{
   "rag/indexProductContext": typeof rag_indexProductContext;
   "rag/productRagKey": typeof rag_productRagKey;
   "rag/searchProductContext": typeof rag_searchProductContext;
+  "topics/buildTopicSearchText": typeof topics_buildTopicSearchText;
   "topics/createTopic": typeof topics_createTopic;
   "topics/deleteTopic": typeof topics_deleteTopic;
   "topics/getTopic": typeof topics_getTopic;
   "topics/listTopics": typeof topics_listTopics;
+  "topics/normalizeTopicKeyword": typeof topics_normalizeTopicKeyword;
   "topics/updateTopicNotes": typeof topics_updateTopicNotes;
   "topics/updateTopicStatus": typeof topics_updateTopicStatus;
   "workspaceSelections/saveWorkspaceSelection": typeof workspaceSelections_saveWorkspaceSelection;
+  "workspaces/getWorkspaceSummary": typeof workspaces_getWorkspaceSummary;
 }>;
 
 /**

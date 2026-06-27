@@ -1,6 +1,7 @@
 import { v } from "convex/values";
 import { mutation } from "../_generated/server";
 import { requireUserId } from "../identity/requireUserId";
+import { buildBlogSearchText } from "./buildBlogSearchText";
 import { validateSeoContentLengths } from "./validateSeoContentLengths";
 
 const linkValidator = v.object({
@@ -34,6 +35,7 @@ export const upsertGeneratedBlog = mutation({
     ),
     mdx: v.string(),
     featureImageUrl: v.optional(v.string()),
+    tags: v.optional(v.array(v.string())),
     images: v.array(imageValidator),
     internalLinks: v.array(linkValidator),
     youtubeVideos: v.array(linkValidator),
@@ -79,6 +81,12 @@ export const upsertGeneratedBlog = mutation({
       await ctx.db.patch(existing._id, {
         ...args,
         excerpt,
+        searchText: buildBlogSearchText({
+          excerpt,
+          keyword: args.keyword,
+          seoTitle,
+          title: args.title,
+        }),
         seoTitle,
         updatedAt: now,
       });
@@ -98,6 +106,12 @@ export const upsertGeneratedBlog = mutation({
     const blogId = await ctx.db.insert("blogs", {
       ...args,
       excerpt,
+      searchText: buildBlogSearchText({
+        excerpt,
+        keyword: args.keyword,
+        seoTitle,
+        title: args.title,
+      }),
       seoTitle,
       userId,
       createdAt: now,
