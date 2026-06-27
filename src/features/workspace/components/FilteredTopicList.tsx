@@ -30,7 +30,7 @@ export const FilteredTopicList = ({
   topics,
   writeBlog,
 }: FilteredTopicListProps) => {
-  const [activeFilter, setActiveFilter] = useState<TopicStatusFilter>("all");
+  const [activeFilter, setActiveFilter] = useState<TopicStatusFilter>("saved");
   const [searchQuery, setSearchQuery] = useState("");
   const filteredTopics = filterTopicsBySearch(
     filterTopicsByStatus(topics, activeFilter),
