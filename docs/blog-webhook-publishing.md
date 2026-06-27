@@ -118,6 +118,12 @@ The receiving app should:
 - Include webhook-published posts in sitemap/feed outputs and refresh cached blog pages after publishing.
 - Return a JSON response with `{ "message": "Published." }`.
 
+## Troubleshooting
+
+If publishing works for one product but fails for another with `Method Not Allowed`, that product is usually connected to the wrong receiving URL.
+
+Check that product's **Settings** page and make sure the Webhook URL points to the receiving app's blog publishing endpoint, not a public blog page or another API route. The receiving route must accept `POST /api/webhooks/blog-publisher`.
+
 ## Security
 
 The target webhook must be public but token-protected. Never put the webhook token in browser code.

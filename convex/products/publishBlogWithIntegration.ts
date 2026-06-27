@@ -5,6 +5,7 @@ import { action } from "../_generated/server";
 import { applyBlogPublishingSourceName } from "./applyBlogPublishingSourceName";
 import { blogPublishingIntegrationValidator } from "./blogPublishingIntegrationValidator";
 import { blogPublishPayloadValidator } from "./blogPublishPayloadValidator";
+import { buildBlogPublishingWebhookErrorMessage } from "./buildBlogPublishingWebhookErrorMessage";
 import { readBlogPublishingWebhookMessage } from "./readBlogPublishingWebhookMessage";
 
 type BlogPublishingIntegration = Infer<typeof blogPublishingIntegrationValidator>;
@@ -49,7 +50,15 @@ export const publishBlogWithIntegration = action({
     });
 
     if (!response.ok) {
-      throw new Error(await readBlogPublishingWebhookMessage(response));
+      const message = await readBlogPublishingWebhookMessage(response);
+
+      throw new Error(
+        buildBlogPublishingWebhookErrorMessage({
+          message,
+          status: response.status,
+          statusText: response.statusText,
+        }),
+      );
     }
 
     return {

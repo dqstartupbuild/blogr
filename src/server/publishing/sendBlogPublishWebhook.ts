@@ -1,4 +1,5 @@
 import { createBlogPublishHeaders } from "./createBlogPublishHeaders";
+import { buildBlogPublishWebhookErrorMessage } from "./buildBlogPublishWebhookErrorMessage";
 import { getBlogPublishTimeoutMs } from "./getBlogPublishTimeoutMs";
 import { readBlogPublishWebhookMessage } from "./readBlogPublishWebhookMessage";
 import type { BlogPublishPayload } from "./types/BlogPublishPayload";
@@ -22,7 +23,13 @@ export const sendBlogPublishWebhook = async (
   if (!response.ok) {
     const message = await readBlogPublishWebhookMessage(response);
 
-    throw new Error(message);
+    throw new Error(
+      buildBlogPublishWebhookErrorMessage({
+        message,
+        status: response.status,
+        statusText: response.statusText,
+      }),
+    );
   }
 
   return readBlogPublishWebhookMessage(response);
