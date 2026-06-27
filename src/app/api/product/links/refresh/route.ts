@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { requireRouteUserId } from "@/server/auth/requireRouteUserId";
 import { getErrorStatus } from "@/server/http/getErrorStatus";
 import { getPublicErrorMessage } from "@/server/http/getPublicErrorMessage";
+import { logRouteError } from "@/server/http/logRouteError";
 import { refreshProductSiteLinks } from "@/server/product/refreshProductSiteLinks";
 import { productLinksRefreshRequestSchema } from "./schema";
 
@@ -17,6 +18,8 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ siteLinks });
   } catch (error) {
+    logRouteError(error);
+
     return NextResponse.json(
       { error: getPublicErrorMessage(error) },
       { status: getErrorStatus(error) },

@@ -9,6 +9,8 @@ import { hasConvexUrl } from "@/server/convex/hasConvexUrl";
 import { publishBlogWithIntegrationAction } from "@/server/convex/references/publishBlogWithIntegrationAction";
 import { getErrorStatus } from "@/server/http/getErrorStatus";
 import { getPublicErrorMessage } from "@/server/http/getPublicErrorMessage";
+import { logRouteError } from "@/server/http/logRouteError";
+import { PublicError } from "@/server/http/PublicError";
 import { buildBlogPublishPayload } from "@/server/publishing/buildBlogPublishPayload";
 import { getBlogPublishEnvironmentDestination } from "@/server/publishing/getBlogPublishEnvironmentDestination";
 import { sendBlogPublishWebhook } from "@/server/publishing/sendBlogPublishWebhook";
@@ -50,7 +52,7 @@ export async function POST(request: Request) {
     const destination = getBlogPublishEnvironmentDestination();
 
     if (!destination) {
-      throw new Error("Add a publishing integration in Settings before publishing.");
+      throw new PublicError("Add a publishing integration in Settings before publishing.");
     }
 
     const fallbackPayload = buildBlogPublishPayload(
@@ -66,6 +68,8 @@ export async function POST(request: Request) {
       published: true,
     });
   } catch (error) {
+    logRouteError(error);
+
     return NextResponse.json(
       { error: getPublicErrorMessage(error) },
       { status: getErrorStatus(error) },

@@ -11,6 +11,7 @@ import { getFirecrawlApiKey } from "../firecrawl/getFirecrawlApiKey";
 import { mergeUniqueColors } from "../firecrawl/mergeUniqueColors";
 import { normalizeUrl } from "../firecrawl/normalizeUrl";
 import { pickDetailLinks } from "../firecrawl/pickDetailLinks";
+import { PublicError } from "../http/PublicError";
 import type { ProductScanResult } from "./types/ProductScanResult";
 
 type ScanProductWebsiteOptions = {
@@ -23,7 +24,7 @@ export const scanProductWebsite = async ({
   websiteUrl,
 }: ScanProductWebsiteOptions): Promise<ProductScanResult> => {
   const normalizedUrl = normalizeUrl(websiteUrl);
-  if (!normalizedUrl) throw new Error("Use a real website URL.");
+  if (!normalizedUrl) throw new PublicError("Use a real website URL.");
 
   const apiKey = getFirecrawlApiKey();
   const scrapeData = await fetchPrimaryScrape({ apiKey, url: normalizedUrl });

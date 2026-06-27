@@ -3,6 +3,7 @@ import { runGoogleSearchScraper } from "@/server/apify/runGoogleSearchScraper";
 import { requireRouteUserId } from "@/server/auth/requireRouteUserId";
 import { getErrorStatus } from "@/server/http/getErrorStatus";
 import { getPublicErrorMessage } from "@/server/http/getPublicErrorMessage";
+import { logRouteError } from "@/server/http/logRouteError";
 import { buildTopicDiscoveryQueries } from "@/server/topics/buildTopicDiscoveryQueries";
 import { extractSerpSignals } from "@/server/topics/extractSerpSignals";
 import { generateTopicIdeas } from "@/server/topics/generateTopicIdeas";
@@ -35,6 +36,8 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ discovery });
   } catch (error) {
+    logRouteError(error);
+
     return NextResponse.json(
       { error: getPublicErrorMessage(error) },
       { status: getErrorStatus(error) },

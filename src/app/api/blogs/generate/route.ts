@@ -4,6 +4,7 @@ import { requireRouteUserId } from "@/server/auth/requireRouteUserId";
 import { generateBlogForKeyword } from "@/server/blog/generateBlogForKeyword";
 import { getErrorStatus } from "@/server/http/getErrorStatus";
 import { getPublicErrorMessage } from "@/server/http/getPublicErrorMessage";
+import { logRouteError } from "@/server/http/logRouteError";
 import { blogGenerateRequestSchema } from "./schema";
 
 export const maxDuration = 300;
@@ -23,6 +24,8 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ blog });
   } catch (error) {
+    logRouteError(error);
+
     return NextResponse.json(
       { error: getPublicErrorMessage(error) },
       { status: getErrorStatus(error) },

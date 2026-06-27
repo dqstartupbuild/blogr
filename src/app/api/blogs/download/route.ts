@@ -4,6 +4,7 @@ import { buildBlogZip } from "@/server/download/buildBlogZip";
 import { safeFilename } from "@/server/download/safeFilename";
 import { getErrorStatus } from "@/server/http/getErrorStatus";
 import { getPublicErrorMessage } from "@/server/http/getPublicErrorMessage";
+import { logRouteError } from "@/server/http/logRouteError";
 import { blogDownloadRequestSchema } from "./schema";
 
 export const maxDuration = 300;
@@ -24,6 +25,8 @@ export async function POST(request: Request) {
       },
     });
   } catch (error) {
+    logRouteError(error);
+
     return NextResponse.json(
       { error: getPublicErrorMessage(error) },
       { status: getErrorStatus(error) },

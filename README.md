@@ -4,6 +4,12 @@ Blogr is a simple Next.js workspace for turning saved keywords into longform MDX
 
 The app uses Clerk for auth, Convex for data, Firecrawl for website and web research, Apify for Google topic discovery, Replicate for the writer and image models, Cloudflare R2 for stored images, and OpenAI embeddings for product context retrieval.
 
+## Project
+
+- [MIT license](LICENSE)
+- [Security policy](SECURITY.md)
+- [Contributing guide](CONTRIBUTING.md)
+
 ## Local Setup
 
 ```bash
@@ -78,6 +84,7 @@ npx convex env set R2_BUCKET <bucket>
 - [Zip export](docs/zip-export.md)
 - [Auth](docs/auth.md)
 - [Convex data](docs/convex-data.md)
+- [Security hardening](docs/security-hardening.md)
 - [Theme](docs/theme.md)
 
 The in-app version of the publishing setup guide is available from **Settings** > **Publishing** for the active product.

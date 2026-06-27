@@ -6,6 +6,7 @@ import { getPublicErrorMessage } from "@/server/http/getPublicErrorMessage";
 import { scanProductWebsite } from "@/server/product/scanProductWebsite";
 import { storeProductScanImages } from "@/server/product/storeProductScanImages";
 import { indexProductRagContext } from "@/server/rag/indexProductRagContext";
+import { logRouteError } from "@/server/http/logRouteError";
 import { productScanRequestSchema } from "./schema";
 
 export const maxDuration = 300;
@@ -35,6 +36,8 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ product: storedProduct });
   } catch (error) {
+    logRouteError(error);
+
     return NextResponse.json(
       { error: getPublicErrorMessage(error) },
       { status: getErrorStatus(error) },

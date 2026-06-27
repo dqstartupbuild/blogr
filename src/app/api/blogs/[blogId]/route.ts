@@ -8,6 +8,8 @@ import { updateBlogContentMutation } from "@/server/convex/references/updateBlog
 import { hasConvexUrl } from "@/server/convex/hasConvexUrl";
 import { getErrorStatus } from "@/server/http/getErrorStatus";
 import { getPublicErrorMessage } from "@/server/http/getPublicErrorMessage";
+import { logRouteError } from "@/server/http/logRouteError";
+import { PublicError } from "@/server/http/PublicError";
 import { blogUpdateRequestSchema } from "./schema";
 
 type BlogRouteContext = {
@@ -19,7 +21,7 @@ export async function GET(_request: Request, context: BlogRouteContext) {
     await requireRouteUserId();
 
     if (!hasConvexUrl()) {
-      throw new Error("Connect Convex before loading live blogs.");
+      throw new PublicError("Connect Convex before loading live blogs.", 503);
     }
 
     const token = await getConvexAuthToken();
@@ -33,6 +35,8 @@ export async function GET(_request: Request, context: BlogRouteContext) {
 
     return NextResponse.json({ blog });
   } catch (error) {
+    logRouteError(error);
+
     return NextResponse.json(
       { error: getPublicErrorMessage(error) },
       { status: getErrorStatus(error) },
@@ -45,7 +49,7 @@ export async function PATCH(request: Request, context: BlogRouteContext) {
     await requireRouteUserId();
 
     if (!hasConvexUrl()) {
-      throw new Error("Connect Convex before saving live blogs.");
+      throw new PublicError("Connect Convex before saving live blogs.", 503);
     }
 
     const token = await getConvexAuthToken();
@@ -68,6 +72,8 @@ export async function PATCH(request: Request, context: BlogRouteContext) {
 
     return NextResponse.json({ saved: true });
   } catch (error) {
+    logRouteError(error);
+
     return NextResponse.json(
       { error: getPublicErrorMessage(error) },
       { status: getErrorStatus(error) },

@@ -12,6 +12,8 @@ import { updateBlogImageMutation } from "@/server/convex/references/updateBlogIm
 import { hasConvexUrl } from "@/server/convex/hasConvexUrl";
 import { getErrorStatus } from "@/server/http/getErrorStatus";
 import { getPublicErrorMessage } from "@/server/http/getPublicErrorMessage";
+import { logRouteError } from "@/server/http/logRouteError";
+import { PublicError } from "@/server/http/PublicError";
 import { regenerateImageRequestSchema } from "./schema";
 
 type RegenerateImageRouteContext = {
@@ -25,7 +27,7 @@ export async function POST(request: Request, context: RegenerateImageRouteContex
     const userId = await requireRouteUserId();
 
     if (!hasConvexUrl()) {
-      throw new Error("Connect Convex before refreshing images.");
+      throw new PublicError("Connect Convex before refreshing images.", 503);
     }
 
     const token = await getConvexAuthToken();
@@ -107,6 +109,8 @@ export async function POST(request: Request, context: RegenerateImageRouteContex
       mdx: nextMdx,
     });
   } catch (error) {
+    logRouteError(error);
+
     return NextResponse.json(
       { error: getPublicErrorMessage(error) },
       { status: getErrorStatus(error) },
