@@ -156,10 +156,16 @@ Blogr sends `content_format: "mdx"` and keeps the full article body in `content_
 Support at least:
 
 - YAML frontmatter, including stripping it from visible article content.
-- Headings, paragraphs, bold, italic, links, ordered lists, unordered lists, blockquotes, tables, horizontal rules, inline code, and fenced code blocks.
+- H1 through H6 headings, paragraphs, bold, italic, links, ordered lists, unordered lists, blockquotes, tables, horizontal rules, inline code, and fenced code blocks.
 - Markdown image syntax after image URLs have been rewritten to target-owned URLs.
 - Raw HTML or MDX iframe embeds for YouTube videos that use `youtube.com/embed` or `youtube-nocookie.com/embed`.
 - Standalone YouTube watch URLs or markdown links from `youtube.com`, `m.youtube.com`, `music.youtube.com`, `youtube-nocookie.com`, and `youtu.be`, rendered as embedded players when possible.
+
+Blogr articles commonly start with a `#` H1. Render that line as an H1, not as literal text. If the article page generates heading IDs, apply stable IDs to H1 through H6.
+
+Keep article table-of-contents links focused on H2 through H6 sections. The article H1 should render normally but should not become a table-of-contents item.
+
+Blogr's YouTube iframe output can be a multi-line block with an opening `<iframe` line, attributes such as `src`, `title`, `allow`, and `allowFullScreen` on separate lines, and a closing `</iframe>`. Older or imported content may use self-closing iframe tags. Do not only match one-line iframe strings. If the markdown or MDX renderer would show the iframe markup as raw text, transform Blogr's whitelisted YouTube iframe shape into a safe embed component before rendering.
 
 Sanitize rendered content. Do not allow arbitrary scripts, unsafe event handlers, or untrusted iframe sources.
 
@@ -251,6 +257,8 @@ Handle events this way:
 - Saved article content uses target-owned image URLs, not Blogr URLs.
 - `/blog` lists the published post.
 - `/blog/[slug]` renders the post body, feature image, inline images, tables, code blocks, and YouTube videos.
+- `/blog/[slug]` renders `#` H1 headings as headings while keeping table-of-contents entries scoped to H2 through H6.
+- `/blog/[slug]` renders Blogr's multi-line YouTube iframe blocks instead of showing the raw iframe markup.
 - Sitemap and feed outputs include webhook-published posts.
 - Cached blog routes and discovery outputs refresh after publishing.
 - The target app documents the webhook env var and endpoint.

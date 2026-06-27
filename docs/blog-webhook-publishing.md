@@ -94,7 +94,7 @@ The route sends this shape:
 }
 ```
 
-MDX is the source of truth. `content_html` is intentionally blank because this app stores and edits articles as MDX. Blogr can include YAML frontmatter, markdown images, tables, code blocks, and YouTube iframe embeds in the MDX body.
+MDX is the source of truth. `content_html` is intentionally blank because this app stores and edits articles as MDX. Blogr can include YAML frontmatter, H1 through H6 headings, markdown images, tables, code blocks, and YouTube iframe embeds in the MDX body.
 
 ## Target App Expectations
 
@@ -115,7 +115,9 @@ The receiving app should:
 - Do not require `R2_PUBLIC_URL`, an R2 custom domain, a public bucket, or whole-bucket public access when using the default R2 path.
 - Finish with a required setup handoff that names every variable and groups it by where it must be set, including hosting/server env vars, Convex deployment env vars, Cloudflare/R2 setup, database setup, Blogr Settings, optional follow-ups, and verification commands.
 - Treat the Blogr publisher label as the webhook payload's `source` value. It is a sending-app label, not the article author.
-- Render Blogr MDX features including frontmatter stripping, headings, links, lists, blockquotes, tables, code, markdown images, and YouTube iframe embeds or YouTube links.
+- Render Blogr MDX features including frontmatter stripping, H1 through H6 headings, links, lists, blockquotes, tables, code, markdown images, and YouTube iframe embeds or YouTube links.
+- Render article `#` H1 lines as headings while keeping generated table-of-contents entries focused on H2 through H6 sections.
+- Support Blogr's multi-line YouTube iframe blocks and older self-closing iframe variants. If the target renderer would show the iframe markup as raw text, transform whitelisted YouTube iframe markup into a safe embed component before rendering.
 - Include webhook-published posts in sitemap/feed outputs and refresh cached blog pages after publishing.
 - Return a JSON response with `{ "message": "Published." }`.
 
