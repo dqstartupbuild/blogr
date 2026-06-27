@@ -34,10 +34,10 @@ No mockup-only actions were added. Live article links are not shown because this
 
 The dashboard and preview panels derive stats from existing data:
 
-- Topic count comes from the current `topics` list.
-- Article count comes from the current `blogs` list.
+- Topic count comes from the live workspace summary query, or the full demo topic list in preview mode.
+- Article count comes from the live workspace summary query, or the full demo blog list in preview mode.
 - Published count comes from articles with `status === "published"`.
-- Image count comes from article feature images and stored image URLs.
+- Image count comes from unique article feature images and stored image URLs.
 - Word count comes from article MDX text after frontmatter and markdown noise are removed.
 - Heading count comes from markdown heading lines in article MDX.
 - Read time is estimated from word count.
@@ -56,4 +56,4 @@ The helpers live in `src/features/workspace/utils/` and are split by purpose.
 
 Articles and topics now have Delete actions with a confirmation prompt. Deleting an article removes it from Articles and moves its source topic back to a saved state when that topic is still present. Deleting a topic leaves any already-created article in Articles.
 
-In the Articles table, selecting an article title opens preview mode only. Editing is available through the explicit Edit button. The floating Preview button is not shown on the Articles list anymore, but it is still available in the article editor.
+In the Articles table, selecting an article title opens preview mode only. Dashboard recent article rows also open preview mode. Editing is available through the explicit Edit button. The floating Preview button is not shown on the Articles list anymore, but it is still available in the article editor.

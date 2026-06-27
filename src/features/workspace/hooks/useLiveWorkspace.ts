@@ -289,11 +289,25 @@ export const useLiveWorkspace = (
       mode,
     ],
   );
+  const previewBlogs = useMemo(() => {
+    const blogIds = new Set(blogs.map((blog) => blog.id));
+
+    return [
+      ...blogs,
+      ...(workspaceSummary?.recentBlogs || []).filter(
+        (blog) => !blogIds.has(blog.id),
+      ),
+    ];
+  }, [blogs, workspaceSummary]);
   const activeSelectedBlogId =
-    blogs.find((blog) => blog.id === selectedBlogId)?.id || blogs[0]?.id || "";
+    previewBlogs.find((blog) => blog.id === selectedBlogId)?.id ||
+    previewBlogs[0]?.id ||
+    "";
   const selectedBlog = useMemo(
-    () => blogs.find((blog) => blog.id === activeSelectedBlogId) ?? blogs[0],
-    [blogs, activeSelectedBlogId],
+    () =>
+      previewBlogs.find((blog) => blog.id === activeSelectedBlogId) ??
+      previewBlogs[0],
+    [previewBlogs, activeSelectedBlogId],
   );
 
   const scanProduct = async (websiteUrl: string, niche: string) => {

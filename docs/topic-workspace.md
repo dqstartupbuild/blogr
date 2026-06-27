@@ -18,6 +18,8 @@ The blog preview opens from a fixed right-side sidebar button, so users can read
 
 The dashboard is scoped to the active product workspace. Switching workspaces changes which product profile, topics, blogs, and previews are shown.
 
+Dashboard recent article rows open the same article preview drawer. Editing still uses the explicit editor link from the article preview or article list.
+
 ## How It Works
 
 Without Clerk and Convex keys, `DemoWorkspaceView` shows local demo data so the layout can be checked immediately. `AUTH_DISABLED_FOR_PREVIEW=true` also forces demo mode so preview branches can be opened without waiting on Clerk or Convex auth.
@@ -56,6 +58,8 @@ The Settings tab includes product setup, article settings, and a **Publishing** 
 - `src/features/workspace/components/WorkspaceSwitcher.tsx`
 - `src/features/workspace/components/BlogPreviewSidebar.tsx`
 - `src/features/workspace/components/BlogPreviewPanel.tsx`
+- `src/features/workspace/components/DashboardRecentArticles.tsx`
+- `src/features/workspace/components/DashboardRecentArticleRow.tsx`
 - `src/features/workspace/components/MarkdownPreview.tsx`
 - `src/features/workspace/components/TopicDiscoveryLauncher.tsx`
 - `src/features/workspace/components/TopicDiscoveryDialog.tsx`
@@ -96,6 +100,7 @@ The Settings tab includes product setup, article settings, and a **Publishing** 
 - Find refresh ideas for a saved blog.
 - Add a refresh plan to an existing blog draft.
 - Open and close the article preview without losing your place in a long list.
+- Preview a recent dashboard article without leaving the dashboard.
 - Update product details from Settings instead of repeating that form on every tab.
 - Connect publishing for each product from Settings.
 - Publish a generated blog to a connected blog app.

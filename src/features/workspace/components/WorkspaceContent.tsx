@@ -110,8 +110,11 @@ export const WorkspaceContent = ({
   writeBlog,
 }: WorkspaceContentProps) => {
   const [isBlogPreviewOpen, setIsBlogPreviewOpen] = useState(false);
+  const previewBlog =
+    workspaceSummary?.recentBlogs.find((blog) => blog.id === selectedBlogId) ||
+    selectedBlog;
 
-  const previewBlog = (blogId: string) => {
+  const openBlogPreview = (blogId: string) => {
     setSelectedBlogId(blogId);
     setIsBlogPreviewOpen(true);
   };
@@ -132,6 +135,7 @@ export const WorkspaceContent = ({
           {mode === "dashboard" ? (
             <DashboardPanel
               blogs={blogs}
+              previewBlog={openBlogPreview}
               summary={workspaceSummary}
               topics={topics}
             />
@@ -154,7 +158,7 @@ export const WorkspaceContent = ({
               deleteBlog={deleteBlogAndClosePreview}
               discoverBlogRefreshIdeas={discoverBlogRefreshIdeas}
               listState={blogListState}
-              previewBlog={previewBlog}
+              previewBlog={openBlogPreview}
               selectedBlogId={selectedBlogId}
               setSelectedBlogId={setSelectedBlogId}
             />
@@ -199,9 +203,9 @@ export const WorkspaceContent = ({
             </div>
           ) : null}
         </main>
-        {mode === "blogs" ? (
+        {mode === "dashboard" || mode === "blogs" ? (
           <BlogPreviewSidebar
-            blog={selectedBlog}
+            blog={previewBlog}
             deleteBlog={deleteBlogAndClosePreview}
             isOpen={isBlogPreviewOpen}
             onOpenChange={setIsBlogPreviewOpen}

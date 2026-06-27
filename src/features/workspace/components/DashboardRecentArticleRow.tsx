@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { ChevronRight, FileText } from "lucide-react";
 import { StatusBadge } from "./StatusBadge";
 import { formatWorkspaceDate } from "../utils/formatWorkspaceDate";
@@ -6,15 +5,18 @@ import type { BlogItem } from "../types/BlogItem";
 
 type DashboardRecentArticleRowProps = {
   blog: BlogItem;
+  previewBlog: (blogId: string) => void;
 };
 
 export const DashboardRecentArticleRow = ({
   blog,
+  previewBlog,
 }: DashboardRecentArticleRowProps) => {
   return (
-    <Link
-      className="grid gap-3 border-t border-black/10 px-4 py-4 text-black transition hover:bg-black/5 md:grid-cols-[minmax(0,1fr)_auto_auto_auto] md:items-center"
-      href={`/blogs/${blog.id}`}
+    <button
+      className="grid w-full gap-3 border-t border-black/10 px-4 py-4 text-left text-black transition hover:bg-black/5 md:grid-cols-[minmax(0,1fr)_auto_auto_auto] md:items-center"
+      onClick={() => previewBlog(blog.id)}
+      type="button"
     >
       <span className="flex min-w-0 items-start gap-3">
         <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-black text-white">
@@ -34,6 +36,6 @@ export const DashboardRecentArticleRow = ({
         {formatWorkspaceDate(blog.updatedAt)}
       </span>
       <ChevronRight size={18} aria-hidden="true" />
-    </Link>
+    </button>
   );
 };

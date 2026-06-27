@@ -246,9 +246,19 @@ export const useDemoWorkspace = (initialMode: WorkspaceViewMode) => {
     resetBlogPagination,
   ]);
 
+  const previewBlogs = useMemo(() => {
+    const blogIds = new Set(blogs.map((blog) => blog.id));
+
+    return [
+      ...blogs,
+      ...workspaceSummary.recentBlogs.filter((blog) => !blogIds.has(blog.id)),
+    ];
+  }, [blogs, workspaceSummary]);
   const selectedBlog = useMemo(
-    () => blogs.find((blog) => blog.id === selectedBlogId) ?? blogs[0],
-    [blogs, selectedBlogId],
+    () =>
+      previewBlogs.find((blog) => blog.id === selectedBlogId) ??
+      previewBlogs[0],
+    [previewBlogs, selectedBlogId],
   );
 
   const scanProduct = (websiteUrl: string, niche: string) => {

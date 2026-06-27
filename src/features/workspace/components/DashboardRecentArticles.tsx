@@ -5,10 +5,12 @@ import type { BlogItem } from "../types/BlogItem";
 
 type DashboardRecentArticlesProps = {
   blogs: BlogItem[];
+  previewBlog: (blogId: string) => void;
 };
 
 export const DashboardRecentArticles = ({
   blogs,
+  previewBlog,
 }: DashboardRecentArticlesProps) => {
   const recentBlogs = blogs.slice(0, 5);
 
@@ -22,7 +24,11 @@ export const DashboardRecentArticles = ({
       </div>
       {recentBlogs.length > 0 ? (
         recentBlogs.map((blog) => (
-          <DashboardRecentArticleRow blog={blog} key={blog.id} />
+          <DashboardRecentArticleRow
+            blog={blog}
+            key={blog.id}
+            previewBlog={previewBlog}
+          />
         ))
       ) : (
         <div className="border-t border-black/10 p-4">

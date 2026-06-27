@@ -10,12 +10,14 @@ import type { WorkspaceSummary } from "../types/WorkspaceSummary";
 
 type DashboardPanelProps = {
   blogs: BlogItem[];
+  previewBlog: (blogId: string) => void;
   summary?: WorkspaceSummary;
   topics: TopicItem[];
 };
 
 export const DashboardPanel = ({
   blogs,
+  previewBlog,
   summary,
   topics,
 }: DashboardPanelProps) => {
@@ -35,7 +37,7 @@ export const DashboardPanel = ({
         }
         topicCount={summary?.topicCount ?? topics.length}
       />
-      <DashboardRecentArticles blogs={recentBlogs} />
+      <DashboardRecentArticles blogs={recentBlogs} previewBlog={previewBlog} />
       <DashboardTip />
     </div>
   );
