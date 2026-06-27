@@ -128,6 +128,7 @@ When using the default Convex and R2 path:
 - Save the returned R2 object keys on article records.
 - Serve images by resolving keys with `r2.getUrl`.
 - Document these Convex env vars: `R2_TOKEN`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_ENDPOINT`, and `R2_BUCKET`.
+- Do not require `R2_PUBLIC_URL`, an R2 custom domain, a public bucket, or whole-bucket public access. Prefer signed URLs from the existing storage layer or `@convex-dev/r2`'s `r2.getUrl`. Only add public access when the user explicitly asks for that tradeoff.
 
 ## Image Ingestion
 
@@ -211,6 +212,8 @@ npx convex env set R2_ENDPOINT <endpoint>
 npx convex env set R2_BUCKET <bucket>
 ```
 
+Do not add `R2_PUBLIC_URL` or require an R2 custom domain for the default path. A CORS policy and signed serving URLs are enough unless the user explicitly chooses public bucket access.
+
 Keep helper files focused. Suggested file tree:
 
 ```text
@@ -264,7 +267,7 @@ The final response must include a clear **Required setup** section with:
 - Vercel, hosting, or server env vars, including `BLOG_PUBLISH_WEBHOOK_TOKEN` and any site URL or framework-specific env vars needed by the implementation.
 - Convex deployment env vars, including `R2_TOKEN`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_ENDPOINT`, and `R2_BUCKET` when Convex R2 is used.
 - Database setup steps, including Convex project setup, schema deployment, migrations, seed steps, or commands the user must run.
-- Cloudflare/R2 setup steps, including bucket creation, API token creation, CORS policy, and any public access or signed URL behavior the implementation expects.
+- Cloudflare/R2 setup steps, including bucket creation, API token creation, CORS policy, and signed URL behavior the implementation expects. Do not require `R2_PUBLIC_URL`, an R2 custom domain, a public bucket, or whole-bucket public access unless the user explicitly chose that setup.
 - Blogr setup steps: webhook URL, access token, and publisher label to enter in Blogr Settings. The publisher label becomes the payload's `source` value and is not the article author.
 - Optional env vars or follow-up steps, clearly labeled optional.
 - Verification commands that were run and anything the user still needs to run after deployment.
@@ -282,3 +285,5 @@ Enter:
 - Publisher label: `Blogr`
 
 Then open Blogr, choose a generated post, and click **Publish**.
+
+If publishing returns `Invalid access token.`, the receiving app is reachable but the token in Blogr does not exactly match `BLOG_PUBLISH_WEBHOOK_TOKEN` in the target app's active deployment. Check for copied spaces, quotes, stale deployment env vars, or setting the token in the wrong environment.

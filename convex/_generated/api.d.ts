@@ -29,6 +29,7 @@ import type * as products_blogGenerationSettingsValidator from "../products/blog
 import type * as products_blogPublishArticleValidator from "../products/blogPublishArticleValidator.js";
 import type * as products_blogPublishPayloadValidator from "../products/blogPublishPayloadValidator.js";
 import type * as products_blogPublishingIntegrationValidator from "../products/blogPublishingIntegrationValidator.js";
+import type * as products_buildBlogPublishingWebhookErrorMessage from "../products/buildBlogPublishingWebhookErrorMessage.js";
 import type * as products_createImportedProductWorkspace from "../products/createImportedProductWorkspace.js";
 import type * as products_createProductWorkspace from "../products/createProductWorkspace.js";
 import type * as products_defaultBlogGenerationSettings from "../products/defaultBlogGenerationSettings.js";
@@ -99,6 +100,7 @@ declare const fullApi: ApiFromModules<{
   "products/blogPublishArticleValidator": typeof products_blogPublishArticleValidator;
   "products/blogPublishPayloadValidator": typeof products_blogPublishPayloadValidator;
   "products/blogPublishingIntegrationValidator": typeof products_blogPublishingIntegrationValidator;
+  "products/buildBlogPublishingWebhookErrorMessage": typeof products_buildBlogPublishingWebhookErrorMessage;
   "products/createImportedProductWorkspace": typeof products_createImportedProductWorkspace;
   "products/createProductWorkspace": typeof products_createProductWorkspace;
   "products/defaultBlogGenerationSettings": typeof products_defaultBlogGenerationSettings;
