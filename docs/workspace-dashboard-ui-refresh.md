@@ -13,6 +13,8 @@ No mockup-only actions were added. Live article links are not shown because this
 
 On mobile, the workspace frame uses a compact top header for the logo, workspace selector, workspace creation shortcut, and account action. The main Dashboard, Topics, Articles, and Settings links move into a fixed bottom navbar so primary navigation stays reachable without taking over the top of the page.
 
+The dashboard stats are compact on mobile. They render as two-column summary chips without supporting text, so recent articles show up sooner. From the small breakpoint upward, they keep the roomier desktop card layout with supporting text.
+
 ## Main Files
 
 - `src/features/workspace/components/WorkspaceShell.tsx` renders the shared sidebar workspace frame.

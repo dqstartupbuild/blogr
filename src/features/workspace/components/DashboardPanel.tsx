@@ -24,7 +24,7 @@ export const DashboardPanel = ({
   const recentBlogs = summary?.recentBlogs || blogs.slice(0, 5);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 lg:space-y-6">
       <WorkspacePageHeader
         description="A quick look at your blog workspace."
         title="Dashboard"
