@@ -10,13 +10,18 @@ import type { CreateProductWorkspaceInput } from "../types/CreateProductWorkspac
 import type { WorkspaceSwitcherState } from "../types/WorkspaceSwitcherState";
 import { getWorkspaceSwitchRoute } from "../utils/getWorkspaceSwitchRoute";
 
+type WorkspaceSwitcherProps = WorkspaceSwitcherState & {
+  isCompact?: boolean;
+};
+
 export const WorkspaceSwitcher = ({
   activeWorkspaceId,
   createWorkspace,
+  isCompact = false,
   isLoadingWorkspaces,
   selectWorkspace,
   workspaces,
-}: WorkspaceSwitcherState) => {
+}: WorkspaceSwitcherProps) => {
   const router = useRouter();
   const pathname = usePathname();
   const [isCreating, setIsCreating] = useState(false);
@@ -71,25 +76,41 @@ export const WorkspaceSwitcher = ({
   };
 
   return (
-    <div className="grid max-w-full gap-2">
+    <div
+      className={
+        isCompact
+          ? "flex min-w-0 items-center gap-2"
+          : "grid max-w-full gap-2"
+      }
+    >
       <WorkspaceSelect
         activeWorkspaceId={activeWorkspaceId}
         disabled={isBusy}
+        isCompact={isCompact}
         onChange={handleWorkspaceChange}
         workspaces={workspaces}
       />
       <WorkspaceCreateButton
         disabled={isBusy}
+        isCompact={isCompact}
         onClick={() => setIsCreating(true)}
       />
       {isCreating ? (
-        <WorkspaceCreateForm
-          disabled={isBusy}
-          onCancel={() => setIsCreating(false)}
-          onCreate={handleCreateWorkspace}
-        />
+        <div
+          className={
+            isCompact
+              ? "fixed left-3 right-3 top-16 z-50 lg:static"
+              : undefined
+          }
+        >
+          <WorkspaceCreateForm
+            disabled={isBusy}
+            onCancel={() => setIsCreating(false)}
+            onCreate={handleCreateWorkspace}
+          />
+        </div>
       ) : null}
-      <WorkspaceSwitcherStatus message={message} />
+      <WorkspaceSwitcherStatus isCompact={isCompact} message={message} />
     </div>
   );
 };

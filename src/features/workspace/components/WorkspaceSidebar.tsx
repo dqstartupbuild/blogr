@@ -20,11 +20,20 @@ export const WorkspaceSidebar = ({
   workspaceSwitcher,
 }: WorkspaceSidebarProps) => {
   return (
-    <aside className="border-b border-black/10 bg-white px-4 py-5 lg:sticky lg:top-0 lg:flex lg:h-screen lg:w-72 lg:shrink-0 lg:flex-col lg:border-b-0 lg:border-r lg:px-5">
-      <WorkspaceLogo />
+    <aside className="sticky top-0 z-40 border-b border-black/10 bg-white px-4 py-3 lg:top-0 lg:flex lg:h-screen lg:w-72 lg:shrink-0 lg:flex-col lg:border-b-0 lg:border-r lg:px-5 lg:py-5">
+      <div className="flex items-center justify-between gap-3 lg:block">
+        <WorkspaceLogo />
+        <div className="flex min-w-0 flex-1 items-center justify-end gap-2 lg:hidden">
+          <WorkspaceSidebarWorkspaceCard
+            variant="compact"
+            workspaceSwitcher={workspaceSwitcher}
+          />
+          <AuthActions />
+        </div>
+      </div>
       <nav
         aria-label="Workspace"
-        className="mt-6 grid gap-1 sm:grid-cols-4 lg:grid-cols-1"
+        className="fixed inset-x-0 bottom-0 z-50 grid grid-cols-4 gap-1 border-t border-black/10 bg-white px-2 pb-[calc(0.5rem+env(safe-area-inset-bottom))] pt-2 shadow-[0_-8px_24px_rgba(0,0,0,0.08)] lg:static lg:mt-6 lg:grid-cols-1 lg:border-t-0 lg:bg-transparent lg:p-0 lg:shadow-none"
       >
         <WorkspaceSidebarLink
           href="/"
@@ -59,7 +68,7 @@ export const WorkspaceSidebar = ({
           setMode={setMode}
         />
       </nav>
-      <div className="mt-5 border-t border-black/10 pt-5 lg:mt-auto">
+      <div className="mt-5 hidden border-t border-black/10 pt-5 lg:mt-auto lg:block">
         <WorkspaceSidebarWorkspaceCard workspaceSwitcher={workspaceSwitcher} />
         <div className="mt-3 flex justify-start">
           <AuthActions />

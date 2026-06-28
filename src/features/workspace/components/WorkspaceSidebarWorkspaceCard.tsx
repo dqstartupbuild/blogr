@@ -2,14 +2,24 @@ import { WorkspaceSwitcher } from "./WorkspaceSwitcher";
 import type { WorkspaceSwitcherState } from "../types/WorkspaceSwitcherState";
 
 type WorkspaceSidebarWorkspaceCardProps = {
+  variant?: "card" | "compact";
   workspaceSwitcher?: WorkspaceSwitcherState;
 };
 
 export const WorkspaceSidebarWorkspaceCard = ({
+  variant = "card",
   workspaceSwitcher,
 }: WorkspaceSidebarWorkspaceCardProps) => {
   if (!workspaceSwitcher) {
     return null;
+  }
+
+  if (variant === "compact") {
+    return (
+      <div className="min-w-0 flex-1">
+        <WorkspaceSwitcher isCompact {...workspaceSwitcher} />
+      </div>
+    );
   }
 
   return (

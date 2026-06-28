@@ -26,7 +26,7 @@ export const WorkspaceShell = ({
         workspaceSwitcher={workspaceSwitcher}
       />
       <main className="min-w-0 flex-1">
-        <div className="mx-auto flex w-full max-w-7xl flex-col gap-6 px-4 py-6 sm:px-6 lg:px-8">
+        <div className="mx-auto flex w-full max-w-7xl flex-col gap-6 px-4 pb-28 pt-5 sm:px-6 lg:px-8 lg:py-6">
           {children}
         </div>
       </main>

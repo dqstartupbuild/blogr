@@ -11,10 +11,14 @@ The workspace now uses a sidebar layout with a dashboard, topic table, article t
 
 No mockup-only actions were added. Live article links are not shown because this app does not currently expose those URLs.
 
+On mobile, the workspace frame uses a compact top header for the logo, workspace selector, workspace creation shortcut, and account action. The main Dashboard, Topics, Articles, and Settings links move into a fixed bottom navbar so primary navigation stays reachable without taking over the top of the page.
+
 ## Main Files
 
 - `src/features/workspace/components/WorkspaceShell.tsx` renders the shared sidebar workspace frame.
-- `src/features/workspace/components/WorkspaceSidebar.tsx` renders the main navigation.
+- `src/features/workspace/components/WorkspaceSidebar.tsx` renders the desktop sidebar, mobile header, and mobile bottom navigation.
+- `src/features/workspace/components/WorkspaceSidebarLink.tsx` renders links in sidebar form on desktop and bottom-navbar form on mobile.
+- `src/features/workspace/components/WorkspaceSwitcher.tsx` supports the regular workspace card and the compact mobile header selector.
 - `src/features/workspace/components/DashboardPanel.tsx` renders the dashboard.
 - `src/features/workspace/components/DashboardStatsGrid.tsx` renders workspace counts.
 - `src/features/workspace/components/DashboardRecentArticles.tsx` renders recent articles.
