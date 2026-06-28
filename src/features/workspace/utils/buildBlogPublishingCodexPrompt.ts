@@ -28,6 +28,7 @@ Behavior:
 - Also support event_type "update_article" with data.article for future updates.
 - Upsert posts by slug so publishing the same blog again updates the existing page.
 - On every create or update, save the current title, seo_title, meta_description, content, images, tags, source, created_at, and updated_at values from the payload.
+- Treat created_at and updated_at as the time Blogr sent the publish request, not the draft creation time.
 - Store seo_title as a separate SEO metadata title, not as the visible article title.
 - Keep seo_title between 70 and 110 characters and meta_description between 110 and 160 characters.
 - Store content_mdx as the source of truth, falling back to content_markdown.

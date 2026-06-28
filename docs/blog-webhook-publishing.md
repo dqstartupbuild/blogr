@@ -28,6 +28,8 @@ Published blogs keep their `published` status in the Blogs tab, so users can fil
 
 Tags come from the saved blog tag list when it exists. Older blogs get clean fallback tags from the current keyword, title, SEO title, and meta description. Internal planning phrases are removed before the tags are sent.
 
+The article `created_at` and `updated_at` values use the time the user clicks **Publish**. They do not use the draft creation time, so the target blog can show when the article was actually sent live.
+
 ## Settings Workflow
 
 Open **Settings** for the active product workspace, then use the **Publishing** panel.
@@ -86,8 +88,8 @@ The route sends this shape:
         "image_url": "https://example.com/image.jpg",
         "tags": ["content planning", "team priorities", "weekly planning"],
         "source": "Blogr",
-        "created_at": "2026-06-23T15:30:00.000Z",
-        "updated_at": "2026-06-23T15:45:00.000Z"
+        "created_at": "2026-06-23T16:00:00.000Z",
+        "updated_at": "2026-06-23T16:00:00.000Z"
       }
     ]
   }
@@ -106,6 +108,7 @@ The receiving app should:
 - Validate `event_type`, `timestamp`, and article fields.
 - Upsert by `slug` so publishing the same blog again updates the existing post.
 - On every create or update, save the current title, SEO title, meta description, body, images, tags, source, and timestamps from the payload.
+- Treat `created_at` and `updated_at` as the Blogr publish request time.
 - Store `seo_title` separately from the visible article title.
 - Keep `seo_title` between 70 and 110 characters and `meta_description` between 110 and 160 characters.
 - Store `content_mdx` or `content_markdown`.

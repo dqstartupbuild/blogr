@@ -48,8 +48,8 @@ Expected payload:
         "image_url": "https://example.com/image.jpg",
         "tags": ["content planning", "team priorities", "weekly planning"],
         "source": "Blogr",
-        "created_at": "2026-06-23T15:30:00.000Z",
-        "updated_at": "2026-06-23T15:45:00.000Z"
+        "created_at": "2026-06-23T16:00:00.000Z",
+        "updated_at": "2026-06-23T16:00:00.000Z"
       }
     ]
   }
@@ -76,7 +76,7 @@ Also support this single-article update shape for forward compatibility:
       "image_url": "https://example.com/image.jpg",
       "tags": ["content planning", "team priorities", "weekly planning"],
       "source": "Blogr",
-      "created_at": "2026-06-23T15:30:00.000Z",
+      "created_at": "2026-06-23T16:05:00.000Z",
       "updated_at": "2026-06-23T16:05:00.000Z"
     }
   }
@@ -115,6 +115,8 @@ Create or reuse a blog post model with these fields:
 - `updatedAt`
 
 Upsert by `slug`. If a post with that slug already exists, update it. If not, create it. On every create or update, save the current `title`, `seo_title`, `meta_description`, content, images, tags, `source`, `created_at`, and `updated_at` values from the payload.
+
+Treat `created_at` and `updated_at` as the time Blogr sent the publish request, not the time the draft was first created.
 
 Keep `seoTitle` between 70 and 110 characters. Keep `description` between 110 and 160 characters.
 
