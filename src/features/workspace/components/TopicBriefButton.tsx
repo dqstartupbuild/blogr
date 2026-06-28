@@ -1,4 +1,4 @@
-import { FileSearch } from "lucide-react";
+import { FileSearch, Pencil } from "lucide-react";
 import { SecondaryButton } from "./SecondaryButton";
 
 type TopicBriefButtonProps = {
@@ -14,8 +14,12 @@ export const TopicBriefButton = ({
 }: TopicBriefButtonProps) => {
   return (
     <SecondaryButton disabled={disabled} onClick={onOpen} type="button">
-      <FileSearch size={16} aria-hidden="true" />
-      {hasBrief ? "View brief" : "Find brief"}
+      {hasBrief ? (
+        <Pencil size={16} aria-hidden="true" />
+      ) : (
+        <FileSearch size={16} aria-hidden="true" />
+      )}
+      {hasBrief ? "Edit brief" : "Find brief"}
     </SecondaryButton>
   );
 };

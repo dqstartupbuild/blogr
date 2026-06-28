@@ -10,12 +10,14 @@ import { TopicRepurposeDialog } from "./TopicRepurposeDialog";
 import { TopicWriteButton } from "./TopicWriteButton";
 import { countTopicArticles } from "../utils/countTopicArticles";
 import type { DeleteTopic } from "../types/DeleteTopic";
+import type { SaveTopicBrief } from "../types/SaveTopicBrief";
 import type { TopicItem } from "../types/TopicItem";
 import type { WriteBlogOptions } from "../types/WriteBlogOptions";
 
 type TopicRowProps = {
   deleteTopic: DeleteTopic;
   refreshTopicBrief: (topicId: string) => Promise<string>;
+  saveTopicBrief: SaveTopicBrief;
   topic: TopicItem;
   writeBlog: (
     topicId: string,
@@ -26,6 +28,7 @@ type TopicRowProps = {
 export const TopicRow = ({
   deleteTopic,
   refreshTopicBrief,
+  saveTopicBrief,
   topic,
   writeBlog,
 }: TopicRowProps) => {
@@ -86,6 +89,7 @@ export const TopicRow = ({
           key={topic.id}
           onClose={() => setIsBriefOpen(false)}
           refreshTopicBrief={refreshTopicBrief}
+          saveTopicBrief={saveTopicBrief}
           topic={topic}
         />
       ) : null}

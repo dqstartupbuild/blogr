@@ -22,6 +22,7 @@ import type { ProductLinksState } from "../types/ProductLinksState";
 import type { ProductScanState } from "../types/ProductScanState";
 import type { RefreshProductLinks } from "../types/RefreshProductLinks";
 import type { RefreshTopicBrief } from "../types/RefreshTopicBrief";
+import type { SaveTopicBrief } from "../types/SaveTopicBrief";
 import type { RegenerateBlogImage } from "../types/RegenerateBlogImage";
 import type { SetProductLinkActive } from "../types/SetProductLinkActive";
 import type { TopicItem } from "../types/TopicItem";
@@ -52,6 +53,7 @@ type WorkspaceContentProps = {
   refreshTopicBrief: RefreshTopicBrief;
   refreshProductLinks: RefreshProductLinks;
   regenerateImage?: RegenerateBlogImage;
+  saveTopicBrief: SaveTopicBrief;
   saveBlogGenerationSettings: (
     settings: BlogGenerationSettings,
   ) => void | Promise<void>;
@@ -94,6 +96,7 @@ export const WorkspaceContent = ({
   refreshTopicBrief,
   refreshProductLinks,
   regenerateImage,
+  saveTopicBrief,
   saveBlogGenerationSettings,
   saveBlogPublishingIntegration,
   scanProduct,
@@ -147,6 +150,7 @@ export const WorkspaceContent = ({
               discoverTopicIdeas={discoverTopicIdeas}
               listState={topicListState}
               refreshTopicBrief={refreshTopicBrief}
+              saveTopicBrief={saveTopicBrief}
               topics={topics}
               writeBlog={writeBlog}
             />

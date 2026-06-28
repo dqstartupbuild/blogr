@@ -8,6 +8,7 @@ import { SearchField } from "./SearchField";
 import { TopicList } from "./TopicList";
 import { topicStatusFilterOptions } from "../constants/topicStatusFilterOptions";
 import type { DeleteTopic } from "../types/DeleteTopic";
+import type { SaveTopicBrief } from "../types/SaveTopicBrief";
 import type { TopicItem } from "../types/TopicItem";
 import type { TopicListViewState } from "../types/TopicListViewState";
 import type { TopicStatusFilter } from "../types/TopicStatusFilter";
@@ -17,6 +18,7 @@ type FilteredTopicListProps = {
   deleteTopic: DeleteTopic;
   listState: TopicListViewState;
   refreshTopicBrief: (topicId: string) => Promise<string>;
+  saveTopicBrief: SaveTopicBrief;
   topics: TopicItem[];
   writeBlog: (
     topicId: string,
@@ -28,6 +30,7 @@ export const FilteredTopicList = ({
   deleteTopic,
   listState,
   refreshTopicBrief,
+  saveTopicBrief,
   topics,
   writeBlog,
 }: FilteredTopicListProps) => {
@@ -55,6 +58,7 @@ export const FilteredTopicList = ({
         <TopicList
           deleteTopic={deleteTopic}
           refreshTopicBrief={refreshTopicBrief}
+          saveTopicBrief={saveTopicBrief}
           topics={topics}
           writeBlog={writeBlog}
         />

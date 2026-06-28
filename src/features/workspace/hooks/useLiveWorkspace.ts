@@ -568,6 +568,27 @@ export const useLiveWorkspace = (
     return notes;
   };
 
+  const saveTopicBrief = async (topicId: string, notes: string) => {
+    const topic = topics.find((item) => item.id === topicId);
+    const trimmedNotes = notes.trim();
+
+    if (!topic) {
+      throw new Error("Topic not found.");
+    }
+
+    if (!convexProductId) {
+      throw new Error("Choose a workspace first.");
+    }
+
+    await updateTopicNotes({
+      notes: trimmedNotes || undefined,
+      productId: convexProductId,
+      topicId: castTopicId(topicId),
+    });
+
+    return trimmedNotes;
+  };
+
   const deleteTopic = async (topicId: string) => {
     await deleteTopicRecord({
       productId: convexProductId || undefined,
@@ -843,13 +864,14 @@ export const useLiveWorkspace = (
     },
     regenerateImage,
     refreshProductLinks,
+    refreshTopicBrief,
+    saveTopicBrief,
     saveBlogGenerationSettings,
     saveBlogPublishingIntegration,
     scanProduct,
     selectedBlog,
     selectedBlogId: activeSelectedBlogId,
     settingsStatusMessage,
-    refreshTopicBrief,
     setProductLinkActive,
     setMode,
     setSelectedBlogId,

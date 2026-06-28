@@ -381,6 +381,25 @@ export const useDemoWorkspace = (initialMode: WorkspaceViewMode) => {
     return notes;
   };
 
+  const saveTopicBrief = async (topicId: string, notes: string) => {
+    const trimmedNotes = notes.trim();
+
+    if (!topics.some((topic) => topic.id === topicId)) {
+      throw new Error("Topic not found.");
+    }
+
+    setTopicsByWorkspace((current) => ({
+      ...current,
+      [activeWorkspaceId]: (current[activeWorkspaceId] || []).map((item) =>
+        item.id === topicId
+          ? { ...item, notes: trimmedNotes || undefined }
+          : item,
+      ),
+    }));
+
+    return trimmedNotes;
+  };
+
   const deleteTopic = (topicId: string) => {
     setTopicsByWorkspace((current) => ({
       ...current,
@@ -605,6 +624,7 @@ export const useDemoWorkspace = (initialMode: WorkspaceViewMode) => {
     deleteTopic,
     refreshTopicBrief,
     refreshProductLinks,
+    saveTopicBrief,
     saveBlogGenerationSettings,
     saveBlogPublishingIntegration,
     setProductLinkActive,

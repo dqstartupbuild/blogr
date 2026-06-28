@@ -1,26 +1,33 @@
 "use client";
 
 import { useState } from "react";
-import { FileSearch } from "lucide-react";
+import { FileSearch, Save } from "lucide-react";
 import { PrimaryButton } from "./PrimaryButton";
 import { SecondaryButton } from "./SecondaryButton";
 import type { TopicItem } from "../types/TopicItem";
+import type { SaveTopicBrief } from "../types/SaveTopicBrief";
 
 type TopicBriefDialogProps = {
   onClose: () => void;
   refreshTopicBrief: (topicId: string) => Promise<string>;
+  saveTopicBrief: SaveTopicBrief;
   topic: TopicItem;
 };
 
 export const TopicBriefDialog = ({
   onClose,
   refreshTopicBrief,
+  saveTopicBrief,
   topic,
 }: TopicBriefDialogProps) => {
-  const [briefText, setBriefText] = useState(topic.notes || "");
+  const [savedBriefText, setSavedBriefText] = useState(topic.notes || "");
+  const [draftBriefText, setDraftBriefText] = useState(topic.notes || "");
   const [message, setMessage] = useState("");
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const hasBrief = briefText.trim().length > 0;
+  const [isSaving, setIsSaving] = useState(false);
+  const hasBrief = draftBriefText.trim().length > 0;
+  const hasChanges = draftBriefText.trim() !== savedBriefText.trim();
+  const isBusy = isRefreshing || isSaving;
 
   const handleRefresh = () => {
     setIsRefreshing(true);
@@ -28,7 +35,8 @@ export const TopicBriefDialog = ({
 
     void refreshTopicBrief(topic.id)
       .then((notes) => {
-        setBriefText(notes);
+        setSavedBriefText(notes);
+        setDraftBriefText(notes);
         setMessage("Brief saved.");
       })
       .catch((error) => {
@@ -37,6 +45,24 @@ export const TopicBriefDialog = ({
         );
       })
       .finally(() => setIsRefreshing(false));
+  };
+
+  const handleSave = () => {
+    setIsSaving(true);
+    setMessage("");
+
+    void saveTopicBrief(topic.id, draftBriefText)
+      .then((notes) => {
+        setSavedBriefText(notes);
+        setDraftBriefText(notes);
+        setMessage(notes.trim() ? "Brief saved." : "Brief cleared.");
+      })
+      .catch((error) => {
+        setMessage(
+          error instanceof Error ? error.message : "Could not save this brief.",
+        );
+      })
+      .finally(() => setIsSaving(false));
   };
 
   return (
@@ -50,22 +76,35 @@ export const TopicBriefDialog = ({
           <h2 className="text-lg font-semibold text-black">Topic brief</h2>
           <p className="text-sm text-black">{topic.keyword}</p>
         </div>
-        {hasBrief ? (
-          <pre className="max-h-96 overflow-auto whitespace-pre-wrap rounded-md border border-black bg-white p-3 text-sm text-black">
-            {briefText}
-          </pre>
-        ) : (
-          <p className="rounded-md border border-black p-3 text-sm text-black">
-            No search brief has been saved for this topic yet.
+        <label className="grid gap-2 text-sm font-semibold text-black">
+          Brief notes
+          <textarea
+            className="min-h-72 resize-y rounded-md border border-black bg-white p-3 text-sm font-normal leading-6 text-black outline-none transition focus:ring-2 focus:ring-black"
+            onChange={(event) => setDraftBriefText(event.target.value)}
+            placeholder="Add the points you want this article to cover."
+            value={draftBriefText}
+          />
+        </label>
+        {!hasBrief ? (
+          <p className="text-sm text-black/60">
+            No brief has been saved for this topic yet.
           </p>
-        )}
+        ) : null}
         {message ? <p className="text-sm text-black">{message}</p> : null}
         <div className="flex flex-col gap-2 sm:flex-row sm:justify-end">
-          <SecondaryButton disabled={isRefreshing} onClick={onClose}>
+          <SecondaryButton disabled={isBusy} onClick={onClose}>
             Close
           </SecondaryButton>
+          <SecondaryButton
+            disabled={isBusy || !hasChanges}
+            onClick={handleSave}
+            type="button"
+          >
+            <Save size={16} aria-hidden="true" />
+            {isSaving ? "Saving..." : "Save brief"}
+          </SecondaryButton>
           <PrimaryButton
-            disabled={isRefreshing}
+            disabled={isBusy}
             onClick={handleRefresh}
             type="button"
           >

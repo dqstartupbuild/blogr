@@ -1,12 +1,14 @@
 import { EmptyState } from "./EmptyState";
 import { TopicRow } from "./TopicRow";
 import type { DeleteTopic } from "../types/DeleteTopic";
+import type { SaveTopicBrief } from "../types/SaveTopicBrief";
 import type { TopicItem } from "../types/TopicItem";
 import type { WriteBlogOptions } from "../types/WriteBlogOptions";
 
 type TopicListProps = {
   deleteTopic: DeleteTopic;
   refreshTopicBrief: (topicId: string) => Promise<string>;
+  saveTopicBrief: SaveTopicBrief;
   topics: TopicItem[];
   writeBlog: (
     topicId: string,
@@ -17,6 +19,7 @@ type TopicListProps = {
 export const TopicList = ({
   deleteTopic,
   refreshTopicBrief,
+  saveTopicBrief,
   topics,
   writeBlog,
 }: TopicListProps) => {
@@ -37,6 +40,7 @@ export const TopicList = ({
           deleteTopic={deleteTopic}
           key={topic.id}
           refreshTopicBrief={refreshTopicBrief}
+          saveTopicBrief={saveTopicBrief}
           topic={topic}
           writeBlog={writeBlog}
         />

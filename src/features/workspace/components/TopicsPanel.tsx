@@ -3,6 +3,7 @@ import { TopicDiscoveryLauncher } from "./TopicDiscoveryLauncher";
 import { TopicCreator } from "./TopicCreator";
 import { WorkspacePageHeader } from "./WorkspacePageHeader";
 import type { DeleteTopic } from "../types/DeleteTopic";
+import type { SaveTopicBrief } from "../types/SaveTopicBrief";
 import type { TopicItem } from "../types/TopicItem";
 import type { TopicListViewState } from "../types/TopicListViewState";
 import type { RefreshTopicBrief } from "../types/RefreshTopicBrief";
@@ -16,6 +17,7 @@ type TopicsPanelProps = {
   discoverTopicIdeas: DiscoverTopicIdeas;
   listState: TopicListViewState;
   refreshTopicBrief: RefreshTopicBrief;
+  saveTopicBrief: SaveTopicBrief;
   writeBlog: (
     topicId: string,
     options?: WriteBlogOptions,
@@ -29,6 +31,7 @@ export const TopicsPanel = ({
   discoverTopicIdeas,
   listState,
   refreshTopicBrief,
+  saveTopicBrief,
   writeBlog,
 }: TopicsPanelProps) => {
   return (
@@ -50,6 +53,7 @@ export const TopicsPanel = ({
         deleteTopic={deleteTopic}
         listState={listState}
         refreshTopicBrief={refreshTopicBrief}
+        saveTopicBrief={saveTopicBrief}
         topics={topics}
         writeBlog={writeBlog}
       />
