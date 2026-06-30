@@ -2,7 +2,7 @@
 
 ## What It Does
 
-Users can refresh any image they don't like, right inside the AI article preview. A small "Regenerate" button sits on top of every image in the article preview, including the cover image. Clicking it swaps the image for a freshly generated one and updates the article body so the new image shows up everywhere the old one was used.
+Users can refresh any image they don't like, right inside the AI article preview. A small "Regenerate" button sits on top of every image in the article preview, including the cover image. Clicking it opens the image prompt first, so the user can change what the next image should show before creating it. Submitting that prompt swaps the image for a freshly generated one and updates the article body so the new image shows up everywhere the old one was used.
 
 ## How It Works
 
@@ -14,7 +14,7 @@ To make sure the button shows on every image even after image URLs are re-signed
 2. Stable path match: the signed R2 URL's query string changes when links are refreshed, but the path (the R2 key) stays the same, so images are matched by path when the full URL drifts.
 3. Order fallback: any remaining markdown image is matched to the next unused stored image so its prompt is still available.
 
-When the user clicks "Regenerate", the component sends the image's `src`, alt text, matched index, and prompt to the regenerate callback. The cover image is rendered by `RegenerateableFeatureImage`, which uses the same callback with `isFeatureImage: true` so the server also updates the blog's `featureImageUrl`.
+When the user clicks "Regenerate", `useImageRegenerationPrompt` opens `ImagePromptDialog` with the matched prompt. If there is no stored prompt, `buildImagePromptDraft` creates a simple draft from the image alt text. When the user submits the dialog, the component sends the image's `src`, alt text, matched index, and edited prompt to the regenerate callback. The cover image is rendered by `RegenerateableFeatureImage`, which uses the same callback with `isFeatureImage: true` so the server also updates the blog's `featureImageUrl`.
 
 The regenerate callback lives in `useBlogEditor` (for the editor route) and `useLiveWorkspace` (for the workspace preview drawer). Both call `POST /api/blogs/[blogId]/regenerate-image`.
 
@@ -37,8 +37,11 @@ It regenerates the image through `regenerateBlogImage` (Replicate + R2 storage),
 - `src/server/blog/replaceImageUrlInMdx.ts`
 - `src/server/blog/getImageUrlPathKey.ts`
 - `src/features/workspace/utils/resolveBlogImageMatches.ts`
+- `src/features/workspace/utils/buildImagePromptDraft.ts`
 - `src/features/workspace/utils/getImageUrlPathKey.ts`
 - `src/features/workspace/utils/getMarkdownImageUrls.ts`
+- `src/features/workspace/hooks/useImageRegenerationPrompt.ts`
+- `src/features/workspace/components/ImagePromptDialog.tsx`
 - `src/features/workspace/components/RegenerateImageButton.tsx`
 - `src/features/workspace/components/RegenerateableImage.tsx`
 - `src/features/workspace/components/RegenerateableFeatureImage.tsx`
@@ -58,6 +61,7 @@ It regenerates the image through `regenerateBlogImage` (Replicate + R2 storage),
 
 - Swap a cover image that doesn't match the article tone.
 - Replace a supporting image that looks off-brand or low quality.
+- Change the prompt before refreshing so the new image matches the article better.
 - Try a few variations of the same image until one fits the article.
 
 ## File Tree
@@ -66,6 +70,8 @@ It regenerates the image through `regenerateBlogImage` (Replicate + R2 storage),
 src/app/api/blogs/[blogId]/regenerate-image/
 convex/blogs/updateBlogImage.ts
 src/server/blog/regenerateBlogImage.ts
+src/features/workspace/hooks/useImageRegenerationPrompt.ts
+src/features/workspace/components/ImagePromptDialog.tsx
 src/features/workspace/components/Regenerate*
 src/features/workspace/components/markdownPreviewComponents.tsx
 src/features/workspace/components/MarkdownPreview.tsx

@@ -1,8 +1,9 @@
 "use client";
 
 import Image from "next/image";
-import { useState } from "react";
+import { ImagePromptDialog } from "./ImagePromptDialog";
 import { RegenerateImageButton } from "./RegenerateImageButton";
+import { useImageRegenerationPrompt } from "../hooks/useImageRegenerationPrompt";
 import type { RegenerateBlogImage } from "../types/RegenerateBlogImage";
 
 type RegenerateableImageProps = {
@@ -24,37 +25,19 @@ export const RegenerateableImage = ({
   regenerateImage,
   src,
 }: RegenerateableImageProps) => {
-  const [isRegenerating, setIsRegenerating] = useState(false);
-  const [error, setError] = useState("");
+  const imageRegeneration = useImageRegenerationPrompt({
+    alt,
+    blogId,
+    imageIndex,
+    isFeatureImage,
+    prompt,
+    regenerateImage,
+    src,
+  });
 
   if (!src) {
     return null;
   }
-
-  const canRegenerate = Boolean(blogId && regenerateImage);
-
-  const handleRegenerate = async () => {
-    if (!canRegenerate || !regenerateImage || !blogId) {
-      return;
-    }
-
-    setIsRegenerating(true);
-    setError("");
-
-    try {
-      await regenerateImage(blogId, {
-        alt,
-        imageIndex,
-        isFeatureImage,
-        prompt,
-        src,
-      });
-    } catch (caught) {
-      setError(caught instanceof Error ? caught.message : "Could not refresh that image.");
-    } finally {
-      setIsRegenerating(false);
-    }
-  };
 
   return (
     <figure className="my-4 grid gap-2">
@@ -67,17 +50,29 @@ export const RegenerateableImage = ({
           unoptimized
           width={1280}
         />
-        {canRegenerate ? (
+        {imageRegeneration.canRegenerate ? (
           <div className="absolute right-2 top-2">
             <RegenerateImageButton
-              isRegenerating={isRegenerating}
-              onClick={handleRegenerate}
+              aria-haspopup="dialog"
+              isRegenerating={imageRegeneration.isRegenerating}
+              onClick={imageRegeneration.openPromptDialog}
             />
           </div>
         ) : null}
       </div>
-      {error ? (
-        <p className="text-xs font-medium text-red-600">{error}</p>
+      <ImagePromptDialog
+        error={imageRegeneration.error}
+        isOpen={imageRegeneration.isPromptDialogOpen}
+        isRegenerating={imageRegeneration.isRegenerating}
+        onClose={imageRegeneration.closePromptDialog}
+        onPromptChange={imageRegeneration.updatePromptDraft}
+        onRegenerate={imageRegeneration.regenerateFromPrompt}
+        prompt={imageRegeneration.promptDraft}
+      />
+      {imageRegeneration.error ? (
+        <p className="text-xs font-medium text-red-600">
+          {imageRegeneration.error}
+        </p>
       ) : null}
     </figure>
   );
