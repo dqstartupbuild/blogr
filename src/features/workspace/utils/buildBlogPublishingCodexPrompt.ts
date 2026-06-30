@@ -20,6 +20,13 @@ Auth:
 Required env var:
 ${blogPublishingReceiverEnvVar}
 
+Architecture:
+- The webhook route must own the Blogr publishing flow directly. Do not forward this request to a Convex HTTP action, a Convex HTTP route, or any .convex.site URL.
+- For Next.js App Router apps, implement the orchestration in src/app/api/webhooks/blog-publisher/route.ts.
+- Validate the bearer token, parse the payload, copy images, upsert articles, and refresh cached pages from the receiving server route.
+- If the app uses Convex for article records, call Convex record mutations or queries from the server route with ConvexHttpClient and the normal Convex URL from CONVEX_URL or NEXT_PUBLIC_CONVEX_URL. That URL should be the .convex.cloud URL, not .convex.site.
+- Do not add CONVEX_SITE_URL, NEXT_PUBLIC_CONVEX_SITE_URL, or any .convex.site dependency for Blogr publishing. Use .convex.site only for unrelated existing Convex HTTP routes.
+
 Expected payload:
 ${blogPublishingPayloadExample}
 
@@ -35,12 +42,12 @@ Behavior:
 - Treat image_url and all image URLs inside content_mdx/content_markdown as temporary source URLs, not durable public URLs.
 - Before implementing storage, inspect the repo for an existing durable database and existing durable media/object storage.
 - If both already exist, reuse the existing systems and follow their local patterns.
-- If either one is missing, ask the user which database and object storage they prefer before building that part. Present Convex for article records and Cloudflare R2 through the Convex R2 component as the recommended default.
-- If the user says to choose, does not care, or asks for the default, use Convex for blog article records and Cloudflare R2 through @convex-dev/r2 for object storage.
+- If either one is missing, ask the user which database and object storage they prefer before building that part. Present Convex for article records and Cloudflare R2 copied directly from the receiving server route with AWS S3-compatible R2 helpers as the recommended default.
+- If the user says to choose, does not care, or asks for the default, use Convex for blog article records and Cloudflare R2 for object storage. The webhook route should upload images to R2 directly, then save the target-owned image URL or object key on the Convex article record through ConvexHttpClient.
 - Never implement production article or media storage with local writable files, checked-in JSON, in-memory state, or any serverless/ephemeral filesystem path.
-- When using the Convex R2 component, install @convex-dev/r2, add it to convex/convex.config.ts with app.use(r2), create an R2 client from components.r2, store downloaded images from a Convex action with r2.store, save returned object keys on article records, and serve images by resolving keys with r2.getUrl.
-- Document required Convex/R2 env vars when that default is used: R2_TOKEN, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_ENDPOINT, and R2_BUCKET.
-- Do not require R2_PUBLIC_URL, an R2 custom domain, a public bucket, or whole-bucket public access. Prefer signed URLs from the existing storage layer or @convex-dev/r2's r2.getUrl. Only add public access when the user explicitly asks for that tradeoff.
+- For the default R2 path, create focused server-side helpers for safe image download, R2 client creation, object key building, object upload, and serving URL resolution. Reuse existing helpers when the app already has them.
+- Document required hosting/server env vars when the default R2 path is used: R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_ENDPOINT, and R2_BUCKET. Also document CONVEX_URL or NEXT_PUBLIC_CONVEX_URL when ConvexHttpClient is used.
+- Do not require R2_TOKEN, R2_PUBLIC_URL, an R2 custom domain, a public bucket, or whole-bucket public access for the default path. Prefer signed URLs or an existing private image-serving route. Only add public access when the user explicitly asks for that tradeoff.
 - During the webhook request, download every article image the target app needs: image_url, markdown image URLs, and any frontmatter featureImage URL.
 - Store downloaded images in durable object storage, preferring the existing media/object storage system when one exists and otherwise the selected/default object storage above.
 - Rewrite image_url, frontmatter featureImage, and every markdown image URL in the saved body to the target app's stored image URLs before saving the post.
@@ -64,10 +71,10 @@ Behavior:
 - Run lint, typecheck, and build before finishing.
 
 Before your final response, audit every required setup value and manual step. In your final response, include a clear "Required setup" section with:
-- Vercel/hosting/server env vars, including BLOG_PUBLISH_WEBHOOK_TOKEN and any site URL or framework-specific env vars needed by the implementation.
-- Convex deployment env vars, including R2_TOKEN, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_ENDPOINT, and R2_BUCKET when Convex R2 is used.
+- Vercel/hosting/server env vars, including BLOG_PUBLISH_WEBHOOK_TOKEN, CONVEX_URL or NEXT_PUBLIC_CONVEX_URL when ConvexHttpClient is used, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_ENDPOINT, R2_BUCKET when the default R2 path is used, and any site URL or framework-specific env vars needed by the implementation.
+- Convex deployment env vars required by the implementation. Do not list CONVEX_SITE_URL or NEXT_PUBLIC_CONVEX_SITE_URL for Blogr publishing.
 - Database setup steps, including Convex project setup, schema deployment, migrations, seed steps, or commands the user must run.
-- Cloudflare/R2 setup steps, including bucket creation, API token creation, CORS policy, and signed URL behavior the implementation expects. Do not require R2_PUBLIC_URL, an R2 custom domain, a public bucket, or whole-bucket public access unless the user explicitly chose that setup.
+- Cloudflare/R2 setup steps, including bucket creation, S3-compatible access key creation, CORS policy, and signed/private URL behavior the implementation expects. Do not require R2_TOKEN, R2_PUBLIC_URL, an R2 custom domain, a public bucket, or whole-bucket public access unless the user explicitly chose that setup.
 - Blogr setup steps: webhook URL, access token, and publisher label to enter in Blogr Settings. Explain that the publisher label becomes the payload's source value and is not the article author.
 - Any optional env vars or follow-up steps, clearly labeled optional.
 - The exact verification commands you ran and anything the user still needs to run after deployment.

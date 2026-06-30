@@ -36,7 +36,9 @@ Open **Settings** for the active product workspace, then use the **Publishing** 
 
 The panel starts with a **Setup guide**. It gives the user the full workflow, a copyable Codex prompt for the target app, the webhook path, the token env var, a sample payload, and a quick checklist for the receiving app.
 
-The copyable Codex prompt tells the target app to inspect its existing database and object storage first. If durable storage is missing, it tells Codex to ask the user for a preference while recommending Convex article records and Cloudflare R2 through the Convex R2 component as the default. It also tells the target app to copy Blogr image URLs into durable object storage, rewrite article image URLs before saving, render Blogr's MDX and YouTube embeds, and include webhook-published posts in sitemap/feed discovery outputs. The default R2 instructions do not require `R2_PUBLIC_URL`, an R2 custom domain, a public bucket, or whole-bucket public access; they prefer signed serving URLs such as `r2.getUrl`.
+The copyable Codex prompt tells the target app to inspect its existing database and object storage first. If durable storage is missing, it tells Codex to ask the user for a preference while recommending Convex article records and Cloudflare R2 copied directly from the receiving server route as the default. It also tells the target app to copy Blogr image URLs into durable object storage, rewrite article image URLs before saving, render Blogr's MDX and YouTube embeds, and include webhook-published posts in sitemap/feed discovery outputs. The default R2 instructions do not require `R2_TOKEN`, `R2_PUBLIC_URL`, an R2 custom domain, a public bucket, or whole-bucket public access; they prefer signed URLs or an existing private image-serving route.
+
+The prompt also steers Next.js App Router targets away from forwarding Blogr publishing requests to Convex HTTP actions. The target webhook should validate the token, parse the payload, copy images, call Convex through `ConvexHttpClient` on the normal `.convex.cloud` URL when Convex is used, and revalidate blog routes from the receiving server route. It explicitly says not to add or rely on `CONVEX_SITE_URL`, `NEXT_PUBLIC_CONVEX_SITE_URL`, or `.convex.site` for Blogr publishing.
 
 The user enters:
 
@@ -114,8 +116,10 @@ The receiving app should:
 - Store `content_mdx` or `content_markdown`.
 - Treat `image_url` and markdown image URLs as temporary source URLs.
 - Download article images during the webhook request, store them in the target app's durable object storage, and rewrite `image_url`, frontmatter `featureImage`, and markdown image URLs before saving the post.
-- Ask the user for database and object storage preferences if the target app does not already have durable systems, defaulting to Convex and Cloudflare R2 through `@convex-dev/r2` when the user wants the default.
-- Do not require `R2_PUBLIC_URL`, an R2 custom domain, a public bucket, or whole-bucket public access when using the default R2 path.
+- Own the publishing orchestration in the receiving server route. Do not forward Blogr publishing to Convex HTTP actions or `.convex.site`.
+- If Convex is used for article records, call it from the receiving server route with `ConvexHttpClient` and `CONVEX_URL` or `NEXT_PUBLIC_CONVEX_URL` on `.convex.cloud`.
+- Ask the user for database and object storage preferences if the target app does not already have durable systems, defaulting to Convex article records and Cloudflare R2 uploaded from the receiving server route when the user wants the default.
+- Do not require `CONVEX_SITE_URL`, `NEXT_PUBLIC_CONVEX_SITE_URL`, `R2_TOKEN`, `R2_PUBLIC_URL`, an R2 custom domain, a public bucket, or whole-bucket public access when using the default path.
 - Finish with a required setup handoff that names every variable and groups it by where it must be set, including hosting/server env vars, Convex deployment env vars, Cloudflare/R2 setup, database setup, Blogr Settings, optional follow-ups, and verification commands.
 - Treat the Blogr publisher label as the webhook payload's `source` value. It is a sending-app label, not the article author.
 - Render Blogr MDX features including frontmatter stripping, H1 through H6 headings, links, lists, blockquotes, tables, code, markdown images, and YouTube iframe embeds or YouTube links.

@@ -12,6 +12,22 @@ Create a public, token-protected webhook endpoint and a simple blog system that 
 
 The target app must own the public blog content after a publish. Do not store Blogr image URLs as permanent public image URLs. Blogr can send signed image URLs that are only temporary.
 
+## Architecture
+
+The receiving webhook should own the Blogr publishing flow directly.
+
+For Next.js App Router apps, implement the orchestration in:
+
+```text
+src/app/api/webhooks/blog-publisher/route.ts
+```
+
+The route should validate the bearer token, parse the payload, copy images, upsert article records, and refresh cached pages. Do not forward the Blogr webhook request to a Convex HTTP action, a Convex `http.ts` route, or any `.convex.site` URL.
+
+If the app uses Convex for article records, call Convex record mutations or queries from the server route with `ConvexHttpClient` and the normal Convex URL from `CONVEX_URL` or `NEXT_PUBLIC_CONVEX_URL`. That should be the `.convex.cloud` URL.
+
+Do not add `CONVEX_SITE_URL`, `NEXT_PUBLIC_CONVEX_SITE_URL`, or any `.convex.site` dependency for Blogr publishing. `.convex.site` is only for unrelated existing Convex HTTP routes.
+
 ## Incoming Webhook
 
 Create this endpoint:
@@ -95,9 +111,9 @@ If both already exist, reuse them and follow the repo's local patterns.
 If either one is missing, ask the user which database and object storage they prefer before building that part. Present this as the recommended default:
 
 - Database: Convex article records.
-- Object storage: Cloudflare R2 through the Convex R2 component, `@convex-dev/r2`.
+- Object storage: Cloudflare R2 copied directly from the receiving server route with AWS S3-compatible R2 helpers.
 
-If the user says to choose, does not care, or asks for the default, use Convex for blog article records and Cloudflare R2 through `@convex-dev/r2` for downloaded article images.
+If the user says to choose, does not care, or asks for the default, use Convex for blog article records and Cloudflare R2 for downloaded article images. The webhook route should upload images to R2 directly, then save the target-owned image URL or object key on the Convex article record through `ConvexHttpClient`.
 
 Do not implement production article or media storage with local writable files, checked-in JSON, in-memory state, or any serverless/ephemeral filesystem path.
 
@@ -123,14 +139,14 @@ Keep `seoTitle` between 70 and 110 characters. Keep `description` between 110 an
 When using the default Convex and R2 path:
 
 - Install `convex` when the app does not already use it.
-- Install `@convex-dev/r2`.
-- Add the R2 component in `convex/convex.config.ts` with `app.use(r2)`.
-- Create an R2 client from `components.r2`.
-- Store downloaded images from a Convex action with `r2.store`.
-- Save the returned R2 object keys on article records.
-- Serve images by resolving keys with `r2.getUrl`.
-- Document these Convex env vars: `R2_TOKEN`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_ENDPOINT`, and `R2_BUCKET`.
-- Do not require `R2_PUBLIC_URL`, an R2 custom domain, a public bucket, or whole-bucket public access. Prefer signed URLs from the existing storage layer or `@convex-dev/r2`'s `r2.getUrl`. Only add public access when the user explicitly asks for that tradeoff.
+- Create or reuse a Convex mutation that upserts article records.
+- Call that Convex function from the webhook route with `ConvexHttpClient` and `CONVEX_URL` or `NEXT_PUBLIC_CONVEX_URL` on `.convex.cloud`.
+- Create focused server-side helpers for safe image download, R2 client creation, object key building, object upload, and serving URL resolution.
+- Upload downloaded images to R2 from the webhook route, not from a forwarded Convex HTTP action.
+- Save the target-owned image URL or object key on article records.
+- Serve images with signed URLs, an existing private image-serving route, or another existing target-owned media URL pattern.
+- Document these hosting/server env vars: `CONVEX_URL` or `NEXT_PUBLIC_CONVEX_URL`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_ENDPOINT`, and `R2_BUCKET`.
+- Do not require `R2_TOKEN`, `R2_PUBLIC_URL`, an R2 custom domain, a public bucket, or whole-bucket public access. Only add public access when the user explicitly asks for that tradeoff.
 
 ## Image Ingestion
 
@@ -149,7 +165,7 @@ During the webhook request:
 - Use safe fetching: allow only `http` and `https`, verify image content types, set a timeout, enforce a reasonable file-size limit, and return a clear `400` if required images cannot be copied.
 - Avoid hotlinking Blogr URLs in public pages because those URLs can expire or return `400`.
 
-If the target app cannot store images yet, ask for the user's storage preference and default to Convex plus Cloudflare R2 through `@convex-dev/r2` when the user wants the default. Do not leave Blogr URLs in the saved post.
+If the target app cannot store images yet, ask for the user's storage preference and default to Convex plus Cloudflare R2 copied from the receiving server route when the user wants the default. Do not leave Blogr URLs in the saved post.
 
 ## MDX And Embeds
 
@@ -208,19 +224,20 @@ Use server-only env vars:
 
 ```bash
 BLOG_PUBLISH_WEBHOOK_TOKEN=replace-with-the-same-token-used-in-blogr
+CONVEX_URL=https://your-deployment.convex.cloud
+# or NEXT_PUBLIC_CONVEX_URL=https://your-deployment.convex.cloud
 ```
 
-If the target app uses the default Convex R2 storage path, also set these in Convex:
+If the target app uses the default R2 storage path, set these on the hosting/server deployment because the webhook route uploads images directly:
 
 ```bash
-npx convex env set R2_TOKEN <token>
-npx convex env set R2_ACCESS_KEY_ID <access-key-id>
-npx convex env set R2_SECRET_ACCESS_KEY <secret-access-key>
-npx convex env set R2_ENDPOINT <endpoint>
-npx convex env set R2_BUCKET <bucket>
+R2_ACCESS_KEY_ID=<access-key-id>
+R2_SECRET_ACCESS_KEY=<secret-access-key>
+R2_ENDPOINT=<endpoint>
+R2_BUCKET=<bucket>
 ```
 
-Do not add `R2_PUBLIC_URL` or require an R2 custom domain for the default path. A CORS policy and signed serving URLs are enough unless the user explicitly chooses public bucket access.
+Do not add `CONVEX_SITE_URL`, `NEXT_PUBLIC_CONVEX_SITE_URL`, `R2_TOKEN`, `R2_PUBLIC_URL`, or require an R2 custom domain for the default path. S3-compatible R2 credentials and signed or private serving URLs are enough unless the user explicitly chooses public bucket access.
 
 Keep helper files focused. Suggested file tree:
 
@@ -228,7 +245,11 @@ Keep helper files focused. Suggested file tree:
 src/app/api/webhooks/blog-publisher/route.ts
 src/app/api/webhooks/blog-publisher/schema.ts
 src/server/blogPublisher/collectBlogPublisherImageUrls.ts
-src/server/blogPublisher/storeBlogPublisherImage.ts
+src/server/blogPublisher/downloadBlogPublisherImage.ts
+src/server/blogPublisher/createBlogPublisherR2Client.ts
+src/server/blogPublisher/buildBlogPublisherR2Key.ts
+src/server/blogPublisher/putBlogPublisherR2Object.ts
+src/server/blogPublisher/getBlogPublisherImageUrl.ts
 src/server/blogPublisher/rewriteBlogPublisherImageUrls.ts
 src/server/blogPublisher/validateBlogPublisherToken.ts
 src/server/blogPublisher/normalizeBlogPublisherArticles.ts
@@ -265,6 +286,7 @@ Handle events this way:
 - Cached blog routes and discovery outputs refresh after publishing.
 - The target app documents the webhook env var and endpoint.
 - The implementation handoff names every required variable and groups them by where they must be set: hosting/server env, Convex deployment env, Cloudflare/R2, database setup, and Blogr Settings.
+- The implementation does not add or rely on `CONVEX_SITE_URL`, `NEXT_PUBLIC_CONVEX_SITE_URL`, or `.convex.site` for Blogr publishing.
 - The implementation handoff lists every manual setup step still required after code is merged.
 - Lint, typecheck, and build pass.
 
@@ -274,10 +296,10 @@ Before finishing, audit every setup value and manual step the target app needs.
 
 The final response must include a clear **Required setup** section with:
 
-- Vercel, hosting, or server env vars, including `BLOG_PUBLISH_WEBHOOK_TOKEN` and any site URL or framework-specific env vars needed by the implementation.
-- Convex deployment env vars, including `R2_TOKEN`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_ENDPOINT`, and `R2_BUCKET` when Convex R2 is used.
+- Vercel, hosting, or server env vars, including `BLOG_PUBLISH_WEBHOOK_TOKEN`, `CONVEX_URL` or `NEXT_PUBLIC_CONVEX_URL` when `ConvexHttpClient` is used, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_ENDPOINT`, `R2_BUCKET` when the default R2 path is used, and any site URL or framework-specific env vars needed by the implementation.
+- Convex deployment env vars required by the implementation. Do not list `CONVEX_SITE_URL` or `NEXT_PUBLIC_CONVEX_SITE_URL` for Blogr publishing.
 - Database setup steps, including Convex project setup, schema deployment, migrations, seed steps, or commands the user must run.
-- Cloudflare/R2 setup steps, including bucket creation, API token creation, CORS policy, and signed URL behavior the implementation expects. Do not require `R2_PUBLIC_URL`, an R2 custom domain, a public bucket, or whole-bucket public access unless the user explicitly chose that setup.
+- Cloudflare/R2 setup steps, including bucket creation, S3-compatible access key creation, CORS policy, and signed/private URL behavior the implementation expects. Do not require `R2_TOKEN`, `R2_PUBLIC_URL`, an R2 custom domain, a public bucket, or whole-bucket public access unless the user explicitly chose that setup.
 - Blogr setup steps: webhook URL, access token, and publisher label to enter in Blogr Settings. The publisher label becomes the payload's `source` value and is not the article author.
 - Optional env vars or follow-up steps, clearly labeled optional.
 - Verification commands that were run and anything the user still needs to run after deployment.
