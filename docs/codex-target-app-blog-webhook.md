@@ -148,6 +148,35 @@ When using the default Convex and R2 path:
 - Document these hosting/server env vars: `CONVEX_URL` or `NEXT_PUBLIC_CONVEX_URL`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_ENDPOINT`, and `R2_BUCKET`.
 - Do not require `R2_TOKEN`, `R2_PUBLIC_URL`, an R2 custom domain, a public bucket, or whole-bucket public access. Only add public access when the user explicitly asks for that tradeoff.
 
+## Read Cost And Caching
+
+Design the public blog to keep database reads small.
+
+Do not load full article bodies, MDX, image arrays, or large metadata for:
+
+- blog index pages
+- sitemap output
+- RSS/feed output
+- search
+- related posts
+- static params
+- tag/category/filter choices
+- any other discovery view
+
+Store full article content in the canonical article record, but use lightweight summary records, projections, selected fields, or small index documents for list and discovery views.
+
+Use indexed lookups by slug for article pages and cursor pagination for lists. Avoid fetching every article to render one page or generate filter choices.
+
+On webhook create or update, update any summary/read-model data in the same write flow so public reads stay cheap.
+
+Revalidate or refresh cached blog pages, sitemap, feed, and list pages after publish instead of relying on repeated dynamic database reads.
+
+Backend-specific guidance:
+
+- If using Convex, prefer dedicated summary/read-model tables for blog lists, sitemap/feed metadata, and search/filter options. Avoid live subscriptions for public blog pages unless live updates are truly required.
+- If using SQL, Supabase, or Prisma, use field selection, indexes, and optionally materialized summary rows or views.
+- If using Firestore or another document database, avoid reading full article documents for list pages. Maintain small index documents when needed.
+
 ## Image Ingestion
 
 Blogr image URLs are source URLs for ingestion, not durable public URLs for the target blog.

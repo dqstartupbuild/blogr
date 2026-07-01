@@ -48,6 +48,14 @@ Behavior:
 - For the default R2 path, create focused server-side helpers for safe image download, R2 client creation, object key building, object upload, and serving URL resolution. Reuse existing helpers when the app already has them.
 - Document required hosting/server env vars when the default R2 path is used: R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_ENDPOINT, and R2_BUCKET. Also document CONVEX_URL or NEXT_PUBLIC_CONVEX_URL when ConvexHttpClient is used.
 - Do not require R2_TOKEN, R2_PUBLIC_URL, an R2 custom domain, a public bucket, or whole-bucket public access for the default path. Prefer signed URLs or an existing private image-serving route. Only add public access when the user explicitly asks for that tradeoff.
+- Design the public blog to keep database reads small. Do not load full article bodies, MDX, image arrays, or large metadata for blog index pages, sitemap, RSS/feed, search, related posts, static params, or other discovery views.
+- Store full article content in the canonical article record, but use lightweight summary records, projections, or selected fields for list and discovery views.
+- Use indexed lookups by slug and cursor pagination for lists. Avoid fetching every article to render one page or generate filter choices.
+- On webhook create or update, update any summary/read-model data in the same write flow so public reads stay cheap.
+- Revalidate or refresh cached blog pages, sitemap, feed, and list pages after publish instead of relying on repeated dynamic database reads.
+- If using Convex, prefer dedicated summary/read-model tables for blog lists, sitemap/feed metadata, and search/filter options. Avoid live subscriptions for public blog pages unless live updates are truly required.
+- If using SQL, Supabase, or Prisma, use field selection, indexes, and optionally materialized summary rows or views.
+- If using Firestore or another document database, avoid reading full article documents for list pages. Maintain small index documents when needed.
 - During the webhook request, download every article image the target app needs: image_url, markdown image URLs, and any frontmatter featureImage URL.
 - Store downloaded images in durable object storage, preferring the existing media/object storage system when one exists and otherwise the selected/default object storage above.
 - Rewrite image_url, frontmatter featureImage, and every markdown image URL in the saved body to the target app's stored image URLs before saving the post.

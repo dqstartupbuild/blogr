@@ -40,6 +40,8 @@ The copyable Codex prompt tells the target app to inspect its existing database 
 
 The prompt also steers Next.js App Router targets away from forwarding Blogr publishing requests to Convex HTTP actions. The target webhook should validate the token, parse the payload, copy images, call Convex through `ConvexHttpClient` on the normal `.convex.cloud` URL when Convex is used, and revalidate blog routes from the receiving server route. It explicitly says not to add or rely on `CONVEX_SITE_URL`, `NEXT_PUBLIC_CONVEX_SITE_URL`, or `.convex.site` for Blogr publishing.
 
+The prompt also tells the target app to keep public blog reads small. It asks for lightweight summaries, projections, or selected fields for blog indexes, sitemap, RSS/feed, search, related posts, static params, and filter views instead of loading full article bodies or image arrays. For Convex targets, it recommends read-model tables for public lists and discovery metadata. For SQL-style targets, it recommends field selection and indexes. For document databases, it recommends small index documents when list views would otherwise read full articles.
+
 The user enters:
 
 - Webhook URL
@@ -118,6 +120,12 @@ The receiving app should:
 - Download article images during the webhook request, store them in the target app's durable object storage, and rewrite `image_url`, frontmatter `featureImage`, and markdown image URLs before saving the post.
 - Own the publishing orchestration in the receiving server route. Do not forward Blogr publishing to Convex HTTP actions or `.convex.site`.
 - If Convex is used for article records, call it from the receiving server route with `ConvexHttpClient` and `CONVEX_URL` or `NEXT_PUBLIC_CONVEX_URL` on `.convex.cloud`.
+- Keep public blog reads small. Do not load full article bodies, MDX, image arrays, or large metadata for blog index pages, sitemap, RSS/feed, search, related posts, static params, or filter views.
+- Store full content in the canonical article record, but use lightweight summaries, projections, selected fields, or small index documents for list and discovery views.
+- Update any summary or read-model data during webhook create or update, and revalidate cached blog pages after publishing.
+- Use indexed slug lookups and cursor pagination for lists.
+- If Convex is used, prefer read-model tables for public lists, sitemap/feed metadata, and search/filter options. Avoid live subscriptions on public blog pages unless live updates are truly needed.
+- If SQL, Supabase, or Prisma is used, use field selection, indexes, and optionally materialized summary rows or views.
 - Ask the user for database and object storage preferences if the target app does not already have durable systems, defaulting to Convex article records and Cloudflare R2 uploaded from the receiving server route when the user wants the default.
 - Do not require `CONVEX_SITE_URL`, `NEXT_PUBLIC_CONVEX_SITE_URL`, `R2_TOKEN`, `R2_PUBLIC_URL`, an R2 custom domain, a public bucket, or whole-bucket public access when using the default path.
 - Finish with a required setup handoff that names every variable and groups it by where it must be set, including hosting/server env vars, Convex deployment env vars, Cloudflare/R2 setup, database setup, Blogr Settings, optional follow-ups, and verification commands.
