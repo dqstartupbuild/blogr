@@ -27,6 +27,10 @@ export const updateTopicScheduledDate = mutation({
     }
 
     if (scheduledDate) {
+      if (topic.status !== "saved" && topic.status !== "failed") {
+        throw new Error("Only saved or failed topics can be added to the calendar.");
+      }
+
       const existingForDate = await ctx.db
         .query("topics")
         .withIndex("by_userId_productId_scheduledDate", (q) =>

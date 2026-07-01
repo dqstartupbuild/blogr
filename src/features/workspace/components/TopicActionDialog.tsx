@@ -13,6 +13,7 @@ import { TopicRepurposeButton } from "./TopicRepurposeButton";
 import { TopicRepurposeDialog } from "./TopicRepurposeDialog";
 import { TopicSourceBadge } from "./TopicSourceBadge";
 import { TopicWriteButton } from "./TopicWriteButton";
+import { canAddTopicToCalendar } from "../utils/canAddTopicToCalendar";
 import { formatCalendarDateBadge } from "../utils/formatCalendarDateBadge";
 import type { DeleteTopic } from "../types/DeleteTopic";
 import type { RemoveTopicFromCalendar } from "../types/RemoveTopicFromCalendar";
@@ -55,6 +56,7 @@ export const TopicActionDialog = ({
   const [isRepurposeOpen, setIsRepurposeOpen] = useState(false);
   const isWriting = topic.status === "writing";
   const hasBrief = Boolean(topic.notes?.trim());
+  const canShowCalendarScheduleControl = canAddTopicToCalendar(topic);
 
   const handleOpenBlog = (blogId: string) => {
     openBlogPreview(blogId);
@@ -105,13 +107,15 @@ export const TopicActionDialog = ({
             No brief yet.
           </p>
         )}
-        <TopicCalendarScheduleControl
-          calendarDateKeys={calendarDateKeys}
-          occupiedCalendarDates={occupiedCalendarDates}
-          onScheduled={onClose}
-          scheduleTopicOnCalendar={scheduleTopicOnCalendar}
-          topic={topic}
-        />
+        {canShowCalendarScheduleControl ? (
+          <TopicCalendarScheduleControl
+            calendarDateKeys={calendarDateKeys}
+            occupiedCalendarDates={occupiedCalendarDates}
+            onScheduled={onClose}
+            scheduleTopicOnCalendar={scheduleTopicOnCalendar}
+            topic={topic}
+          />
+        ) : null}
         <div className="flex min-w-0 flex-col items-stretch gap-2 sm:flex-row sm:flex-wrap">
           {topic.blogId ? (
             <TopicOpenArticleButton

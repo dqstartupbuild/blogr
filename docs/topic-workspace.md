@@ -44,7 +44,7 @@ Topic discovery calls `POST /api/topics/discover`, runs Apify Google Search Scra
 
 The discovery dialog also exposes non-topic insights as planning rows. Users can save People Also Ask questions, content gaps, comparison ideas, clusters, refresh suggestions, AI answer notes, and difficulty notes as topics with notes. Content gap rows save the actual gap title as the topic, while the row badge shows that it came from a gap.
 
-The calendar batch flow calls `POST /api/topics/batch-plan`, dedupes discovery outputs and product-niche expansion ideas into canonical topic candidates, and saves them through `createScheduledTopicBatch`. It fills only blank dates in the 30-day window and never replaces already scheduled topics. Scheduled topics and topic rows open the shared topic action dialog with edit, repurpose, write, article preview, calendar scheduling, removal, and delete controls.
+The calendar batch flow calls `POST /api/topics/batch-plan`, dedupes discovery outputs and product-niche expansion ideas into canonical topic candidates, and saves them through `createScheduledTopicBatch`. It fills only blank dates in the 30-day window and never replaces already scheduled topics. Scheduled topics and topic rows open the shared topic action dialog with edit, repurpose, write, article preview, calendar scheduling, removal, and delete controls. Calendar scheduling is only offered for Saved and Failed topics.
 
 Blog rows and the blog editor expose **Find refresh ideas** for existing blogs. In the blog list, users can filter unpublished and published posts, then save a refresh plan as a topic. In the editor, users can save the plan or add it directly to the draft.
 

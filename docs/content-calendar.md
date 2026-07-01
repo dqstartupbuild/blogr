@@ -21,7 +21,7 @@ Scheduled topics are stored in the existing `topics` table with optional calenda
 
 `useLiveWorkspace` loads scheduled topics with `listScheduledTopics` when the workspace is in calendar mode. It also loads existing topic keywords and article keywords so batch planning can avoid topics that already exist in the workspace.
 
-The shared topic action dialog is used by both the Calendar and Topics views. It contains the writing controls and the calendar scheduling control, so a saved topic from the Topics page can be added to any open day in the current 30-day window.
+The shared topic action dialog is used by both the Calendar and Topics views. It contains the writing controls and the calendar scheduling control. Only Saved and Failed topics can be added to an open day in the current 30-day window; Writing, Written, and already Scheduled topics are not offered for calendar scheduling.
 
 Topics on the calendar use the `scheduled` status. New calendar topics are saved with `status: "scheduled"`, and older records that still have `status: "saved"` plus a `scheduledDate` are treated as Scheduled in the UI and topic filters.
 
@@ -72,7 +72,7 @@ The route builds enough long-tail product-niche candidates to fill the requested
 - Plan the next 30 days of content without manually saving each keyword.
 - Fill only the blank days after manually adding a few priority topics.
 - Filter the Topics page to show scheduled topics.
-- Place a saved topic on a blank calendar day without creating a duplicate topic.
+- Place a saved or failed topic on a blank calendar day without creating a duplicate topic.
 - Add or move a saved topic from the Topics page through the shared topic dialog.
 - Keep similar keyword ideas from turning into competing articles.
 - Click a scheduled topic to open editing, repurposing, writing, article preview, calendar removal, and delete actions.

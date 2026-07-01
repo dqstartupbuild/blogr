@@ -2,6 +2,7 @@
 
 import { useMemo, useState, type FormEvent } from "react";
 import { PrimaryButton } from "./PrimaryButton";
+import { canAddTopicToCalendar } from "../utils/canAddTopicToCalendar";
 import type { ScheduleTopicOnCalendar } from "../types/ScheduleTopicOnCalendar";
 import type { TopicItem } from "../types/TopicItem";
 
@@ -19,7 +20,10 @@ export const CalendarAddExistingTopicForm = ({
   scheduleTopicOnCalendar,
 }: CalendarAddExistingTopicFormProps) => {
   const availableTopics = useMemo(
-    () => savedTopics.filter((topic) => !topic.scheduledDate),
+    () =>
+      savedTopics.filter(
+        (topic) => !topic.scheduledDate && canAddTopicToCalendar(topic),
+      ),
     [savedTopics],
   );
   const [selectedTopicId, setSelectedTopicId] = useState(
@@ -57,7 +61,7 @@ export const CalendarAddExistingTopicForm = ({
   if (availableTopics.length === 0) {
     return (
       <p className="rounded-md border border-black/10 bg-black/[0.03] p-3 text-sm leading-6 text-black/60">
-        No saved topics are ready to add.
+        No saved or failed topics are ready to add.
       </p>
     );
   }
