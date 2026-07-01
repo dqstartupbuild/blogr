@@ -16,11 +16,13 @@ Product scan runs first, then `storeProductScanImages` copies logo/Open Graph as
 
 Blog generation creates images with Replicate, then `storeGeneratedBlogImages` downloads each Replicate image into R2 before the writer prompt is built. The blog stores each image's `r2Key` with the image metadata.
 
-Convex queries refresh image URLs before returning data:
+Convex queries keep signed image URLs usable before returning data:
 
 - `getCurrentProduct` refreshes `assets` and `productImages` from `assetKeys` and `productImageKeys`.
-- `listBlogs` and `getBlog` refresh blog image URLs from each image `r2Key`.
-- Blog MDX is rewritten on read when an old signed URL is replaced with a fresh one.
+- `listBlogs` and `getBlog` check each blog image URL and only sign a fresh R2 URL when the current signed URL is missing, invalid, or close to expiring.
+- Blog MDX is rewritten on read only when an old signed URL is actually replaced with a fresh one.
+
+This keeps article previews stable after status-only changes, such as publishing, because unchanged images do not receive new signed URLs on every blog query update.
 
 If R2 storage is unavailable during a server route call, the app keeps the original external URL so generation and scanning can still finish.
 
@@ -50,6 +52,8 @@ The R2 bucket must allow Convex to read and write objects.
 - `convex/r2/client.ts`
 - `convex/r2/storeImageFromUrl.ts`
 - `convex/r2/getR2ImageUrl.ts`
+- `convex/r2/getSignedImageUrlExpirationMs.ts`
+- `convex/r2/shouldRefreshSignedImageUrl.ts`
 - `convex/products/refreshProductImageUrls.ts`
 - `convex/blogs/refreshBlogImageUrls.ts`
 - `src/server/r2/storeImageUrlWithConvexR2.ts`

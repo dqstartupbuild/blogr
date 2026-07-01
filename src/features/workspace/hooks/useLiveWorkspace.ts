@@ -59,6 +59,7 @@ export const useLiveWorkspace = (
 ) => {
   const [mode, setMode] = useState<WorkspaceViewMode>(initialMode);
   const [selectedBlogSelection, setSelectedBlogSelection] = useState<{
+    blog?: BlogItem;
     blogId: string;
     productId: string;
   } | null>(null);
@@ -110,14 +111,6 @@ export const useLiveWorkspace = (
     selectedBlogSelection?.productId === activeProductId
       ? selectedBlogSelection.blogId
       : "";
-  const setSelectedBlogId = useCallback(
-    (blogId: string) => {
-      setSelectedBlogSelection(
-        blogId && activeProductId ? { blogId, productId: activeProductId } : null,
-      );
-    },
-    [activeProductId],
-  );
   const convexProductId = activeProductId
     ? castProductId(activeProductId)
     : null;
@@ -246,6 +239,20 @@ export const useLiveWorkspace = (
         : undefined,
     [workspaceSummaryResult],
   );
+  const setSelectedBlogId = useCallback(
+    (blogId: string) => {
+      const selectedBlog =
+        blogs.find((blog) => blog.id === blogId) ||
+        workspaceSummary?.recentBlogs.find((blog) => blog.id === blogId);
+
+      setSelectedBlogSelection(
+        blogId && activeProductId
+          ? { blog: selectedBlog, blogId, productId: activeProductId }
+          : null,
+      );
+    },
+    [activeProductId, blogs, workspaceSummary?.recentBlogs],
+  );
   const selectedBlogFromQuery = useMemo(
     () => (selectedBlogResult ? mapConvexBlog(selectedBlogResult) : undefined),
     [selectedBlogResult],
@@ -322,9 +329,9 @@ export const useLiveWorkspace = (
       mergePreviewBlogs({
         currentPageBlogs: blogs,
         recentBlogs: workspaceSummary?.recentBlogs,
-        selectedBlog: selectedBlogFromQuery,
+        selectedBlog: selectedBlogFromQuery || selectedBlogSelection?.blog,
       }),
-    [blogs, selectedBlogFromQuery, workspaceSummary],
+    [blogs, selectedBlogFromQuery, selectedBlogSelection?.blog, workspaceSummary],
   );
   const selectedBlog = useMemo(
     () =>

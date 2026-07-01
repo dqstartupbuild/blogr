@@ -1,10 +1,11 @@
 import type { Doc } from "../_generated/dataModel";
 import { getR2ImageUrl } from "../r2/getR2ImageUrl";
+import { shouldRefreshSignedImageUrl } from "../r2/shouldRefreshSignedImageUrl";
 
 export const refreshBlogImageUrls = async (blog: Doc<"blogs">) => {
   const refreshedImages = await Promise.all(
     blog.images.map(async (image) => {
-      if (!image.r2Key) {
+      if (!image.r2Key || !shouldRefreshSignedImageUrl(image.url)) {
         return image;
       }
 
