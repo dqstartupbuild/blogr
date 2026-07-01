@@ -1,6 +1,8 @@
 import { v } from "convex/values";
 import { mutation } from "../_generated/server";
 import { requireUserId } from "../identity/requireUserId";
+import { upsertBlogReadModels } from "../readModels/upsertBlogReadModels";
+import { upsertTopicReadModel } from "../readModels/upsertTopicReadModel";
 import { buildBlogSearchText } from "./buildBlogSearchText";
 import { validateSeoContentLengths } from "./validateSeoContentLengths";
 
@@ -78,7 +80,8 @@ export const upsertGeneratedBlog = mutation({
       existing.userId === userId &&
       (!existing.productId || existing.productId === args.productId)
     ) {
-      await ctx.db.patch(existing._id, {
+      const updatedBlog = {
+        ...existing,
         ...args,
         excerpt,
         searchText: buildBlogSearchText({
@@ -89,21 +92,47 @@ export const upsertGeneratedBlog = mutation({
         }),
         seoTitle,
         updatedAt: now,
+      };
+
+      await ctx.db.patch(existing._id, {
+        ...args,
+        excerpt,
+        searchText: updatedBlog.searchText,
+        seoTitle,
+        updatedAt: now,
       });
+      await upsertBlogReadModels(ctx, updatedBlog);
 
       if (args.topicId) {
+        const topic = await ctx.db.get(args.topicId);
+        const topicStatus =
+          args.status === "failed" ? ("failed" as const) : ("written" as const);
+        const updatedTopic = topic
+          ? {
+              ...topic,
+              productId: args.productId,
+              status: topicStatus,
+              blogId: existing._id,
+              updatedAt: now,
+            }
+          : null;
+
         await ctx.db.patch(args.topicId, {
           productId: args.productId,
-          status: args.status === "failed" ? "failed" : "written",
+          status: topicStatus,
           blogId: existing._id,
           updatedAt: now,
         });
+
+        if (updatedTopic) {
+          await upsertTopicReadModel(ctx, updatedTopic);
+        }
       }
 
       return existing._id;
     }
 
-    const blogId = await ctx.db.insert("blogs", {
+    const blog = {
       ...args,
       excerpt,
       searchText: buildBlogSearchText({
@@ -116,15 +145,38 @@ export const upsertGeneratedBlog = mutation({
       userId,
       createdAt: now,
       updatedAt: now,
+    };
+    const blogId = await ctx.db.insert("blogs", blog);
+
+    await upsertBlogReadModels(ctx, {
+      ...blog,
+      _id: blogId,
     });
 
     if (args.topicId) {
+      const topic = await ctx.db.get(args.topicId);
+      const topicStatus =
+        args.status === "failed" ? ("failed" as const) : ("written" as const);
+      const updatedTopic = topic
+        ? {
+            ...topic,
+            productId: args.productId,
+            status: topicStatus,
+            blogId,
+            updatedAt: now,
+          }
+        : null;
+
       await ctx.db.patch(args.topicId, {
         productId: args.productId,
-        status: args.status === "failed" ? "failed" : "written",
+        status: topicStatus,
         blogId,
         updatedAt: now,
       });
+
+      if (updatedTopic) {
+        await upsertTopicReadModel(ctx, updatedTopic);
+      }
     }
 
     return blogId;

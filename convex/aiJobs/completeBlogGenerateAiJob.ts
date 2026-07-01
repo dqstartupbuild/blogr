@@ -2,6 +2,8 @@ import { v } from "convex/values";
 import { mutation } from "../_generated/server";
 import { buildBlogSearchText } from "../blogs/buildBlogSearchText";
 import { validateSeoContentLengths } from "../blogs/validateSeoContentLengths";
+import { upsertBlogReadModels } from "../readModels/upsertBlogReadModels";
+import { upsertTopicReadModel } from "../readModels/upsertTopicReadModel";
 import { assertAiWorkerSecret } from "./assertAiWorkerSecret";
 import { imageValidator } from "./imageValidator";
 import { linkValidator } from "./linkValidator";
@@ -102,14 +104,38 @@ export const completeBlogGenerateAiJob = mutation({
       await ctx.db.patch(existing._id, blogPayload);
     }
 
+    const blog = await ctx.db.get(blogId);
+
+    if (blog) {
+      await upsertBlogReadModels(ctx, blog);
+    }
+
     if (args.topicId) {
+      const topic = await ctx.db.get(args.topicId);
+      const topicStatus =
+        args.status === "failed" ? ("failed" as const) : ("written" as const);
+      const updatedTopic = topic
+        ? {
+            ...topic,
+            blogId,
+            lastError: undefined,
+            productId: args.productId,
+            status: topicStatus,
+            updatedAt: now,
+          }
+        : null;
+
       await ctx.db.patch(args.topicId, {
         blogId,
         lastError: undefined,
         productId: args.productId,
-        status: args.status === "failed" ? "failed" : "written",
+        status: topicStatus,
         updatedAt: now,
       });
+
+      if (updatedTopic) {
+        await upsertTopicReadModel(ctx, updatedTopic);
+      }
     }
 
     await ctx.db.patch(args.jobId, {

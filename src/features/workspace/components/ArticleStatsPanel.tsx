@@ -9,7 +9,7 @@ type ArticleStatsPanelProps = {
 };
 
 export const ArticleStatsPanel = ({ blog }: ArticleStatsPanelProps) => {
-  const words = countBlogWords(blog.mdx);
+  const words = blog.wordCount ?? countBlogWords(blog.mdx);
   const headings = countBlogHeadings(blog.mdx);
   const images = countBlogImages(blog);
   const readTime = estimateReadTimeMinutes(words);

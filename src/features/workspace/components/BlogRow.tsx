@@ -28,7 +28,7 @@ export const BlogRow = ({
   previewBlog,
   savePlan,
 }: BlogRowProps) => {
-  const wordCount = countBlogWords(blog.mdx);
+  const wordCount = blog.wordCount ?? countBlogWords(blog.mdx);
 
   return (
     <article

@@ -1,5 +1,6 @@
 import { v } from "convex/values";
 import { mutation } from "../_generated/server";
+import { upsertProductWorkspaceSummary } from "../readModels/upsertProductWorkspaceSummary";
 import { assertAiWorkerSecret } from "./assertAiWorkerSecret";
 import { linkValidator } from "./linkValidator";
 
@@ -70,6 +71,11 @@ export const completeProductScanAiJob = mutation({
     await ctx.db.patch(args.productId, {
       ...savedProduct,
       scannedAt: now,
+      updatedAt: now,
+    });
+    await upsertProductWorkspaceSummary(ctx, {
+      ...product,
+      ...savedProduct,
       updatedAt: now,
     });
 

@@ -1,6 +1,7 @@
 import { v } from "convex/values";
 import { mutation } from "../_generated/server";
 import { requireUserId } from "../identity/requireUserId";
+import { upsertProductWorkspaceSummary } from "../readModels/upsertProductWorkspaceSummary";
 import { blogGenerationSettingsValidator } from "./blogGenerationSettingsValidator";
 
 export const updateBlogGenerationSettings = mutation({
@@ -20,9 +21,15 @@ export const updateBlogGenerationSettings = mutation({
       throw new Error("Add up to 5 associate brand links.");
     }
 
+    const now = Date.now();
+
     await ctx.db.patch(args.productId, {
       blogGenerationSettings: args.settings,
-      updatedAt: Date.now(),
+      updatedAt: now,
+    });
+    await upsertProductWorkspaceSummary(ctx, {
+      ...product,
+      updatedAt: now,
     });
   },
 });

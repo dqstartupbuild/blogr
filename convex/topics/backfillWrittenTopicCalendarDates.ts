@@ -2,6 +2,7 @@ import { v } from "convex/values";
 import { mutation } from "../_generated/server";
 import { requireUserId } from "../identity/requireUserId";
 import { resolveActiveProductId } from "../products/resolveActiveProductId";
+import { upsertTopicReadModel } from "../readModels/upsertTopicReadModel";
 import { buildTopicSearchText } from "./buildTopicSearchText";
 import { getCalendarDateKeyFromTimestamp } from "./getCalendarDateKeyFromTimestamp";
 
@@ -19,13 +20,9 @@ export const backfillWrittenTopicCalendarDates = mutation({
     }
 
     const blogs = await ctx.db
-      .query("blogs")
-      .withIndex("by_userId_updatedAt", (q) => q.eq("userId", userId))
-      .filter((q) =>
-        q.or(
-          q.eq(q.field("productId"), productId),
-          q.eq(q.field("productId"), undefined),
-        ),
+      .query("blogSummaries")
+      .withIndex("by_userId_productId_updatedAt", (q) =>
+        q.eq("userId", userId).eq("productId", productId),
       )
       .collect();
     const now = Date.now();
@@ -54,9 +51,12 @@ export const backfillWrittenTopicCalendarDates = mutation({
         topic.createdAt || blog.createdAt,
         args.timeZone,
       );
+      const status =
+        topic.status === "writing" ? ("writing" as const) : ("written" as const);
 
-      await ctx.db.patch(topic._id, {
-        blogId: topic.blogId || blog._id,
+      const updatedTopic = {
+        ...topic,
+        blogId: topic.blogId || blog.blogId,
         productId: topic.productId || blog.productId || productId,
         scheduledDate,
         searchText: buildTopicSearchText({
@@ -67,9 +67,19 @@ export const backfillWrittenTopicCalendarDates = mutation({
           scheduledDate,
           sourceType: topic.sourceType,
         }),
-        status: topic.status === "writing" ? "writing" : "written",
+        status,
+        updatedAt: now,
+      };
+
+      await ctx.db.patch(topic._id, {
+        blogId: updatedTopic.blogId,
+        productId: updatedTopic.productId,
+        scheduledDate,
+        searchText: updatedTopic.searchText,
+        status: updatedTopic.status,
         updatedAt: now,
       });
+      await upsertTopicReadModel(ctx, updatedTopic);
       updatedCount += 1;
     }
 

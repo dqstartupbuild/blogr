@@ -10,10 +10,6 @@ export const listTopicKeywords = query({
   handler: async (ctx, args) => {
     const userId = await requireUserId(ctx);
     const productId = await resolveActiveProductId(ctx, userId, args.productId);
-    let topicsQuery = ctx.db
-      .query("topics")
-      .withIndex("by_userId_createdAt", (q) => q.eq("userId", userId))
-      .order("desc");
     const topics: {
       canonicalKeyword?: string;
       blogId?: string;
@@ -35,20 +31,22 @@ export const listTopicKeywords = query({
       status: "saved" | "scheduled" | "writing" | "written" | "failed";
     }[] = [];
 
-    if (productId) {
-      topicsQuery = topicsQuery.filter((q) =>
-        q.or(
-          q.eq(q.field("productId"), productId),
-          q.eq(q.field("productId"), undefined),
-        ),
-      );
+    if (!productId) {
+      return [];
     }
+
+    const topicsQuery = ctx.db
+      .query("topicKeywordOptions")
+      .withIndex("by_userId_productId_updatedAt", (q) =>
+        q.eq("userId", userId).eq("productId", productId),
+      )
+      .order("desc");
 
     for await (const topic of topicsQuery) {
       topics.push({
         blogId: topic.blogId,
         canonicalKeyword: topic.canonicalKeyword,
-        id: topic._id,
+        id: topic.topicId,
         intentKey: topic.intentKey,
         keyword: topic.keyword,
         notes: topic.notes,

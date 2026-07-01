@@ -1,6 +1,7 @@
 import { v } from "convex/values";
 import { mutation } from "../_generated/server";
 import { requireUserId } from "../identity/requireUserId";
+import { upsertTopicReadModel } from "../readModels/upsertTopicReadModel";
 import { topicStatusValidator } from "./topicStatusValidator";
 
 export const updateTopicStatus = mutation({
@@ -23,12 +24,22 @@ export const updateTopicStatus = mutation({
       throw new Error("Topic not found in this workspace.");
     }
 
-    await ctx.db.patch(args.topicId, {
+    const updatedTopic = {
+      ...topic,
       productId: topic.productId || args.productId,
       status: args.status,
       blogId: args.blogId,
       lastError: args.lastError,
       updatedAt: Date.now(),
+    };
+
+    await ctx.db.patch(args.topicId, {
+      productId: updatedTopic.productId,
+      status: updatedTopic.status,
+      blogId: updatedTopic.blogId,
+      lastError: updatedTopic.lastError,
+      updatedAt: updatedTopic.updatedAt,
     });
+    await upsertTopicReadModel(ctx, updatedTopic);
   },
 });

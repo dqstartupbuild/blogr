@@ -1,5 +1,6 @@
 import type { Doc } from "../../../../convex/_generated/dataModel";
 import type { BlogItem } from "../types/BlogItem";
+import { countBlogWords } from "../utils/countBlogWords";
 
 export const mapConvexBlog = (blog: Doc<"blogs">): BlogItem => {
   return {
@@ -19,6 +20,7 @@ export const mapConvexBlog = (blog: Doc<"blogs">): BlogItem => {
     tags: blog.tags || [],
     title: blog.title,
     updatedAt: blog.updatedAt,
+    wordCount: countBlogWords(blog.mdx),
     youtubeVideos: blog.youtubeVideos || [],
   };
 };

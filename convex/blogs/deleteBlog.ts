@@ -1,6 +1,8 @@
 import { v } from "convex/values";
 import { mutation } from "../_generated/server";
 import { requireUserId } from "../identity/requireUserId";
+import { deleteBlogReadModels } from "../readModels/deleteBlogReadModels";
+import { upsertTopicReadModel } from "../readModels/upsertTopicReadModel";
 
 export const deleteBlog = mutation({
   args: {
@@ -23,14 +25,23 @@ export const deleteBlog = mutation({
       const topic = await ctx.db.get(blog.topicId);
 
       if (topic?.userId === userId && topic.blogId === args.blogId) {
-        await ctx.db.patch(blog.topicId, {
+        const updatedTopic = {
+          ...topic,
           blogId: undefined,
           status: topic.scheduledDate ? "scheduled" : "saved",
           updatedAt: Date.now(),
+        } as const;
+
+        await ctx.db.patch(blog.topicId, {
+          blogId: undefined,
+          status: updatedTopic.status,
+          updatedAt: updatedTopic.updatedAt,
         });
+        await upsertTopicReadModel(ctx, updatedTopic);
       }
     }
 
+    await deleteBlogReadModels(ctx, blog);
     await ctx.db.delete(args.blogId);
   },
 });

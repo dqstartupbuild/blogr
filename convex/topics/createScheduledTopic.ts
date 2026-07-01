@@ -1,6 +1,7 @@
 import { v } from "convex/values";
 import { mutation } from "../_generated/server";
 import { requireUserId } from "../identity/requireUserId";
+import { upsertTopicReadModel } from "../readModels/upsertTopicReadModel";
 import { buildTopicIntentKey } from "./buildTopicIntentKey";
 import { buildTopicSearchText } from "./buildTopicSearchText";
 import { normalizeTopicKeyword } from "./normalizeTopicKeyword";
@@ -54,7 +55,7 @@ export const createScheduledTopic = mutation({
 
     const now = Date.now();
 
-    return await ctx.db.insert("topics", {
+    const topic = {
       canonicalKeyword,
       createdAt: now,
       intentKey,
@@ -74,6 +75,14 @@ export const createScheduledTopic = mutation({
       status: "scheduled",
       updatedAt: now,
       userId,
+    } as const;
+    const topicId = await ctx.db.insert("topics", topic);
+
+    await upsertTopicReadModel(ctx, {
+      ...topic,
+      _id: topicId,
     });
+
+    return topicId;
   },
 });

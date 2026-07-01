@@ -1,6 +1,7 @@
 import { v } from "convex/values";
 import { mutation } from "../_generated/server";
 import { requireUserId } from "../identity/requireUserId";
+import { upsertProductWorkspaceSummary } from "../readModels/upsertProductWorkspaceSummary";
 
 const linkValidator = v.object({
   isActive: v.optional(v.boolean()),
@@ -22,9 +23,15 @@ export const updateProductSiteLinks = mutation({
       throw new Error("Workspace not found.");
     }
 
+    const now = Date.now();
+
     await ctx.db.patch(args.productId, {
       siteLinks: args.siteLinks,
-      updatedAt: Date.now(),
+      updatedAt: now,
+    });
+    await upsertProductWorkspaceSummary(ctx, {
+      ...product,
+      updatedAt: now,
     });
   },
 });

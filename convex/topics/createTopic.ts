@@ -1,6 +1,7 @@
 import { v } from "convex/values";
 import { mutation } from "../_generated/server";
 import { requireUserId } from "../identity/requireUserId";
+import { upsertTopicReadModel } from "../readModels/upsertTopicReadModel";
 import { buildTopicIntentKey } from "./buildTopicIntentKey";
 import { buildTopicSearchText } from "./buildTopicSearchText";
 import { normalizeTopicKeyword } from "./normalizeTopicKeyword";
@@ -28,7 +29,7 @@ export const createTopic = mutation({
 
     const now = Date.now();
 
-    return await ctx.db.insert("topics", {
+    const topic = {
       userId,
       productId: args.productId,
       canonicalKeyword: keyword,
@@ -46,6 +47,14 @@ export const createTopic = mutation({
       status: "saved",
       createdAt: now,
       updatedAt: now,
+    } as const;
+    const topicId = await ctx.db.insert("topics", topic);
+
+    await upsertTopicReadModel(ctx, {
+      ...topic,
+      _id: topicId,
     });
+
+    return topicId;
   },
 });

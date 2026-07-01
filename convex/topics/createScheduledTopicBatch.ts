@@ -1,6 +1,7 @@
 import { v } from "convex/values";
 import { mutation } from "../_generated/server";
 import { requireUserId } from "../identity/requireUserId";
+import { upsertTopicReadModel } from "../readModels/upsertTopicReadModel";
 import { buildTopicIntentKey } from "./buildTopicIntentKey";
 import { buildTopicSearchText } from "./buildTopicSearchText";
 import { normalizeTopicKeyword } from "./normalizeTopicKeyword";
@@ -31,13 +32,9 @@ export const createScheduledTopicBatch = mutation({
     const occupiedDates = new Set<string>();
     const existingKeys = new Set<string>();
     const topicsQuery = ctx.db
-      .query("topics")
-      .withIndex("by_userId_createdAt", (q) => q.eq("userId", userId))
-      .filter((q) =>
-        q.or(
-          q.eq(q.field("productId"), args.productId),
-          q.eq(q.field("productId"), undefined),
-        ),
+      .query("topicKeywordOptions")
+      .withIndex("by_userId_productId_updatedAt", (q) =>
+        q.eq("userId", userId).eq("productId", args.productId),
       );
 
     for await (const topic of topicsQuery) {
@@ -59,13 +56,9 @@ export const createScheduledTopicBatch = mutation({
     }
 
     const blogsQuery = ctx.db
-      .query("blogs")
-      .withIndex("by_userId_updatedAt", (q) => q.eq("userId", userId))
-      .filter((q) =>
-        q.or(
-          q.eq(q.field("productId"), args.productId),
-          q.eq(q.field("productId"), undefined),
-        ),
+      .query("blogKeywordOptions")
+      .withIndex("by_userId_productId_updatedAt", (q) =>
+        q.eq("userId", userId).eq("productId", args.productId),
       );
 
     for await (const blog of blogsQuery) {
@@ -101,7 +94,7 @@ export const createScheduledTopicBatch = mutation({
       const notes = item.notes?.trim();
       const sourceType = item.sourceType || "discovery";
 
-      await ctx.db.insert("topics", {
+      const topic = {
         canonicalKeyword,
         createdAt: now,
         intentKey,
@@ -121,6 +114,12 @@ export const createScheduledTopicBatch = mutation({
         status: "scheduled",
         updatedAt: now,
         userId,
+      } as const;
+      const topicId = await ctx.db.insert("topics", topic);
+
+      await upsertTopicReadModel(ctx, {
+        ...topic,
+        _id: topicId,
       });
 
       occupiedDates.add(item.scheduledDate);

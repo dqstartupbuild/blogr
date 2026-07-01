@@ -1,6 +1,7 @@
 import { v } from "convex/values";
 import { mutation } from "../_generated/server";
 import { requireUserId } from "../identity/requireUserId";
+import { deleteTopicReadModel } from "../readModels/deleteTopicReadModel";
 
 export const deleteTopic = mutation({
   args: {
@@ -30,6 +31,7 @@ export const deleteTopic = mutation({
       }
     }
 
+    await deleteTopicReadModel(ctx, topic);
     await ctx.db.delete(args.topicId);
   },
 });

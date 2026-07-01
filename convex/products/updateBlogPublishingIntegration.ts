@@ -1,6 +1,7 @@
 import { v } from "convex/values";
 import { mutation } from "../_generated/server";
 import { requireUserId } from "../identity/requireUserId";
+import { upsertProductWorkspaceSummary } from "../readModels/upsertProductWorkspaceSummary";
 
 export const updateBlogPublishingIntegration = mutation({
   args: {
@@ -28,15 +29,21 @@ export const updateBlogPublishingIntegration = mutation({
       throw new Error("Add a webhook URL and access token before saving.");
     }
 
+    const now = Date.now();
+
     await ctx.db.patch(args.productId, {
       blogPublishingIntegration: {
         accessToken: args.enabled ? accessToken : "",
         enabled: args.enabled,
         sourceName,
-        updatedAt: Date.now(),
+        updatedAt: now,
         webhookUrl: args.enabled ? webhookUrl : "",
       },
-      updatedAt: Date.now(),
+      updatedAt: now,
+    });
+    await upsertProductWorkspaceSummary(ctx, {
+      ...product,
+      updatedAt: now,
     });
   },
 });

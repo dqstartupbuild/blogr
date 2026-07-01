@@ -16,47 +16,83 @@ export const listTopics = query({
     const userId = await requireUserId(ctx);
     const productId = await resolveActiveProductId(ctx, userId, args.productId);
     const searchQuery = args.searchQuery?.trim();
+    const status = args.status;
 
-    let topicsQuery = searchQuery
+    if (!productId) {
+      return {
+        continueCursor: "",
+        isDone: true,
+        page: [],
+        pageStatus: null,
+      };
+    }
+
+    const topicsQuery = searchQuery
       ? ctx.db
-          .query("topics")
-          .withSearchIndex("search_user_topics", (q) =>
-            q.search("searchText", searchQuery).eq("userId", userId),
-          )
-      : ctx.db
-          .query("topics")
-          .withIndex("by_userId_createdAt", (q) => q.eq("userId", userId))
-          .order("desc");
+          .query("topicKeywordOptions")
+          .withSearchIndex("search_product_topic_options", (q) => {
+            let search = q
+              .search("keyword", searchQuery)
+              .eq("userId", userId)
+              .eq("productId", productId);
 
-    if (productId) {
-      topicsQuery = topicsQuery.filter((q) =>
-        q.or(
-          q.eq(q.field("productId"), productId),
-          q.eq(q.field("productId"), undefined),
-        ),
-      );
-    }
+            if (status === "scheduled") {
+              search = search.eq("isScheduled", true);
+            } else if (status === "saved") {
+              search = search.eq("status", "saved").eq("isScheduled", false);
+            } else if (status) {
+              search = search.eq("status", status);
+            }
 
-    if (args.status === "scheduled") {
-      topicsQuery = topicsQuery.filter((q) =>
-        q.or(
-          q.eq(q.field("status"), "scheduled"),
-          q.neq(q.field("scheduledDate"), undefined),
-        ),
-      );
-    } else if (args.status === "saved") {
-      topicsQuery = topicsQuery.filter((q) =>
-        q.and(
-          q.eq(q.field("status"), "saved"),
-          q.eq(q.field("scheduledDate"), undefined),
-        ),
-      );
-    } else if (args.status) {
-      topicsQuery = topicsQuery.filter((q) =>
-        q.eq(q.field("status"), args.status),
-      );
-    }
+            return search;
+          })
+      : status === "scheduled"
+        ? ctx.db
+            .query("topicKeywordOptions")
+            .withIndex("by_userId_productId_isScheduled_updatedAt", (q) =>
+              q
+                .eq("userId", userId)
+                .eq("productId", productId)
+                .eq("isScheduled", true),
+            )
+            .order("desc")
+        : status === "saved"
+          ? ctx.db
+              .query("topicKeywordOptions")
+              .withIndex(
+                "by_userId_productId_status_isScheduled_updatedAt",
+                (q) =>
+                  q
+                    .eq("userId", userId)
+                    .eq("productId", productId)
+                    .eq("status", "saved")
+                    .eq("isScheduled", false),
+              )
+              .order("desc")
+          : status
+            ? ctx.db
+                .query("topicKeywordOptions")
+                .withIndex("by_userId_productId_status_updatedAt", (q) =>
+                  q
+                    .eq("userId", userId)
+                    .eq("productId", productId)
+                    .eq("status", status),
+                )
+                .order("desc")
+            : ctx.db
+                .query("topicKeywordOptions")
+                .withIndex("by_userId_productId_updatedAt", (q) =>
+                  q.eq("userId", userId).eq("productId", productId),
+                )
+                .order("desc");
+    const result = await topicsQuery.paginate(args.paginationOpts);
 
-    return await topicsQuery.paginate(args.paginationOpts);
+    return {
+      ...result,
+      page: result.page.map((topic) => ({
+        ...topic,
+        _id: topic.topicId,
+      })),
+    };
   },
 });

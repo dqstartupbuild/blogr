@@ -8,8 +8,13 @@ Convex stores product workspaces, blog generation settings, blog publishing inte
 
 - `products`
 - `workspaceSelections`
+- `productWorkspaceSummaries`
+- `workspaceStats`
 - `topics`
+- `topicKeywordOptions`
 - `blogs`
+- `blogSummaries`
+- `blogKeywordOptions`
 
 The schema lives in `convex/schema.ts`.
 
@@ -46,6 +51,10 @@ The Convex RAG component stores scanned product context in a namespace based on 
 
 `workspaceSelections` stores one active product workspace per user. New topic and blog records include `productId`. Topic and blog list queries use user indexes, product filters, search indexes, and Convex pagination options so the UI can load 10 rows at a time.
 
+Read-model tables keep common workspace screens cheap. `blogSummaries` powers article lists and dashboard recent articles without reading MDX. `topicKeywordOptions` powers topic lists and calendar planning without reading full topic rows. `blogKeywordOptions` powers article topic filters. `workspaceStats` stores dashboard totals. `productWorkspaceSummaries` powers the workspace switcher without reading raw product context.
+
+`ensureWorkspaceReadModels` rebuilds read models for existing workspaces when the app sees a workspace without these lightweight rows. It also patches legacy topic and article records that are missing `productId`.
+
 Rows created before product workspaces can be backfilled with:
 
 ```bash
@@ -76,6 +85,7 @@ Convex will replace the shim with the normal generated files.
 - `convex/identity/getPreviewUserId.ts`
 - `convex/identity/requireUserId.ts`
 - `convex/products/*`
+- `convex/readModels/*`
 - `convex/r2/*`
 - `convex/rag/*`
 - `convex/migrations/*`
@@ -88,3 +98,5 @@ Convex will replace the shim with the normal generated files.
 
 - Convex Next.js route handler docs: https://docs.convex.dev/client/nextjs/app-router/server-rendering
 - Convex Clerk docs: https://docs.convex.dev/auth/clerk
+- Convex realtime caching docs: https://docs.convex.dev/realtime
+- Convex query best practices: https://docs.convex.dev/understanding/best-practices/

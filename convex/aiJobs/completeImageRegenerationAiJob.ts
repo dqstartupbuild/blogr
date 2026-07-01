@@ -1,6 +1,7 @@
 import { v } from "convex/values";
 import { mutation } from "../_generated/server";
 import { validateSeoContentLengths } from "../blogs/validateSeoContentLengths";
+import { upsertBlogReadModels } from "../readModels/upsertBlogReadModels";
 import { assertAiWorkerSecret } from "./assertAiWorkerSecret";
 import { imageValidator } from "./imageValidator";
 
@@ -51,12 +52,21 @@ export const completeImageRegenerationAiJob = mutation({
       images.push(args.image);
     }
 
+    const updatedBlog = {
+      ...blog,
+      featureImageUrl: args.featureImageUrl,
+      images,
+      mdx: args.mdx,
+      updatedAt: now,
+    };
+
     await ctx.db.patch(job.blogId, {
       featureImageUrl: args.featureImageUrl,
       images,
       mdx: args.mdx,
       updatedAt: now,
     });
+    await upsertBlogReadModels(ctx, updatedBlog);
 
     await ctx.db.patch(args.jobId, {
       completedAt: now,

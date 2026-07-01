@@ -51,7 +51,8 @@ export const BlogPreviewPanel = ({
     );
   }
 
-  const wordCount = countBlogWords(blog.mdx);
+  const isSummary = blog.isSummary === true;
+  const wordCount = blog.wordCount ?? countBlogWords(blog.mdx);
   const readTime = estimateReadTimeMinutes(wordCount);
 
   return (
@@ -80,8 +81,8 @@ export const BlogPreviewPanel = ({
             <Edit3 size={16} aria-hidden="true" />
             Edit
           </SecondaryAnchor>
-          <BlogPublishButton blog={blog} />
-          <BlogZipButton blog={blog} />
+          {isSummary ? null : <BlogPublishButton blog={blog} />}
+          {isSummary ? null : <BlogZipButton blog={blog} />}
           {deleteBlog ? (
             <DeleteActionButton
               confirmMessage="Delete this article? This cannot be undone."
@@ -102,7 +103,7 @@ export const BlogPreviewPanel = ({
           <p className="mt-4 max-w-3xl text-base leading-7 text-black/65">
             {blog.excerpt}
           </p>
-          {blog.featureImageUrl ? (
+          {blog.featureImageUrl && !isSummary ? (
             <RegenerateableFeatureImage
               alt={blog.title}
               blogId={blog.id}
@@ -113,17 +114,23 @@ export const BlogPreviewPanel = ({
             />
           ) : null}
           <div className={markdownClassName}>
-            <MarkdownPreview
-              blogId={blog.id}
-              images={blog.images}
-              mdx={blog.mdx}
-              regenerateImage={regenerateImage}
-            />
+            {isSummary ? (
+              <p className="text-sm leading-6 text-black/60">
+                Loading article.
+              </p>
+            ) : (
+              <MarkdownPreview
+                blogId={blog.id}
+                images={blog.images}
+                mdx={blog.mdx}
+                regenerateImage={regenerateImage}
+              />
+            )}
           </div>
         </article>
         <aside className="grid content-start gap-4">
           <ArticleStatusPanel blog={blog} />
-          <ArticleStatsPanel blog={blog} />
+          {isSummary ? null : <ArticleStatsPanel blog={blog} />}
         </aside>
       </div>
     </section>

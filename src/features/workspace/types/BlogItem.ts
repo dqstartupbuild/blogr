@@ -18,7 +18,9 @@ export type BlogItem = {
   slug: string;
   excerpt: string;
   status: BlogStatus;
+  isSummary?: boolean;
   mdx: string;
+  wordCount?: number;
   featureImageUrl?: string;
   images: BlogImageItem[];
   updatedAt: number;

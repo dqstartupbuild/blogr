@@ -1,6 +1,7 @@
 import { v } from "convex/values";
 import { mutation } from "../_generated/server";
 import { requireUserId } from "../identity/requireUserId";
+import { upsertBlogReadModels } from "../readModels/upsertBlogReadModels";
 
 const imageValidator = v.object({
   alt: v.string(),
@@ -39,12 +40,20 @@ export const updateBlogImage = mutation({
           index === args.imageIndex ? args.image : image,
         )
       : [...blog.images, args.image];
-
-    await ctx.db.patch(args.blogId, {
+    const updatedBlog = {
+      ...blog,
       images: nextImages,
       featureImageUrl: args.featureImageUrl ?? blog.featureImageUrl,
       mdx: args.mdx,
       updatedAt: Date.now(),
+    };
+
+    await ctx.db.patch(args.blogId, {
+      images: nextImages,
+      featureImageUrl: updatedBlog.featureImageUrl,
+      mdx: args.mdx,
+      updatedAt: updatedBlog.updatedAt,
     });
+    await upsertBlogReadModels(ctx, updatedBlog);
   },
 });

@@ -10,23 +10,21 @@ export const listBlogTopicKeywords = query({
   handler: async (ctx, args) => {
     const userId = await requireUserId(ctx);
     const productId = await resolveActiveProductId(ctx, userId, args.productId);
-    let blogsQuery = ctx.db
-      .query("blogs")
-      .withIndex("by_userId_updatedAt", (q) => q.eq("userId", userId))
-      .order("desc");
     const keywords = new Set<string>();
 
-    if (productId) {
-      blogsQuery = blogsQuery.filter((q) =>
-        q.or(
-          q.eq(q.field("productId"), productId),
-          q.eq(q.field("productId"), undefined),
-        ),
-      );
+    if (!productId) {
+      return [];
     }
 
-    for await (const blog of blogsQuery) {
-      const keyword = blog.keyword.trim();
+    const optionsQuery = ctx.db
+      .query("blogKeywordOptions")
+      .withIndex("by_userId_productId_updatedAt", (q) =>
+        q.eq("userId", userId).eq("productId", productId),
+      )
+      .order("desc");
+
+    for await (const option of optionsQuery) {
+      const keyword = option.keyword.trim();
 
       if (keyword) {
         keywords.add(keyword);

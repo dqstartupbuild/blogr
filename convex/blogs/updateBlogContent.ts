@@ -1,6 +1,7 @@
 import { v } from "convex/values";
 import { mutation } from "../_generated/server";
 import { requireUserId } from "../identity/requireUserId";
+import { upsertBlogReadModels } from "../readModels/upsertBlogReadModels";
 import { buildBlogSearchText } from "./buildBlogSearchText";
 import { validateSeoContentLengths } from "./validateSeoContentLengths";
 
@@ -30,7 +31,8 @@ export const updateBlogContent = mutation({
 
     validateSeoContentLengths({ excerpt, seoTitle });
 
-    await ctx.db.patch(args.blogId, {
+    const updatedBlog = {
+      ...blog,
       productId: blog.productId || args.productId,
       title: args.title.trim(),
       seoTitle,
@@ -43,6 +45,17 @@ export const updateBlogContent = mutation({
       }),
       mdx: args.mdx,
       updatedAt: Date.now(),
+    };
+
+    await ctx.db.patch(args.blogId, {
+      productId: updatedBlog.productId,
+      title: updatedBlog.title,
+      seoTitle,
+      excerpt,
+      searchText: updatedBlog.searchText,
+      mdx: args.mdx,
+      updatedAt: updatedBlog.updatedAt,
     });
+    await upsertBlogReadModels(ctx, updatedBlog);
   },
 });

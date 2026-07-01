@@ -1,6 +1,7 @@
 import { v } from "convex/values";
 import { mutation } from "../_generated/server";
 import { requireUserId } from "../identity/requireUserId";
+import { upsertBlogReadModels } from "../readModels/upsertBlogReadModels";
 
 export const markBlogPublished = mutation({
   args: {
@@ -19,10 +20,18 @@ export const markBlogPublished = mutation({
       throw new Error("Blog not found in this workspace.");
     }
 
-    await ctx.db.patch(args.blogId, {
+    const updatedBlog = {
+      ...blog,
       productId: blog.productId || args.productId,
       status: "published",
       updatedAt: Date.now(),
+    } as const;
+
+    await ctx.db.patch(args.blogId, {
+      productId: updatedBlog.productId,
+      status: updatedBlog.status,
+      updatedAt: updatedBlog.updatedAt,
     });
+    await upsertBlogReadModels(ctx, updatedBlog);
   },
 });

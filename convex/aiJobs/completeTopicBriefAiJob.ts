@@ -1,5 +1,6 @@
 import { v } from "convex/values";
 import { mutation } from "../_generated/server";
+import { upsertTopicReadModel } from "../readModels/upsertTopicReadModel";
 import { buildTopicSearchText } from "../topics/buildTopicSearchText";
 import { assertAiWorkerSecret } from "./assertAiWorkerSecret";
 
@@ -31,7 +32,8 @@ export const completeTopicBriefAiJob = mutation({
       throw new Error("Topic not found in this workspace.");
     }
 
-    await ctx.db.patch(args.topicId, {
+    const updatedTopic = {
+      ...topic,
       notes: notes || undefined,
       productId: topic.productId || args.productId,
       searchText: buildTopicSearchText({
@@ -43,7 +45,15 @@ export const completeTopicBriefAiJob = mutation({
         sourceType: topic.sourceType,
       }),
       updatedAt: now,
+    };
+
+    await ctx.db.patch(args.topicId, {
+      notes: updatedTopic.notes,
+      productId: updatedTopic.productId,
+      searchText: updatedTopic.searchText,
+      updatedAt: now,
     });
+    await upsertTopicReadModel(ctx, updatedTopic);
 
     await ctx.db.patch(args.jobId, {
       completedAt: now,

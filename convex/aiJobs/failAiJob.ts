@@ -1,5 +1,6 @@
 import { v } from "convex/values";
 import { mutation } from "../_generated/server";
+import { upsertTopicReadModel } from "../readModels/upsertTopicReadModel";
 import { assertAiWorkerSecret } from "./assertAiWorkerSecret";
 
 export const failAiJob = mutation({
@@ -23,11 +24,21 @@ export const failAiJob = mutation({
     });
 
     if (job?.type === "blog.generate" && job.topicId) {
+      const topic = await ctx.db.get(job.topicId);
+
       await ctx.db.patch(job.topicId, {
         lastError: args.error,
         status: "failed",
         updatedAt: now,
       });
+
+      if (topic) {
+        await upsertTopicReadModel(ctx, {
+          ...topic,
+          status: "failed",
+          updatedAt: now,
+        });
+      }
     }
   },
 });

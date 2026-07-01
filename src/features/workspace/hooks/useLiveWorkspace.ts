@@ -10,6 +10,7 @@ import { createScheduledTopicBatchMutation } from "@/server/convex/references/cr
 import { createTopicMutation } from "@/server/convex/references/createTopicMutation";
 import { deleteBlogMutation } from "@/server/convex/references/deleteBlogMutation";
 import { deleteTopicMutation } from "@/server/convex/references/deleteTopicMutation";
+import { ensureWorkspaceReadModelsMutation } from "@/server/convex/references/ensureWorkspaceReadModelsMutation";
 import { getBlogQuery } from "@/server/convex/references/getBlogQuery";
 import { getCurrentProductQuery } from "@/server/convex/references/getCurrentProductQuery";
 import { getWorkspaceSummaryQuery } from "@/server/convex/references/getWorkspaceSummaryQuery";
@@ -29,8 +30,10 @@ import { upsertGeneratedBlogMutation } from "@/server/convex/references/upsertGe
 import { castTopicId } from "@/server/convex/castTopicId";
 import { workspaceListPageSize } from "../constants/workspaceListPageSize";
 import { useCursorPagination } from "./useCursorPagination";
+import { useOneShotConvexQuery } from "./useOneShotConvexQuery";
 import { buildInitialProductScanProduct } from "../mappers/buildInitialProductScanProduct";
 import { mapConvexBlog } from "../mappers/mapConvexBlog";
+import { mapConvexBlogSummary } from "../mappers/mapConvexBlogSummary";
 import { mapConvexProduct } from "../mappers/mapConvexProduct";
 import { mapConvexTopic } from "../mappers/mapConvexTopic";
 import { mapProductScanResult } from "../mappers/mapProductScanResult";
@@ -106,6 +109,7 @@ export const useLiveWorkspace = (
   const [blogTopicFilter, setBlogTopicFilter] = useState("all");
   const [calendarMessage, setCalendarMessage] = useState("");
   const [isFillingCalendar, setIsFillingCalendar] = useState(false);
+  const [readQueryRefreshKey, setReadQueryRefreshKey] = useState(0);
   const [calendarMonthDate, setCalendarMonthDate] = useState(() =>
     getCalendarMonthStartDate(new Date()),
   );
@@ -152,6 +156,7 @@ export const useLiveWorkspace = (
     resetPagination: resetBlogPagination,
   } = useCursorPagination();
   const activeProductId = workspaceSwitcher.activeWorkspaceId;
+  const ensuredReadModelProductRef = useRef("");
   const selectedBlogId =
     selectedBlogSelection?.productId === activeProductId
       ? selectedBlogSelection.blogId
@@ -170,7 +175,10 @@ export const useLiveWorkspace = (
       ? { blogId: convexSelectedBlogId, productId: convexProductId }
       : "skip",
   );
-  const topicResults = useQuery(
+  const refreshReadQueries = useCallback(() => {
+    setReadQueryRefreshKey((current) => current + 1);
+  }, []);
+  const topicResultsQuery = useOneShotConvexQuery(
     listTopicsQuery,
     convexProductId && mode === "topics"
       ? {
@@ -183,8 +191,10 @@ export const useLiveWorkspace = (
           ...(topicStatusFilter === "all" ? {} : { status: topicStatusFilter }),
         }
       : "skip",
+    readQueryRefreshKey,
   );
-  const blogResults = useQuery(
+  const topicResults = topicResultsQuery.result;
+  const blogResultsQuery = useOneShotConvexQuery(
     listBlogsQuery,
     convexProductId && mode === "blogs"
       ? {
@@ -200,13 +210,17 @@ export const useLiveWorkspace = (
             : { topicKeyword: blogTopicFilter }),
         }
       : "skip",
+    readQueryRefreshKey,
   );
-  const blogTopicKeywordResults = useQuery(
+  const blogResults = blogResultsQuery.result;
+  const blogTopicKeywordResultsQuery = useOneShotConvexQuery(
     listBlogTopicKeywordsQuery,
     convexProductId && (mode === "blogs" || mode === "calendar")
       ? { productId: convexProductId }
       : "skip",
+    readQueryRefreshKey,
   );
+  const blogTopicKeywordResults = blogTopicKeywordResultsQuery.result;
   const scheduledTopicResults = useQuery(
     listScheduledTopicsQuery,
     convexProductId && mode === "calendar"
@@ -217,18 +231,22 @@ export const useLiveWorkspace = (
         }
       : "skip",
   );
-  const topicKeywordResults = useQuery(
+  const topicKeywordResultsQuery = useOneShotConvexQuery(
     listTopicKeywordsQuery,
     convexProductId && (mode === "calendar" || mode === "topics")
       ? { productId: convexProductId }
       : "skip",
+    readQueryRefreshKey,
   );
-  const workspaceSummaryResult = useQuery(
+  const topicKeywordResults = topicKeywordResultsQuery.result;
+  const workspaceSummaryResultQuery = useOneShotConvexQuery(
     getWorkspaceSummaryQuery,
     convexProductId && mode === "dashboard"
       ? { productId: convexProductId }
       : "skip",
+    readQueryRefreshKey,
   );
+  const workspaceSummaryResult = workspaceSummaryResultQuery.result;
   const backfillWrittenTopicCalendarDates = useMutation(
     backfillWrittenTopicCalendarDatesMutation,
   );
@@ -239,6 +257,9 @@ export const useLiveWorkspace = (
   const createTopic = useMutation(createTopicMutation);
   const deleteBlogRecord = useMutation(deleteBlogMutation);
   const deleteTopicRecord = useMutation(deleteTopicMutation);
+  const ensureWorkspaceReadModels = useMutation(
+    ensureWorkspaceReadModelsMutation,
+  );
   const saveProductScan = useMutation(saveProductScanMutation);
   const updateProductSiteLinks = useMutation(updateProductSiteLinksMutation);
   const updateBlogGenerationSettings = useMutation(
@@ -271,6 +292,32 @@ export const useLiveWorkspace = (
     blogStatusFilter,
     blogTopicFilter,
     resetBlogPagination,
+  ]);
+
+  useEffect(() => {
+    if (!convexProductId || !activeProductId) {
+      ensuredReadModelProductRef.current = "";
+      return;
+    }
+
+    if (ensuredReadModelProductRef.current === activeProductId) {
+      return;
+    }
+
+    ensuredReadModelProductRef.current = activeProductId;
+
+    void ensureWorkspaceReadModels({ productId: convexProductId })
+      .then((result) => {
+        if (result.rebuilt) {
+          refreshReadQueries();
+        }
+      })
+      .catch(() => undefined);
+  }, [
+    activeProductId,
+    convexProductId,
+    ensureWorkspaceReadModels,
+    refreshReadQueries,
   ]);
 
   useEffect(() => {
@@ -310,7 +357,7 @@ export const useLiveWorkspace = (
     [topicResults],
   );
   const blogs: BlogItem[] = useMemo(
-    () => (blogResults?.page || []).map(mapConvexBlog),
+    () => (blogResults?.page || []).map(mapConvexBlogSummary),
     [blogResults],
   );
   const calendarTopics = useMemo(
@@ -366,7 +413,9 @@ export const useLiveWorkspace = (
       isCurrentMonth,
       isFilling: isFillingCalendar,
       isLoading: Boolean(
-        convexProductId && mode === "calendar" && !scheduledTopicResults,
+        convexProductId &&
+          mode === "calendar" &&
+          (!scheduledTopicResults || topicKeywordResultsQuery.isLoading),
       ),
       message: calendarMessage,
       monthLabel,
@@ -384,6 +433,7 @@ export const useLiveWorkspace = (
       mode,
       monthLabel,
       scheduledTopicResults,
+      topicKeywordResultsQuery.isLoading,
     ],
   );
   const blogTopicOptions = useMemo(
@@ -403,7 +453,8 @@ export const useLiveWorkspace = (
             blogCount: workspaceSummaryResult.blogCount,
             imageCount: workspaceSummaryResult.imageCount,
             publishedBlogCount: workspaceSummaryResult.publishedBlogCount,
-            recentBlogs: workspaceSummaryResult.recentBlogs.map(mapConvexBlog),
+            recentBlogs:
+              workspaceSummaryResult.recentBlogs.map(mapConvexBlogSummary),
             topicCount: workspaceSummaryResult.topicCount,
           }
         : undefined,
@@ -439,7 +490,11 @@ export const useLiveWorkspace = (
           }
         },
         goToPreviousPage: goToPreviousTopicPage,
-        isLoading: Boolean(convexProductId && mode === "topics" && !topicResults),
+        isLoading: Boolean(
+          convexProductId &&
+            mode === "topics" &&
+            (topicResultsQuery.isLoading || !topicResults),
+        ),
         pageNumber: topicPageNumber,
       },
       searchQuery: topicSearchQuery,
@@ -454,6 +509,7 @@ export const useLiveWorkspace = (
       mode,
       topicPageNumber,
       topicResults,
+      topicResultsQuery.isLoading,
       topicSearchQuery,
       topicStatusFilter,
     ],
@@ -470,7 +526,11 @@ export const useLiveWorkspace = (
           }
         },
         goToPreviousPage: goToPreviousBlogPage,
-        isLoading: Boolean(convexProductId && mode === "blogs" && !blogResults),
+        isLoading: Boolean(
+          convexProductId &&
+            mode === "blogs" &&
+            (blogResultsQuery.isLoading || !blogResults),
+        ),
         pageNumber: blogPageNumber,
       },
       searchQuery: blogSearchQuery,
@@ -484,6 +544,7 @@ export const useLiveWorkspace = (
       canGoToPreviousBlogPage,
       blogPageNumber,
       blogResults,
+      blogResultsQuery.isLoading,
       blogSearchQuery,
       blogStatusFilter,
       blogTopicFilter,
@@ -682,6 +743,7 @@ export const useLiveWorkspace = (
       productId: convexProductId,
     });
     resetTopicPagination();
+    refreshReadQueries();
   };
 
   const addScheduledTopic = async (
@@ -702,6 +764,7 @@ export const useLiveWorkspace = (
     });
     setCalendarMessage("Topic added.");
     resetTopicPagination();
+    refreshReadQueries();
   };
 
   const removeTopicFromCalendar = async (topicId: string) => {
@@ -716,6 +779,7 @@ export const useLiveWorkspace = (
     });
     setCalendarMessage("Topic removed from the calendar.");
     resetTopicPagination();
+    refreshReadQueries();
   };
 
   const scheduleTopicOnCalendar = async (
@@ -733,6 +797,7 @@ export const useLiveWorkspace = (
     });
     setCalendarMessage("Topic added to the calendar.");
     resetTopicPagination();
+    refreshReadQueries();
   };
 
   const fillCalendarBlankDays = async () => {
@@ -810,6 +875,7 @@ export const useLiveWorkspace = (
             : "No unique topics found yet.",
         );
         resetTopicPagination();
+        refreshReadQueries();
         return;
       }
 
@@ -836,6 +902,7 @@ export const useLiveWorkspace = (
           : "No unique topics found yet.",
       );
       resetTopicPagination();
+      refreshReadQueries();
     } catch (error) {
       setCalendarMessage(
         error instanceof Error
@@ -995,6 +1062,7 @@ export const useLiveWorkspace = (
       productId: convexProductId,
       topicId: castTopicId(topicId),
     });
+    refreshReadQueries();
 
     return trimmedNotes;
   };
@@ -1005,6 +1073,7 @@ export const useLiveWorkspace = (
       topicId: castTopicId(topicId),
     });
     resetTopicPagination();
+    refreshReadQueries();
   };
 
   const discoverBlogRefreshIdeas = async (
@@ -1157,6 +1226,7 @@ export const useLiveWorkspace = (
         status: "failed",
         topicId: convexTopicId,
       }).catch(() => undefined);
+      refreshReadQueries();
       return;
     }
 
@@ -1165,6 +1235,7 @@ export const useLiveWorkspace = (
       status: "writing",
       topicId: convexTopicId,
     });
+    refreshReadQueries();
 
     try {
       const response = await fetch("/api/blogs/generate", {
@@ -1203,6 +1274,7 @@ export const useLiveWorkspace = (
       if (blogId) {
         setSelectedBlogId(blogId);
         resetBlogPagination();
+        refreshReadQueries();
         setMode("blogs");
       }
     } catch (error) {
@@ -1214,6 +1286,7 @@ export const useLiveWorkspace = (
         status: "failed",
         topicId: convexTopicId,
       }).catch(() => undefined);
+      refreshReadQueries();
     }
   };
 
@@ -1223,6 +1296,7 @@ export const useLiveWorkspace = (
       productId: convexProductId || undefined,
     });
     resetBlogPagination();
+    refreshReadQueries();
 
     if (selectedBlogId === blogId) {
       setSelectedBlogId("");
@@ -1260,6 +1334,8 @@ export const useLiveWorkspace = (
         .catch(() => ({}))) as { error?: string };
       throw new Error(data.error || "Could not refresh that image.");
     }
+
+    refreshReadQueries();
   };
 
   return {

@@ -1,6 +1,7 @@
 import { v } from "convex/values";
 import { mutation } from "../_generated/server";
 import { requireUserId } from "../identity/requireUserId";
+import { upsertTopicReadModel } from "../readModels/upsertTopicReadModel";
 import { buildTopicSearchText } from "./buildTopicSearchText";
 
 export const updateTopicNotes = mutation({
@@ -26,18 +27,28 @@ export const updateTopicNotes = mutation({
       throw new Error("Topic not found in this workspace.");
     }
 
-    await ctx.db.patch(args.topicId, {
-      searchText: buildTopicSearchText({
-        canonicalKeyword: topic.canonicalKeyword,
-        intentKey: topic.intentKey,
-        keyword: topic.keyword,
-        notes,
-        scheduledDate: topic.scheduledDate,
-        sourceType: topic.sourceType,
-      }),
+    const searchText = buildTopicSearchText({
+      canonicalKeyword: topic.canonicalKeyword,
+      intentKey: topic.intentKey,
+      keyword: topic.keyword,
+      notes,
+      scheduledDate: topic.scheduledDate,
+      sourceType: topic.sourceType,
+    });
+    const updatedTopic = {
+      ...topic,
       notes: notes || undefined,
       productId: topic.productId || args.productId,
+      searchText,
       updatedAt: Date.now(),
+    };
+
+    await ctx.db.patch(args.topicId, {
+      searchText,
+      notes: updatedTopic.notes,
+      productId: updatedTopic.productId,
+      updatedAt: updatedTopic.updatedAt,
     });
+    await upsertTopicReadModel(ctx, updatedTopic);
   },
 });
