@@ -16,6 +16,10 @@ The workspace uses small Convex read-model tables for screens that only need lis
 
 `productWorkspaceSummaries` stores workspace switcher rows without the raw scanned site context.
 
+`productProfiles` stores the product fields needed by ordinary workspace screens, settings, link controls, and publishing controls. It excludes the full raw scanned site context, competitors, and image arrays.
+
+Full `products` records are still available for work that needs the complete scanned context, such as topic discovery, topic briefs, calendar planning, and article refresh planning. Those reads happen on demand when a user starts that work instead of through a live subscription on every workspace screen.
+
 The read models are updated by the existing product, topic, blog, and AI-job mutations. `ensureWorkspaceReadModels` rebuilds missing rows for older workspaces and patches legacy topic or article records that do not have a workspace ID yet.
 
 ## Use Cases
@@ -24,6 +28,8 @@ The read models are updated by the existing product, topic, blog, and AI-job mut
 - Show dashboard totals without counting every topic and article on each visit.
 - Fill filter menus without scanning full article or topic records.
 - Keep workspace switching light even when product scans have large raw context.
+- Show product settings without subscribing to raw scanned site context.
+- Load the full product only when generation or research work needs it.
 
 ## Relevant Code
 
@@ -33,6 +39,7 @@ The read models are updated by the existing product, topic, blog, and AI-job mut
 - `convex/topics/listTopics.ts`
 - `convex/workspaces/getWorkspaceSummary.ts`
 - `convex/products/getProductWorkspaces.ts`
+- `convex/products/getCurrentProductProfile.ts`
 - `src/features/workspace/hooks/useOneShotConvexQuery.ts`
 - `src/features/workspace/hooks/useLiveWorkspace.ts`
 

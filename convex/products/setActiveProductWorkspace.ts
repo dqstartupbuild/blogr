@@ -2,6 +2,7 @@ import { v } from "convex/values";
 import { mutation } from "../_generated/server";
 import { requireUserId } from "../identity/requireUserId";
 import { saveWorkspaceSelection } from "../workspaceSelections/saveWorkspaceSelection";
+import { resolveActiveProductId } from "./resolveActiveProductId";
 
 export const setActiveProductWorkspace = mutation({
   args: {
@@ -9,11 +10,7 @@ export const setActiveProductWorkspace = mutation({
   },
   handler: async (ctx, args) => {
     const userId = await requireUserId(ctx);
-    const product = await ctx.db.get(args.productId);
-
-    if (!product || product.userId !== userId) {
-      throw new Error("Workspace not found.");
-    }
+    await resolveActiveProductId(ctx, userId, args.productId);
 
     await saveWorkspaceSelection(ctx, userId, args.productId);
   },

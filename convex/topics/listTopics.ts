@@ -32,7 +32,7 @@ export const listTopics = query({
           .query("topicKeywordOptions")
           .withSearchIndex("search_product_topic_options", (q) => {
             let search = q
-              .search("keyword", searchQuery)
+              .search("searchText", searchQuery)
               .eq("userId", userId)
               .eq("productId", productId);
 

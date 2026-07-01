@@ -14,6 +14,7 @@ export const buildTopicKeywordOption = (topic: TopicReadModelSource) => {
     keyword: topic.keyword,
     notes: topic.notes,
     productId: topic.productId,
+    searchText: topic.searchText,
     scheduledDate: topic.scheduledDate,
     sourceType: topic.sourceType,
     status: topic.status,

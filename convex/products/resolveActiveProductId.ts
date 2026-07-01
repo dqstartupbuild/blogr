@@ -7,25 +7,71 @@ export const resolveActiveProductId = async (
   productId?: Id<"products">,
 ) => {
   if (productId) {
-    const product = await ctx.db.get(productId);
+    const profile = await ctx.db
+      .query("productProfiles")
+      .withIndex("by_userId_productId", (q) =>
+        q.eq("userId", userId).eq("productId", productId),
+      )
+      .first();
 
-    if (!product || product.userId !== userId) {
-      throw new Error("Workspace not found.");
+    if (profile) {
+      return productId;
     }
 
-    return productId;
+    const summary = await ctx.db
+      .query("productWorkspaceSummaries")
+      .withIndex("by_productId", (q) => q.eq("productId", productId))
+      .first();
+
+    if (summary?.userId === userId) {
+      return productId;
+    }
+
+    const product = await ctx.db.get(productId);
+
+    if (product?.userId === userId) {
+      return productId;
+    }
+
+    throw new Error("Workspace not found.");
   }
 
   const selection = await ctx.db
     .query("workspaceSelections")
     .withIndex("by_userId", (q) => q.eq("userId", userId))
     .first();
-  const selectedProduct = selection
-    ? await ctx.db.get(selection.productId)
+  const selectedProfile = selection
+    ? await ctx.db
+        .query("productProfiles")
+        .withIndex("by_userId_productId", (q) =>
+          q.eq("userId", userId).eq("productId", selection.productId),
+        )
+        .first()
     : null;
 
-  if (selectedProduct?.userId === userId) {
-    return selectedProduct._id;
+  if (selectedProfile) {
+    return selectedProfile.productId;
+  }
+
+  const selectedSummary = selection
+    ? await ctx.db
+        .query("productWorkspaceSummaries")
+        .withIndex("by_productId", (q) => q.eq("productId", selection.productId))
+        .first()
+    : null;
+
+  if (selectedSummary?.userId === userId) {
+    return selectedSummary.productId;
+  }
+
+  const latestProfile = await ctx.db
+    .query("productProfiles")
+    .withIndex("by_userId_updatedAt", (q) => q.eq("userId", userId))
+    .order("desc")
+    .first();
+
+  if (latestProfile) {
+    return latestProfile.productId;
   }
 
   const latestProduct = await ctx.db

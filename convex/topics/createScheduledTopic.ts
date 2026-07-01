@@ -1,6 +1,7 @@
 import { v } from "convex/values";
 import { mutation } from "../_generated/server";
 import { requireUserId } from "../identity/requireUserId";
+import { resolveActiveProductId } from "../products/resolveActiveProductId";
 import { upsertTopicReadModel } from "../readModels/upsertTopicReadModel";
 import { buildTopicIntentKey } from "./buildTopicIntentKey";
 import { buildTopicSearchText } from "./buildTopicSearchText";
@@ -19,7 +20,7 @@ export const createScheduledTopic = mutation({
   },
   handler: async (ctx, args) => {
     const userId = await requireUserId(ctx);
-    const product = await ctx.db.get(args.productId);
+    await resolveActiveProductId(ctx, userId, args.productId);
     const keyword = normalizeTopicKeyword(args.keyword);
     const notes = args.notes?.trim();
     const canonicalKeyword = normalizeTopicKeyword(
@@ -31,16 +32,12 @@ export const createScheduledTopic = mutation({
       canonicalKeyword.toLowerCase();
     const sourceType = args.sourceType || "manual";
 
-    if (!product || product.userId !== userId) {
-      throw new Error("Workspace not found.");
-    }
-
     if (!keyword) {
       throw new Error("Add a keyword first.");
     }
 
     const existingForDate = await ctx.db
-      .query("topics")
+      .query("topicKeywordOptions")
       .withIndex("by_userId_productId_scheduledDate", (q) =>
         q
           .eq("userId", userId)

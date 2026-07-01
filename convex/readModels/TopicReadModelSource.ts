@@ -5,6 +5,7 @@ export type TopicReadModelSource = {
   userId: string;
   productId?: Id<"products">;
   keyword: string;
+  searchText?: string;
   canonicalKeyword?: string;
   intentKey?: string;
   notes?: string;

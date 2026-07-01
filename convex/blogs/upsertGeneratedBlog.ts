@@ -1,6 +1,8 @@
 import { v } from "convex/values";
 import { mutation } from "../_generated/server";
 import { requireUserId } from "../identity/requireUserId";
+import { resolveActiveProductId } from "../products/resolveActiveProductId";
+import { findBlogSummaryByTopicId } from "../readModels/findBlogSummaryByTopicId";
 import { upsertBlogReadModels } from "../readModels/upsertBlogReadModels";
 import { upsertTopicReadModel } from "../readModels/upsertTopicReadModel";
 import { buildBlogSearchText } from "./buildBlogSearchText";
@@ -46,34 +48,86 @@ export const upsertGeneratedBlog = mutation({
   handler: async (ctx, args) => {
     const userId = await requireUserId(ctx);
     const now = Date.now();
-    const product = await ctx.db.get(args.productId);
     const seoTitle = args.seoTitle.trim();
     const excerpt = args.excerpt.trim();
 
     validateSeoContentLengths({ excerpt, seoTitle });
+    await resolveActiveProductId(ctx, userId, args.productId);
 
-    if (!product || product.userId !== userId) {
-      throw new Error("Workspace not found.");
-    }
-
+    const linkedTopic = args.topicId ? await ctx.db.get(args.topicId) : null;
     if (args.topicId) {
-      const topic = await ctx.db.get(args.topicId);
-
       if (
-        !topic ||
-        topic.userId !== userId ||
-        (topic.productId && topic.productId !== args.productId)
+        !linkedTopic ||
+        linkedTopic.userId !== userId ||
+        (linkedTopic.productId && linkedTopic.productId !== args.productId)
       ) {
         throw new Error("Topic not found in this workspace.");
       }
     }
 
-    const existing = args.topicId
+    const existingSummary = args.topicId
+      ? await findBlogSummaryByTopicId(ctx, args.topicId)
+      : null;
+    const existing = !existingSummary && args.topicId
       ? await ctx.db
           .query("blogs")
           .withIndex("by_topicId", (q) => q.eq("topicId", args.topicId))
           .first()
       : null;
+
+    if (
+      existingSummary &&
+      existingSummary.userId === userId &&
+      existingSummary.productId === args.productId
+    ) {
+      const searchText = buildBlogSearchText({
+        excerpt,
+        keyword: args.keyword,
+        seoTitle,
+        title: args.title,
+      });
+      const updatedBlog = {
+        _id: existingSummary.blogId,
+        ...args,
+        excerpt,
+        searchText,
+        seoTitle,
+        userId,
+        createdAt: existingSummary.createdAt,
+        updatedAt: now,
+      };
+
+      await ctx.db.patch(existingSummary.blogId, {
+        ...args,
+        excerpt,
+        searchText,
+        seoTitle,
+        updatedAt: now,
+      });
+      await upsertBlogReadModels(ctx, updatedBlog);
+
+      if (args.topicId && linkedTopic) {
+        const topicStatus =
+          args.status === "failed" ? ("failed" as const) : ("written" as const);
+        const updatedTopic = {
+          ...linkedTopic,
+          productId: args.productId,
+          status: topicStatus,
+          blogId: existingSummary.blogId,
+          updatedAt: now,
+        };
+
+        await ctx.db.patch(args.topicId, {
+          productId: args.productId,
+          status: topicStatus,
+          blogId: existingSummary.blogId,
+          updatedAt: now,
+        });
+        await upsertTopicReadModel(ctx, updatedTopic);
+      }
+
+      return existingSummary.blogId;
+    }
 
     if (
       existing &&
@@ -103,19 +157,16 @@ export const upsertGeneratedBlog = mutation({
       });
       await upsertBlogReadModels(ctx, updatedBlog);
 
-      if (args.topicId) {
-        const topic = await ctx.db.get(args.topicId);
+      if (args.topicId && linkedTopic) {
         const topicStatus =
           args.status === "failed" ? ("failed" as const) : ("written" as const);
-        const updatedTopic = topic
-          ? {
-              ...topic,
-              productId: args.productId,
-              status: topicStatus,
-              blogId: existing._id,
-              updatedAt: now,
-            }
-          : null;
+        const updatedTopic = {
+          ...linkedTopic,
+          productId: args.productId,
+          status: topicStatus,
+          blogId: existing._id,
+          updatedAt: now,
+        };
 
         await ctx.db.patch(args.topicId, {
           productId: args.productId,
@@ -123,10 +174,7 @@ export const upsertGeneratedBlog = mutation({
           blogId: existing._id,
           updatedAt: now,
         });
-
-        if (updatedTopic) {
-          await upsertTopicReadModel(ctx, updatedTopic);
-        }
+        await upsertTopicReadModel(ctx, updatedTopic);
       }
 
       return existing._id;
@@ -153,19 +201,16 @@ export const upsertGeneratedBlog = mutation({
       _id: blogId,
     });
 
-    if (args.topicId) {
-      const topic = await ctx.db.get(args.topicId);
+    if (args.topicId && linkedTopic) {
       const topicStatus =
         args.status === "failed" ? ("failed" as const) : ("written" as const);
-      const updatedTopic = topic
-        ? {
-            ...topic,
-            productId: args.productId,
-            status: topicStatus,
-            blogId,
-            updatedAt: now,
-          }
-        : null;
+      const updatedTopic = {
+        ...linkedTopic,
+        productId: args.productId,
+        status: topicStatus,
+        blogId,
+        updatedAt: now,
+      };
 
       await ctx.db.patch(args.topicId, {
         productId: args.productId,
@@ -173,10 +218,7 @@ export const upsertGeneratedBlog = mutation({
         blogId,
         updatedAt: now,
       });
-
-      if (updatedTopic) {
-        await upsertTopicReadModel(ctx, updatedTopic);
-      }
+      await upsertTopicReadModel(ctx, updatedTopic);
     }
 
     return blogId;

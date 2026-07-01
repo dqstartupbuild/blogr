@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { useMutation, useQuery } from "convex/react";
+import { useConvex, useMutation, useQuery } from "convex/react";
 import { isLiveWorkspaceEnabled } from "@/config/isLiveWorkspaceEnabled";
 import { castBlogId } from "@/server/convex/castBlogId";
 import { castProductId } from "@/server/convex/castProductId";
@@ -32,6 +32,7 @@ export const useBlogEditor = ({
   blogId,
   forceDemo,
 }: UseBlogEditorOptions) => {
+  const convex = useConvex();
   const isLive = !forceDemo && isLiveWorkspaceEnabled();
   const convexBlogId = castBlogId(blogId);
   const convexProductId = activeWorkspaceId
@@ -49,10 +50,6 @@ export const useBlogEditor = ({
     isLive && convexProductId
       ? { blogId: convexBlogId, productId: convexProductId }
       : "skip",
-  );
-  const productResult = useQuery(
-    getCurrentProductQuery,
-    isLive && convexProductId ? {} : "skip",
   );
   const createTopic = useMutation(createTopicMutation);
   const updateBlogContent = useMutation(updateBlogContentMutation);
@@ -134,16 +131,18 @@ export const useBlogEditor = ({
       return demoTopicDiscoveryResult;
     }
 
-    const discoveryProduct = productResult
+    const fullProduct =
+      isLive && convexProductId ? await convex.query(getCurrentProductQuery, {}) : null;
+    const discoveryProduct = fullProduct
       ? {
-          audience: productResult.audience,
-          competitors: productResult.competitors,
-          description: productResult.description,
-          name: productResult.name,
-          niche: productResult.niche,
-          rawContext: productResult.rawContext,
-          siteLinks: productResult.siteLinks,
-          websiteUrl: productResult.websiteUrl,
+          audience: fullProduct.audience,
+          competitors: fullProduct.competitors,
+          description: fullProduct.description,
+          name: fullProduct.name,
+          niche: fullProduct.niche,
+          rawContext: fullProduct.rawContext,
+          siteLinks: fullProduct.siteLinks,
+          websiteUrl: fullProduct.websiteUrl,
         }
       : {
           ...emptyProduct,

@@ -39,26 +39,9 @@ export const getProductWorkspaces = query({
       };
     }
 
-    const products = await ctx.db
-      .query("products")
-      .withIndex("by_userId_updatedAt", (q) => q.eq("userId", userId))
-      .order("desc")
-      .collect();
-    const selectedProduct = selection ? await ctx.db.get(selection.productId) : null;
-    const activeProductId =
-      selectedProduct?.userId === userId
-        ? selectedProduct._id
-        : products[0]?._id;
-
     return {
-      activeProductId,
-      products: products.map((product) => ({
-        _id: product._id,
-        name: product.name,
-        niche: product.niche,
-        updatedAt: product.updatedAt,
-        websiteUrl: product.websiteUrl,
-      })),
+      activeProductId: undefined,
+      products: [],
     };
   },
 });

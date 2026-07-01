@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useMutation, useQuery } from "convex/react";
+import { useConvex, useMutation, useQuery } from "convex/react";
 import { backfillWrittenTopicCalendarDatesMutation } from "@/server/convex/references/backfillWrittenTopicCalendarDatesMutation";
 import { castBlogId } from "@/server/convex/castBlogId";
 import { castProductId } from "@/server/convex/castProductId";
@@ -12,6 +12,7 @@ import { deleteBlogMutation } from "@/server/convex/references/deleteBlogMutatio
 import { deleteTopicMutation } from "@/server/convex/references/deleteTopicMutation";
 import { ensureWorkspaceReadModelsMutation } from "@/server/convex/references/ensureWorkspaceReadModelsMutation";
 import { getBlogQuery } from "@/server/convex/references/getBlogQuery";
+import { getCurrentProductProfileQuery } from "@/server/convex/references/getCurrentProductProfileQuery";
 import { getCurrentProductQuery } from "@/server/convex/references/getCurrentProductQuery";
 import { getWorkspaceSummaryQuery } from "@/server/convex/references/getWorkspaceSummaryQuery";
 import { listBlogTopicKeywordsQuery } from "@/server/convex/references/listBlogTopicKeywordsQuery";
@@ -74,6 +75,7 @@ export const useLiveWorkspace = (
   initialMode: WorkspaceViewMode,
   workspaceSwitcher: WorkspaceSwitcherState,
 ) => {
+  const convex = useConvex();
   const [mode, setMode] = useState<WorkspaceViewMode>(initialMode);
   const [selectedBlogSelection, setSelectedBlogSelection] = useState<{
     blog?: BlogItem;
@@ -165,8 +167,8 @@ export const useLiveWorkspace = (
     ? castProductId(activeProductId)
     : null;
   const convexSelectedBlogId = selectedBlogId ? castBlogId(selectedBlogId) : null;
-  const productResult = useQuery(
-    getCurrentProductQuery,
+  const productProfileResult = useQuery(
+    getCurrentProductProfileQuery,
     activeProductId ? {} : "skip",
   );
   const selectedBlogResult = useQuery(
@@ -178,6 +180,13 @@ export const useLiveWorkspace = (
   const refreshReadQueries = useCallback(() => {
     setReadQueryRefreshKey((current) => current + 1);
   }, []);
+  const loadFullProduct = useCallback(async () => {
+    if (!activeProductId) {
+      return null;
+    }
+
+    return await convex.query(getCurrentProductQuery, {});
+  }, [activeProductId, convex]);
   const topicResultsQuery = useOneShotConvexQuery(
     listTopicsQuery,
     convexProductId && mode === "topics"
@@ -348,9 +357,9 @@ export const useLiveWorkspace = (
 
   const visibleScannedProduct =
     scannedProduct?.productId === activeProductId ? scannedProduct.product : null;
-  const product = visibleScannedProduct || mapConvexProduct(productResult);
+  const product = visibleScannedProduct || mapConvexProduct(productProfileResult);
   const blogGenerationSettings = normalizeBlogGenerationSettings(
-    productResult?.blogGenerationSettings,
+    productProfileResult?.blogGenerationSettings,
   );
   const topics = useMemo(
     () => (topicResults?.page || []).map(mapConvexTopic),
@@ -819,16 +828,17 @@ export const useLiveWorkspace = (
       return;
     }
 
-    const discoveryProduct = productResult
+    const fullProduct = await loadFullProduct();
+    const discoveryProduct = fullProduct
       ? {
-          audience: productResult.audience,
-          competitors: productResult.competitors,
-          description: productResult.description,
-          name: productResult.name,
-          niche: productResult.niche,
-          rawContext: productResult.rawContext,
-          siteLinks: filterActiveLinks(productResult.siteLinks),
-          websiteUrl: productResult.websiteUrl,
+          audience: fullProduct.audience,
+          competitors: fullProduct.competitors,
+          description: fullProduct.description,
+          name: fullProduct.name,
+          niche: fullProduct.niche,
+          rawContext: fullProduct.rawContext,
+          siteLinks: filterActiveLinks(fullProduct.siteLinks),
+          websiteUrl: fullProduct.websiteUrl,
         }
       : {
           ...product,
@@ -918,16 +928,17 @@ export const useLiveWorkspace = (
     includeAiAnswers,
     seedKeyword,
   }: TopicDiscoveryRequest) => {
-    const discoveryProduct = productResult
+    const fullProduct = await loadFullProduct();
+    const discoveryProduct = fullProduct
       ? {
-          audience: productResult.audience,
-          competitors: productResult.competitors,
-          description: productResult.description,
-          name: productResult.name,
-          niche: productResult.niche,
-          rawContext: productResult.rawContext,
-          siteLinks: filterActiveLinks(productResult.siteLinks),
-          websiteUrl: productResult.websiteUrl,
+          audience: fullProduct.audience,
+          competitors: fullProduct.competitors,
+          description: fullProduct.description,
+          name: fullProduct.name,
+          niche: fullProduct.niche,
+          rawContext: fullProduct.rawContext,
+          siteLinks: filterActiveLinks(fullProduct.siteLinks),
+          websiteUrl: fullProduct.websiteUrl,
         }
       : {
           ...product,
@@ -989,16 +1000,17 @@ export const useLiveWorkspace = (
       throw new Error("Choose a workspace first.");
     }
 
-    const discoveryProduct = productResult
+    const fullProduct = await loadFullProduct();
+    const discoveryProduct = fullProduct
       ? {
-          audience: productResult.audience,
-          competitors: productResult.competitors,
-          description: productResult.description,
-          name: productResult.name,
-          niche: productResult.niche,
-          rawContext: productResult.rawContext,
-          siteLinks: filterActiveLinks(productResult.siteLinks),
-          websiteUrl: productResult.websiteUrl,
+          audience: fullProduct.audience,
+          competitors: fullProduct.competitors,
+          description: fullProduct.description,
+          name: fullProduct.name,
+          niche: fullProduct.niche,
+          rawContext: fullProduct.rawContext,
+          siteLinks: filterActiveLinks(fullProduct.siteLinks),
+          websiteUrl: fullProduct.websiteUrl,
         }
       : {
           ...product,
@@ -1086,16 +1098,17 @@ export const useLiveWorkspace = (
       throw new Error("Blog not found.");
     }
 
-    const discoveryProduct = productResult
+    const fullProduct = await loadFullProduct();
+    const discoveryProduct = fullProduct
       ? {
-          audience: productResult.audience,
-          competitors: productResult.competitors,
-          description: productResult.description,
-          name: productResult.name,
-          niche: productResult.niche,
-          rawContext: productResult.rawContext,
-          siteLinks: filterActiveLinks(productResult.siteLinks),
-          websiteUrl: productResult.websiteUrl,
+          audience: fullProduct.audience,
+          competitors: fullProduct.competitors,
+          description: fullProduct.description,
+          name: fullProduct.name,
+          niche: fullProduct.niche,
+          rawContext: fullProduct.rawContext,
+          siteLinks: filterActiveLinks(fullProduct.siteLinks),
+          websiteUrl: fullProduct.websiteUrl,
         }
       : {
           ...product,
@@ -1219,7 +1232,9 @@ export const useLiveWorkspace = (
       return;
     }
 
-    if (!productResult) {
+    const fullProduct = await loadFullProduct();
+
+    if (!fullProduct) {
       await updateTopicStatus({
         lastError: "Scan your product website first.",
         productId: convexProductId || undefined,
@@ -1242,7 +1257,7 @@ export const useLiveWorkspace = (
         body: JSON.stringify({
           blogGenerationSettings,
           keyword: topic.keyword,
-          product: productResult,
+          product: fullProduct,
           productId: activeProductId,
           sourceText: sourceText || undefined,
           topicBrief: topic.notes,

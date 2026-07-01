@@ -1,6 +1,7 @@
 import { v } from "convex/values";
 import { mutation } from "../_generated/server";
 import { requireUserId } from "../identity/requireUserId";
+import { upsertProductProfile } from "../readModels/upsertProductProfile";
 import { upsertProductWorkspaceSummary } from "../readModels/upsertProductWorkspaceSummary";
 import { saveWorkspaceSelection } from "../workspaceSelections/saveWorkspaceSelection";
 import { defaultBlogGenerationSettings } from "./defaultBlogGenerationSettings";
@@ -59,6 +60,7 @@ export const saveProductScan = mutation({
         scannedAt: now,
       });
       await upsertProductWorkspaceSummary(ctx, updatedProduct);
+      await upsertProductProfile(ctx, updatedProduct);
       await saveWorkspaceSelection(ctx, userId, existing._id);
 
       return existing._id;
@@ -75,6 +77,10 @@ export const saveProductScan = mutation({
     const nextProductId = await ctx.db.insert("products", nextProduct);
 
     await upsertProductWorkspaceSummary(ctx, {
+      ...nextProduct,
+      _id: nextProductId,
+    });
+    await upsertProductProfile(ctx, {
       ...nextProduct,
       _id: nextProductId,
     });

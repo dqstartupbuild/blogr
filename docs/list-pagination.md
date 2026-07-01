@@ -20,6 +20,8 @@ The Articles tab gets its topic filter choices from `listBlogTopicKeywords`. Tha
 
 The dashboard uses `getWorkspaceSummary`, which reads `workspaceStats` and the five latest `blogSummaries`. This keeps dashboard counts accurate without loading every item.
 
+The live workspace uses `getCurrentProductProfile` for product settings and link controls. That query reads `productProfiles`, so regular workspace screens do not subscribe to the full scanned product context.
+
 ## Relevant Code
 
 - `src/features/workspace/hooks/useLiveWorkspace.ts`

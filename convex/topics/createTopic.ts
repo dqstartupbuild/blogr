@@ -1,6 +1,7 @@
 import { v } from "convex/values";
 import { mutation } from "../_generated/server";
 import { requireUserId } from "../identity/requireUserId";
+import { resolveActiveProductId } from "../products/resolveActiveProductId";
 import { upsertTopicReadModel } from "../readModels/upsertTopicReadModel";
 import { buildTopicIntentKey } from "./buildTopicIntentKey";
 import { buildTopicSearchText } from "./buildTopicSearchText";
@@ -14,14 +15,10 @@ export const createTopic = mutation({
   },
   handler: async (ctx, args) => {
     const userId = await requireUserId(ctx);
-    const product = await ctx.db.get(args.productId);
+    await resolveActiveProductId(ctx, userId, args.productId);
     const keyword = normalizeTopicKeyword(args.keyword);
     const intentKey = buildTopicIntentKey(keyword) || keyword.toLowerCase();
     const notes = args.notes?.trim();
-
-    if (!product || product.userId !== userId) {
-      throw new Error("Workspace not found.");
-    }
 
     if (!keyword) {
       throw new Error("Add a keyword first.");

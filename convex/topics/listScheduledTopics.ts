@@ -18,7 +18,7 @@ export const listScheduledTopics = query({
     }
 
     const topics = await ctx.db
-      .query("topics")
+      .query("topicKeywordOptions")
       .withIndex("by_userId_productId_scheduledDate", (q) =>
         q
           .eq("userId", userId)
@@ -28,8 +28,13 @@ export const listScheduledTopics = query({
       )
       .collect();
 
-    return topics.sort((left, right) =>
-      (left.scheduledDate || "").localeCompare(right.scheduledDate || ""),
-    );
+    return topics
+      .sort((left, right) =>
+        (left.scheduledDate || "").localeCompare(right.scheduledDate || ""),
+      )
+      .map((topic) => ({
+        ...topic,
+        _id: topic.topicId,
+      }));
   },
 });

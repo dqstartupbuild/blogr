@@ -9,6 +9,7 @@ Convex stores product workspaces, blog generation settings, blog publishing inte
 - `products`
 - `workspaceSelections`
 - `productWorkspaceSummaries`
+- `productProfiles`
 - `workspaceStats`
 - `topics`
 - `topicKeywordOptions`
@@ -51,9 +52,11 @@ The Convex RAG component stores scanned product context in a namespace based on 
 
 `workspaceSelections` stores one active product workspace per user. New topic and blog records include `productId`. Topic and blog list queries use user indexes, product filters, search indexes, and Convex pagination options so the UI can load 10 rows at a time.
 
-Read-model tables keep common workspace screens cheap. `blogSummaries` powers article lists and dashboard recent articles without reading MDX. `topicKeywordOptions` powers topic lists and calendar planning without reading full topic rows. `blogKeywordOptions` powers article topic filters. `workspaceStats` stores dashboard totals. `productWorkspaceSummaries` powers the workspace switcher without reading raw product context.
+Read-model tables keep common workspace screens cheap. `blogSummaries` powers article lists and dashboard recent articles without reading MDX. `topicKeywordOptions` powers topic lists and calendar planning without reading full topic rows. `blogKeywordOptions` powers article topic filters. `workspaceStats` stores dashboard totals. `productWorkspaceSummaries` powers the workspace switcher without reading raw product context. `productProfiles` powers ordinary workspace settings, link controls, and publishing controls without reading raw product context, competitors, or product image arrays.
 
-`ensureWorkspaceReadModels` rebuilds read models for existing workspaces when the app sees a workspace without these lightweight rows. It also patches legacy topic and article records that are missing `productId`.
+The full `products` row is still read when generation or research work needs complete scanned site context. That read happens on demand during topic discovery, topic brief refreshes, calendar planning, and article refresh planning instead of through a live subscription on every workspace screen.
+
+`ensureProductWorkspaceSummaries` rebuilds product workspace summaries and product profiles for existing workspaces when the workspace switcher loads. `ensureWorkspaceReadModels` rebuilds topic, blog, stats, product summary, and product profile read models for an active workspace when the app sees missing lightweight rows. It also patches legacy topic and article records that are missing `productId`.
 
 Rows created before product workspaces can be backfilled with:
 

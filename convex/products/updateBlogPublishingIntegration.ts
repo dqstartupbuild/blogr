@@ -1,6 +1,7 @@
 import { v } from "convex/values";
 import { mutation } from "../_generated/server";
 import { requireUserId } from "../identity/requireUserId";
+import { upsertProductProfile } from "../readModels/upsertProductProfile";
 import { upsertProductWorkspaceSummary } from "../readModels/upsertProductWorkspaceSummary";
 
 export const updateBlogPublishingIntegration = mutation({
@@ -31,18 +32,25 @@ export const updateBlogPublishingIntegration = mutation({
 
     const now = Date.now();
 
+    const blogPublishingIntegration = {
+      accessToken: args.enabled ? accessToken : "",
+      enabled: args.enabled,
+      sourceName,
+      updatedAt: now,
+      webhookUrl: args.enabled ? webhookUrl : "",
+    };
+
     await ctx.db.patch(args.productId, {
-      blogPublishingIntegration: {
-        accessToken: args.enabled ? accessToken : "",
-        enabled: args.enabled,
-        sourceName,
-        updatedAt: now,
-        webhookUrl: args.enabled ? webhookUrl : "",
-      },
+      blogPublishingIntegration,
       updatedAt: now,
     });
     await upsertProductWorkspaceSummary(ctx, {
       ...product,
+      updatedAt: now,
+    });
+    await upsertProductProfile(ctx, {
+      ...product,
+      blogPublishingIntegration,
       updatedAt: now,
     });
   },

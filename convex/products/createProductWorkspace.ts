@@ -1,6 +1,7 @@
 import { v } from "convex/values";
 import { mutation } from "../_generated/server";
 import { requireUserId } from "../identity/requireUserId";
+import { upsertProductProfile } from "../readModels/upsertProductProfile";
 import { upsertProductWorkspaceSummary } from "../readModels/upsertProductWorkspaceSummary";
 import { saveWorkspaceSelection } from "../workspaceSelections/saveWorkspaceSelection";
 import { defaultBlogGenerationSettings } from "./defaultBlogGenerationSettings";
@@ -40,6 +41,10 @@ export const createProductWorkspace = mutation({
     const productId = await ctx.db.insert("products", product);
 
     await upsertProductWorkspaceSummary(ctx, {
+      ...product,
+      _id: productId,
+    });
+    await upsertProductProfile(ctx, {
       ...product,
       _id: productId,
     });

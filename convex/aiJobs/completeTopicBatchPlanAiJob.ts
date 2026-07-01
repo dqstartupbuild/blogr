@@ -1,5 +1,6 @@
 import { v } from "convex/values";
 import { mutation } from "../_generated/server";
+import { resolveActiveProductId } from "../products/resolveActiveProductId";
 import { upsertTopicReadModel } from "../readModels/upsertTopicReadModel";
 import { buildTopicIntentKey } from "../topics/buildTopicIntentKey";
 import { buildTopicSearchText } from "../topics/buildTopicSearchText";
@@ -28,15 +29,12 @@ export const completeTopicBatchPlanAiJob = mutation({
 
     const now = Date.now();
     const job = await ctx.db.get(args.jobId);
-    const product = await ctx.db.get(args.productId);
 
     if (!job || job.type !== "topic.batchPlan") {
       throw new Error("AI job not found.");
     }
 
-    if (!product || product.userId !== job.userId) {
-      throw new Error("Workspace not found.");
-    }
+    await resolveActiveProductId(ctx, job.userId, args.productId);
 
     const occupiedDates = new Set<string>();
     const existingKeys = new Set<string>();

@@ -1,9 +1,10 @@
 "use client";
 
-import { useMemo } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { useMutation, useQuery } from "convex/react";
 import { castProductId } from "@/server/convex/castProductId";
 import { createProductWorkspaceMutation } from "@/server/convex/references/createProductWorkspaceMutation";
+import { ensureProductWorkspaceSummariesMutation } from "@/server/convex/references/ensureProductWorkspaceSummariesMutation";
 import { getProductWorkspacesQuery } from "@/server/convex/references/getProductWorkspacesQuery";
 import { setActiveProductWorkspaceMutation } from "@/server/convex/references/setActiveProductWorkspaceMutation";
 import { mapConvexProductWorkspace } from "../mappers/mapConvexProductWorkspace";
@@ -11,8 +12,12 @@ import type { CreateProductWorkspaceInput } from "../types/CreateProductWorkspac
 import type { WorkspaceSwitcherState } from "../types/WorkspaceSwitcherState";
 
 export const useLiveWorkspaceSwitcher = (): WorkspaceSwitcherState => {
+  const didEnsureSummariesRef = useRef(false);
   const workspaceResult = useQuery(getProductWorkspacesQuery);
   const createProductWorkspace = useMutation(createProductWorkspaceMutation);
+  const ensureProductWorkspaceSummaries = useMutation(
+    ensureProductWorkspaceSummariesMutation,
+  );
   const setActiveProductWorkspace = useMutation(
     setActiveProductWorkspaceMutation,
   );
@@ -25,6 +30,16 @@ export const useLiveWorkspaceSwitcher = (): WorkspaceSwitcherState => {
     () => workspaces.find((workspace) => workspace.id === activeWorkspaceId),
     [activeWorkspaceId, workspaces],
   );
+
+  useEffect(() => {
+    if (didEnsureSummariesRef.current || workspaceResult === undefined) {
+      return;
+    }
+
+    didEnsureSummariesRef.current = true;
+
+    void ensureProductWorkspaceSummaries().catch(() => undefined);
+  }, [ensureProductWorkspaceSummaries, workspaceResult]);
 
   const selectWorkspace = async (workspaceId: string) => {
     if (!workspaceId || workspaceId === activeWorkspaceId) {

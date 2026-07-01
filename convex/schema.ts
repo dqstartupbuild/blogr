@@ -42,6 +42,14 @@ const blogStatusValidator = v.union(
   v.literal("published"),
 );
 
+const publicBlogPublishingIntegrationValidator = v.object({
+  enabled: v.boolean(),
+  hasAccessToken: v.boolean(),
+  sourceName: v.string(),
+  updatedAt: v.optional(v.number()),
+  webhookUrl: v.string(),
+});
+
 export default defineSchema({
   products: defineTable({
     userId: v.string(),
@@ -82,6 +90,24 @@ export default defineSchema({
     updatedAt: v.number(),
   })
     .index("by_productId", ["productId"])
+    .index("by_userId_updatedAt", ["userId", "updatedAt"]),
+
+  productProfiles: defineTable({
+    userId: v.string(),
+    productId: v.id("products"),
+    websiteUrl: v.string(),
+    name: v.string(),
+    description: v.string(),
+    niche: v.string(),
+    audience: v.string(),
+    colors: v.array(v.string()),
+    siteLinks: v.array(linkValidator),
+    blogGenerationSettings: v.optional(blogGenerationSettingsValidator),
+    blogPublishingIntegration: v.optional(publicBlogPublishingIntegrationValidator),
+    updatedAt: v.number(),
+  })
+    .index("by_productId", ["productId"])
+    .index("by_userId_productId", ["userId", "productId"])
     .index("by_userId_updatedAt", ["userId", "updatedAt"]),
 
   workspaceStats: defineTable({
@@ -144,6 +170,7 @@ export default defineSchema({
     productId: v.id("products"),
     topicId: v.id("topics"),
     keyword: v.string(),
+    searchText: v.optional(v.string()),
     canonicalKeyword: v.optional(v.string()),
     intentKey: v.optional(v.string()),
     notes: v.optional(v.string()),
@@ -180,8 +207,13 @@ export default defineSchema({
       "isScheduled",
       "updatedAt",
     ])
+    .index("by_userId_productId_scheduledDate", [
+      "userId",
+      "productId",
+      "scheduledDate",
+    ])
     .searchIndex("search_product_topic_options", {
-      searchField: "keyword",
+      searchField: "searchText",
       filterFields: ["userId", "productId", "status", "isScheduled"],
     }),
 
@@ -256,6 +288,7 @@ export default defineSchema({
     updatedAt: v.number(),
   })
     .index("by_blogId", ["blogId"])
+    .index("by_topicId", ["topicId"])
     .index("by_userId_productId_updatedAt", [
       "userId",
       "productId",

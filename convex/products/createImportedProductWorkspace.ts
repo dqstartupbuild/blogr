@@ -1,4 +1,5 @@
 import type { MutationCtx } from "../_generated/server";
+import { upsertProductProfile } from "../readModels/upsertProductProfile";
 import { upsertProductWorkspaceSummary } from "../readModels/upsertProductWorkspaceSummary";
 import { defaultBlogGenerationSettings } from "./defaultBlogGenerationSettings";
 
@@ -31,6 +32,10 @@ export const createImportedProductWorkspace = async (
   const productId = await ctx.db.insert("products", product);
 
   await upsertProductWorkspaceSummary(ctx, {
+    ...product,
+    _id: productId,
+  });
+  await upsertProductProfile(ctx, {
     ...product,
     _id: productId,
   });

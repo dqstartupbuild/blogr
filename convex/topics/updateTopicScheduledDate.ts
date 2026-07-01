@@ -27,22 +27,28 @@ export const updateTopicScheduledDate = mutation({
       throw new Error("Topic not found in this workspace.");
     }
 
+    const topicProductId = topic.productId || args.productId;
+
     if (scheduledDate) {
+      if (!topicProductId) {
+        throw new Error("Choose a workspace first.");
+      }
+
       if (topic.status !== "saved" && topic.status !== "failed") {
         throw new Error("Only saved or failed topics can be added to the calendar.");
       }
 
       const existingForDate = await ctx.db
-        .query("topics")
+        .query("topicKeywordOptions")
         .withIndex("by_userId_productId_scheduledDate", (q) =>
           q
             .eq("userId", userId)
-            .eq("productId", topic.productId || args.productId)
+            .eq("productId", topicProductId)
             .eq("scheduledDate", scheduledDate),
         )
         .first();
 
-      if (existingForDate && existingForDate._id !== args.topicId) {
+      if (existingForDate && existingForDate.topicId !== args.topicId) {
         throw new Error("That day already has a topic.");
       }
     }
@@ -63,7 +69,7 @@ export const updateTopicScheduledDate = mutation({
     });
     const updatedTopic = {
       ...topic,
-      productId: topic.productId || args.productId,
+      productId: topicProductId,
       scheduledDate,
       searchText,
       status,

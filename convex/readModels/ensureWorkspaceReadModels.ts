@@ -5,6 +5,7 @@ import { resolveActiveProductId } from "../products/resolveActiveProductId";
 import { findProductWorkspaceSummary } from "./findProductWorkspaceSummary";
 import { findWorkspaceStats } from "./findWorkspaceStats";
 import { upsertBlogReadModels } from "./upsertBlogReadModels";
+import { upsertProductProfile } from "./upsertProductProfile";
 import { upsertProductWorkspaceSummary } from "./upsertProductWorkspaceSummary";
 import { upsertTopicReadModel } from "./upsertTopicReadModel";
 
@@ -99,6 +100,7 @@ export const ensureWorkspaceReadModels = mutation({
     }
 
     await upsertProductWorkspaceSummary(ctx, product);
+    await upsertProductProfile(ctx, product);
 
     const topics = await ctx.db
       .query("topics")
