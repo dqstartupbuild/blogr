@@ -20,6 +20,7 @@ import { filterBlogsByTopic } from "../utils/filterBlogsByTopic";
 import { filterTopicsBySearch } from "../utils/filterTopicsBySearch";
 import { filterTopicsByStatus } from "../utils/filterTopicsByStatus";
 import { getUniqueBlogTopics } from "../utils/getUniqueBlogTopics";
+import { mergePreviewBlogs } from "../utils/mergePreviewBlogs";
 import { countPublishedBlogs } from "../utils/countPublishedBlogs";
 import { countWorkspaceImages } from "../utils/countWorkspaceImages";
 import { setProductLinkActiveState } from "../utils/setProductLinkActiveState";
@@ -246,18 +247,24 @@ export const useDemoWorkspace = (initialMode: WorkspaceViewMode) => {
     resetBlogPagination,
   ]);
 
-  const previewBlogs = useMemo(() => {
-    const blogIds = new Set(blogs.map((blog) => blog.id));
-
-    return [
-      ...blogs,
-      ...workspaceSummary.recentBlogs.filter((blog) => !blogIds.has(blog.id)),
-    ];
-  }, [blogs, workspaceSummary]);
+  const selectedWorkspaceBlog = useMemo(
+    () => workspaceBlogs.find((blog) => blog.id === selectedBlogId),
+    [selectedBlogId, workspaceBlogs],
+  );
+  const previewBlogs = useMemo(
+    () =>
+      mergePreviewBlogs({
+        currentPageBlogs: blogs,
+        recentBlogs: workspaceSummary.recentBlogs,
+        selectedBlog: selectedWorkspaceBlog,
+      }),
+    [blogs, selectedWorkspaceBlog, workspaceSummary.recentBlogs],
+  );
   const selectedBlog = useMemo(
     () =>
-      previewBlogs.find((blog) => blog.id === selectedBlogId) ??
-      previewBlogs[0],
+      selectedBlogId
+        ? previewBlogs.find((blog) => blog.id === selectedBlogId)
+        : undefined,
     [previewBlogs, selectedBlogId],
   );
 

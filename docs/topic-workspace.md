@@ -14,7 +14,7 @@ Each topic row can show or refresh its saved search brief. Manual topics can get
 
 The first screen is the usable workspace, not a landing page. It stays focused on topics and blogs, while product setup lives in Settings.
 
-The blog preview opens from a fixed right-side sidebar button, so users can read the selected article without scrolling past a long topic or blog list. The preview renders generated MDX as readable blog content and exposes **Publish** and **Zip** actions for the selected blog.
+The blog preview opens from a fixed right-side sidebar button, so users can read the selected article without scrolling past a long topic or blog list. The preview renders generated MDX as readable blog content and exposes **Publish** and **Zip** actions for the selected blog. The selected preview stays tied to the article the user clicked; changing pages, filters, or live query results does not automatically replace it with the first visible article.
 
 The dashboard is scoped to the active product workspace. Switching workspaces changes which product profile, topics, blogs, and previews are shown.
 
@@ -35,6 +35,8 @@ With Clerk and Convex keys, `LiveWorkspaceView` waits for Clerk and Convex auth 
 - `createProductWorkspace`
 
 The user can create or switch product workspaces, scan a product site, save topics, start writing, browse generated blogs, and open the editor. Topic and blog list queries include the active product ID, current filters, search text, and Convex pagination options, so each workspace keeps its own records and the tab only receives the current page.
+
+Article previews merge the explicitly selected article, the current page, and dashboard recent articles with `mergePreviewBlogs`. In live workspaces, `useLiveWorkspace` also queries the selected article directly, which keeps the drawer stable when the selected article is not part of the current paginated page.
 
 Topic discovery calls `POST /api/topics/discover`, runs Apify Google Search Scraper, turns SERP signals into topic ideas and briefs, and saves selected ideas through the same `createTopic` mutation.
 
@@ -71,6 +73,7 @@ The Settings tab includes product setup, article settings, and a **Publishing** 
 - `src/features/workspace/components/FilteredBlogList.tsx`
 - `src/features/workspace/components/FilteredTopicList.tsx`
 - `src/features/workspace/components/ListPaginationControls.tsx`
+- `src/features/workspace/utils/mergePreviewBlogs.ts`
 - `src/app/api/topics/discover/route.ts`
 - `src/server/topics/generateTopicIdeas.ts`
 - `src/server/apify/runGoogleSearchScraper.ts`
@@ -100,6 +103,7 @@ The Settings tab includes product setup, article settings, and a **Publishing** 
 - Find refresh ideas for a saved blog.
 - Add a refresh plan to an existing blog draft.
 - Open and close the article preview without losing your place in a long list.
+- Keep a previewed article open while changing filters or pages.
 - Preview a recent dashboard article without leaving the dashboard.
 - Update product details from Settings instead of repeating that form on every tab.
 - Connect publishing for each product from Settings.

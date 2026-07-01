@@ -10,7 +10,7 @@ Blog records store `published` as a real blog status in Convex. New generated bl
 
 When a user clicks **Publish**, the app sends the blog to the configured webhook destination. After the webhook succeeds, the publish route calls `markBlogPublished`, which updates the saved blog status to `published` and moves it to the top of the list with a fresh `updatedAt`.
 
-The live Blogs panel passes the active status filter through `BlogListViewState`. `useLiveWorkspace` sends that filter to the Convex `listBlogs` query, so the tab receives one 10-row page of matching blogs. `FilteredBlogList` renders the status select and keeps the preview pointed at a blog in the selected page when possible.
+The live Blogs panel passes the active status filter through `BlogListViewState`. `useLiveWorkspace` sends that filter to the Convex `listBlogs` query, so the tab receives one 10-row page of matching blogs. `FilteredBlogList` renders the status select without changing the selected preview. If a user publishes a previewed article and the active filter no longer includes it, the drawer stays on that article instead of jumping to the first visible row.
 
 ## Use Cases
 
@@ -27,6 +27,7 @@ The live Blogs panel passes the active status filter through `BlogListViewState`
 - `src/features/workspace/components/FilteredBlogList.tsx`
 - `src/features/workspace/components/FilterSelect.tsx`
 - `src/features/workspace/hooks/useLiveWorkspace.ts`
+- `src/features/workspace/utils/mergePreviewBlogs.ts`
 - `src/features/workspace/types/BlogListViewState.ts`
 - `src/features/workspace/types/BlogStatus.ts`
 - `src/features/workspace/types/BlogStatusFilter.ts`
@@ -38,6 +39,7 @@ convex/blogs/markBlogPublished.ts
 src/app/api/blogs/publish/markPublishedBlogStatus.ts
 src/features/workspace/components/FilteredBlogList.tsx
 src/features/workspace/components/FilterSelect.tsx
+src/features/workspace/utils/mergePreviewBlogs.ts
 src/features/workspace/constants/blogStatusFilterOptions.ts
 src/features/workspace/types/BlogListViewState.ts
 src/features/workspace/types/BlogStatus.ts

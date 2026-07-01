@@ -14,7 +14,6 @@ type BlogsPanelProps = {
   listState: BlogListViewState;
   previewBlog: (blogId: string) => void;
   selectedBlogId: string;
-  setSelectedBlogId: (blogId: string) => void;
 };
 
 export const BlogsPanel = ({
@@ -25,7 +24,6 @@ export const BlogsPanel = ({
   listState,
   previewBlog,
   selectedBlogId,
-  setSelectedBlogId,
 }: BlogsPanelProps) => {
   const savePlan: SaveDiscoveryPlan = (item) => addTopic(item.title, item.notes);
 
@@ -43,7 +41,6 @@ export const BlogsPanel = ({
         previewBlog={previewBlog}
         savePlan={savePlan}
         selectedBlogId={selectedBlogId}
-        setSelectedBlogId={setSelectedBlogId}
       />
     </section>
   );

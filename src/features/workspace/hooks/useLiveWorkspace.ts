@@ -1,12 +1,13 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery } from "convex/react";
 import { castBlogId } from "@/server/convex/castBlogId";
 import { castProductId } from "@/server/convex/castProductId";
 import { createTopicMutation } from "@/server/convex/references/createTopicMutation";
 import { deleteBlogMutation } from "@/server/convex/references/deleteBlogMutation";
 import { deleteTopicMutation } from "@/server/convex/references/deleteTopicMutation";
+import { getBlogQuery } from "@/server/convex/references/getBlogQuery";
 import { getCurrentProductQuery } from "@/server/convex/references/getCurrentProductQuery";
 import { getWorkspaceSummaryQuery } from "@/server/convex/references/getWorkspaceSummaryQuery";
 import { listBlogTopicKeywordsQuery } from "@/server/convex/references/listBlogTopicKeywordsQuery";
@@ -31,6 +32,7 @@ import { buildBlogRefreshSeedKeyword } from "../utils/buildBlogRefreshSeedKeywor
 import { buildExistingTopicBriefNotes } from "../utils/buildExistingTopicBriefNotes";
 import { filterActiveLinks } from "../utils/filterActiveLinks";
 import { mergeProductLinkStates } from "../utils/mergeProductLinkStates";
+import { mergePreviewBlogs } from "../utils/mergePreviewBlogs";
 import { normalizeBlogGenerationSettings } from "../utils/normalizeBlogGenerationSettings";
 import { setProductLinkActiveState } from "../utils/setProductLinkActiveState";
 import type { BlogGenerateResponse } from "../types/BlogGenerateResponse";
@@ -56,7 +58,10 @@ export const useLiveWorkspace = (
   workspaceSwitcher: WorkspaceSwitcherState,
 ) => {
   const [mode, setMode] = useState<WorkspaceViewMode>(initialMode);
-  const [selectedBlogId, setSelectedBlogId] = useState("");
+  const [selectedBlogSelection, setSelectedBlogSelection] = useState<{
+    blogId: string;
+    productId: string;
+  } | null>(null);
   const [scannedProduct, setScannedProduct] = useState<{
     product: ProductProfile;
     productId: string;
@@ -101,12 +106,31 @@ export const useLiveWorkspace = (
     resetPagination: resetBlogPagination,
   } = useCursorPagination();
   const activeProductId = workspaceSwitcher.activeWorkspaceId;
+  const selectedBlogId =
+    selectedBlogSelection?.productId === activeProductId
+      ? selectedBlogSelection.blogId
+      : "";
+  const setSelectedBlogId = useCallback(
+    (blogId: string) => {
+      setSelectedBlogSelection(
+        blogId && activeProductId ? { blogId, productId: activeProductId } : null,
+      );
+    },
+    [activeProductId],
+  );
   const convexProductId = activeProductId
     ? castProductId(activeProductId)
     : null;
+  const convexSelectedBlogId = selectedBlogId ? castBlogId(selectedBlogId) : null;
   const productResult = useQuery(
     getCurrentProductQuery,
     activeProductId ? {} : "skip",
+  );
+  const selectedBlogResult = useQuery(
+    getBlogQuery,
+    convexProductId && convexSelectedBlogId
+      ? { blogId: convexSelectedBlogId, productId: convexProductId }
+      : "skip",
   );
   const topicResults = useQuery(
     listTopicsQuery,
@@ -222,6 +246,10 @@ export const useLiveWorkspace = (
         : undefined,
     [workspaceSummaryResult],
   );
+  const selectedBlogFromQuery = useMemo(
+    () => (selectedBlogResult ? mapConvexBlog(selectedBlogResult) : undefined),
+    [selectedBlogResult],
+  );
   const topicListState: TopicListViewState = useMemo(
     () => ({
       activeFilter: topicStatusFilter,
@@ -289,25 +317,21 @@ export const useLiveWorkspace = (
       mode,
     ],
   );
-  const previewBlogs = useMemo(() => {
-    const blogIds = new Set(blogs.map((blog) => blog.id));
-
-    return [
-      ...blogs,
-      ...(workspaceSummary?.recentBlogs || []).filter(
-        (blog) => !blogIds.has(blog.id),
-      ),
-    ];
-  }, [blogs, workspaceSummary]);
-  const activeSelectedBlogId =
-    previewBlogs.find((blog) => blog.id === selectedBlogId)?.id ||
-    previewBlogs[0]?.id ||
-    "";
+  const previewBlogs = useMemo(
+    () =>
+      mergePreviewBlogs({
+        currentPageBlogs: blogs,
+        recentBlogs: workspaceSummary?.recentBlogs,
+        selectedBlog: selectedBlogFromQuery,
+      }),
+    [blogs, selectedBlogFromQuery, workspaceSummary],
+  );
   const selectedBlog = useMemo(
     () =>
-      previewBlogs.find((blog) => blog.id === activeSelectedBlogId) ??
-      previewBlogs[0],
-    [previewBlogs, activeSelectedBlogId],
+      selectedBlogId
+        ? previewBlogs.find((blog) => blog.id === selectedBlogId)
+        : undefined,
+    [previewBlogs, selectedBlogId],
   );
 
   const scanProduct = async (websiteUrl: string, niche: string) => {
@@ -870,7 +894,7 @@ export const useLiveWorkspace = (
     saveBlogPublishingIntegration,
     scanProduct,
     selectedBlog,
-    selectedBlogId: activeSelectedBlogId,
+    selectedBlogId,
     settingsStatusMessage,
     setProductLinkActive,
     setMode,

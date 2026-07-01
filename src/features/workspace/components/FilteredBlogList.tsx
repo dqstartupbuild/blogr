@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect } from "react";
 import { BlogList } from "./BlogList";
 import { EmptyState } from "./EmptyState";
 import { FilterBar } from "./FilterBar";
@@ -23,7 +22,6 @@ type FilteredBlogListProps = {
   previewBlog: (blogId: string) => void;
   savePlan: SaveDiscoveryPlan;
   selectedBlogId: string;
-  setSelectedBlogId: (blogId: string) => void;
 };
 
 export const FilteredBlogList = ({
@@ -34,20 +32,7 @@ export const FilteredBlogList = ({
   previewBlog,
   savePlan,
   selectedBlogId,
-  setSelectedBlogId,
 }: FilteredBlogListProps) => {
-  useEffect(() => {
-    if (blogs.length === 0) {
-      return;
-    }
-
-    if (blogs.some((blog) => blog.id === selectedBlogId)) {
-      return;
-    }
-
-    setSelectedBlogId(blogs[0].id);
-  }, [blogs, selectedBlogId, setSelectedBlogId]);
-
   return (
     <div className="space-y-4">
       <FilterBar>

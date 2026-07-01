@@ -12,7 +12,7 @@ YouTube links are rendered with `MarkdownPreviewLink`. When a link points to a p
 
 The preview does not mutate the stored blog body. Downloads still use the original MDX, including frontmatter, image markdown, and any YouTube iframe embeds.
 
-The workspace preview opens in a fixed right-side sidebar so users can inspect the selected article without scrolling to the bottom of long topic or blog lists. The editor keeps its own side-by-side preview while a draft is open.
+The workspace preview opens in a fixed right-side sidebar so users can inspect the selected article without scrolling to the bottom of long topic or blog lists. The selected article is kept explicit after the user opens a preview, so list pagination, filters, and refreshed query results do not silently swap the drawer to a different article. The editor keeps its own side-by-side preview while a draft is open.
 
 The CSS modules beside `MarkdownPreview` make headings, links, lists, quotes, tables, code, images, and YouTube embeds easy to scan inside the existing preview surfaces.
 
@@ -26,6 +26,7 @@ The CSS modules beside `MarkdownPreview` make headings, links, lists, quotes, ta
 - `src/features/workspace/components/BlogPreviewSidebar.tsx`
 - `src/features/workspace/components/BlogPreviewPanel.tsx`
 - `src/features/workspace/components/BlogEditorPreview.tsx`
+- `src/features/workspace/utils/mergePreviewBlogs.ts`
 - `src/features/workspace/utils/stripMdxFrontmatter.ts`
 - `src/features/workspace/utils/replaceYoutubeIframesWithMarkdownLinks.ts`
 
@@ -47,6 +48,7 @@ src/features/workspace/components/BlogPreviewPanel.tsx
 src/features/workspace/components/YoutubeEmbed.tsx
 src/features/workspace/components/YoutubeEmbed.module.css
 src/features/workspace/components/MarkdownPreview.module.css
+src/features/workspace/utils/mergePreviewBlogs.ts
 src/features/workspace/utils/stripMdxFrontmatter.ts
 src/features/workspace/utils/replaceYoutubeIframesWithMarkdownLinks.ts
 docs/markdown-preview.md
