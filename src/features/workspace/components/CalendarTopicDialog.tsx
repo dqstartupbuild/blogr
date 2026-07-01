@@ -54,41 +54,43 @@ export const CalendarTopicDialog = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 grid place-items-center overflow-y-auto bg-black/40 px-4 py-6">
+    <div className="fixed inset-0 z-50 grid place-items-center overflow-x-hidden overflow-y-auto bg-black/40 px-3 py-6 sm:px-4">
       <article
         aria-modal="true"
-        className="grid max-h-[calc(100dvh-3rem)] w-full max-w-2xl gap-5 overflow-y-auto rounded-lg border border-black bg-white p-5"
+        className="grid max-h-[calc(100dvh-3rem)] w-full max-w-2xl min-w-0 gap-5 overflow-x-hidden overflow-y-auto rounded-lg border border-black bg-white p-4 sm:p-5"
         role="dialog"
       >
-        <div className="flex items-start justify-between gap-4">
+        <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
           <div className="min-w-0">
             <p className="text-sm font-semibold text-black/50">
               {topic.scheduledDate
                 ? formatCalendarDateBadge(topic.scheduledDate)
                 : "Scheduled topic"}
             </p>
-            <h2 className="mt-1 break-words text-xl font-semibold leading-7 text-black">
+            <h2 className="mt-1 min-w-0 break-words text-lg font-semibold leading-7 text-black sm:text-xl">
               {topic.keyword}
             </h2>
           </div>
-          <SecondaryButton onClick={onClose} type="button">
-            Close
-          </SecondaryButton>
+          <div className="min-w-0 sm:flex-shrink-0">
+            <SecondaryButton onClick={onClose} type="button">
+              Close
+            </SecondaryButton>
+          </div>
         </div>
-        <div className="flex flex-wrap gap-2">
+        <div className="flex min-w-0 flex-wrap gap-2">
           <StatusBadge status={topic.status} />
           <TopicSourceBadge sourceType={topic.sourceType} />
         </div>
         {topic.notes ? (
-          <p className="whitespace-pre-line rounded-md border border-black/10 bg-black/[0.03] p-3 text-sm leading-6 text-black/70">
+          <p className="min-w-0 break-words whitespace-pre-line rounded-md border border-black/10 bg-black/[0.03] p-3 text-sm leading-6 text-black/70">
             {topic.notes}
           </p>
         ) : (
-          <p className="rounded-md border border-black/10 bg-black/[0.03] p-3 text-sm leading-6 text-black/60">
+          <p className="min-w-0 break-words rounded-md border border-black/10 bg-black/[0.03] p-3 text-sm leading-6 text-black/60">
             No brief yet.
           </p>
         )}
-        <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
+        <div className="flex min-w-0 flex-col items-stretch gap-2 sm:flex-row sm:flex-wrap">
           {topic.blogId ? (
             <CalendarOpenArticleButton
               blogId={topic.blogId}
