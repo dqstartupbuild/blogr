@@ -7,6 +7,7 @@ export const blogGenerateRequestSchema = z.object({
   keyword: z.string().trim().min(1, "Choose a topic first."),
   product: storedProductSchema,
   productId: z.string().optional(),
+  topicId: z.string().optional(),
   sourceText: z
     .string()
     .trim()

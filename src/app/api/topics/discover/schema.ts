@@ -34,5 +34,6 @@ export const topicDiscoverRequestSchema = z.object({
   existingTopics: z.array(existingTopicSchema).default([]),
   includeAiAnswers: z.boolean().default(false),
   product: topicDiscoverProductSchema,
+  productId: z.string().optional(),
   seedKeyword: z.string().trim().max(120).optional(),
 });

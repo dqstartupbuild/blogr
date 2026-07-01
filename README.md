@@ -37,6 +37,13 @@ Without keys, the workspace shows a local demo layout. With Clerk and Convex pub
 - `APIFY_TOKEN`
 - `YOUTUBE_API_KEY` optional
 - `EXA_API_KEY` optional video search fallback
+- `BLOG_AI_WORKER_JOB_PROJECT_ID` optional Google Cloud project for the AI worker job
+- `BLOG_AI_WORKER_JOB_LOCATION` optional Google Cloud region for the AI worker job
+- `BLOG_AI_WORKER_JOB_NAME` optional Cloud Run Job name
+- `BLOG_AI_WORKER_DISPATCH_CLIENT_EMAIL` optional dispatcher service account email
+- `BLOG_AI_WORKER_DISPATCH_PRIVATE_KEY` optional dispatcher service account private key
+- `BLOG_AI_WORKER_SECRET` shared secret for the Google Cloud AI worker
+- `BLOG_AI_WORKER_ONLY=true` for the Cloud Run worker service image
 - `BLOG_PUBLISH_WEBHOOK_URL` optional fallback blog publishing destination
 - `BLOG_PUBLISH_WEBHOOK_TOKEN` optional fallback blog publishing token
 - `BLOG_PUBLISH_SOURCE_NAME` optional fallback publishing source label
@@ -77,6 +84,7 @@ npx convex env set R2_BUCKET <bucket>
 - [Blog generation workflow](docs/blog-generation-workflow.md)
 - [Associate brand links](docs/associate-brand-links.md)
 - [Article image planning agent](docs/article-image-planning-agent.md)
+- [Google Cloud AI worker](docs/google-cloud-ai-worker.md)
 - [RAG product context](docs/rag-product-context.md)
 - [Blog generation reliability](docs/blog-generation-reliability.md)
 - [Blog editor](docs/blog-editor.md)

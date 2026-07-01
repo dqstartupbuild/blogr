@@ -1,18 +1,14 @@
 import { NextResponse } from "next/server";
-import { runGoogleSearchScraper } from "@/server/apify/runGoogleSearchScraper";
+import { getConvexAuthToken } from "@/server/auth/getConvexAuthToken";
 import { requireRouteUserId } from "@/server/auth/requireRouteUserId";
+import { createBlogAiJob } from "@/server/blogAiWorker/createBlogAiJob";
+import { hasBlogAiWorkerJob } from "@/server/blogAiWorker/hasBlogAiWorkerJob";
+import { waitForBlogAiJob } from "@/server/blogAiWorker/waitForBlogAiJob";
+import { castProductId } from "@/server/convex/castProductId";
 import { getErrorStatus } from "@/server/http/getErrorStatus";
 import { getPublicErrorMessage } from "@/server/http/getPublicErrorMessage";
 import { logRouteError } from "@/server/http/logRouteError";
-import { assignTopicCandidatesToDates } from "@/server/topics/assignTopicCandidatesToDates";
-import { buildTopicBatchDiscoveryQueries } from "@/server/topics/buildTopicBatchDiscoveryQueries";
-import { buildTopicCandidatesFromDiscovery } from "@/server/topics/buildTopicCandidatesFromDiscovery";
-import { buildUniqueTopicCandidates } from "@/server/topics/buildUniqueTopicCandidates";
-import { buildExpandedTopicCandidates } from "@/server/topics/buildExpandedTopicCandidates";
-import { extractSerpSignals } from "@/server/topics/extractSerpSignals";
-import { generateTopicIdeas } from "@/server/topics/generateTopicIdeas";
-import { topicExpansionPatterns } from "@/server/topics/topicExpansionPatterns";
-import type { TopicCandidate } from "@/server/topics/types/TopicCandidate";
+import { planTopicBatch } from "@/server/topics/planTopicBatch";
 import { topicBatchPlanRequestSchema } from "./schema";
 
 export const maxDuration = 300;
@@ -29,63 +25,45 @@ export async function POST(request: Request) {
       return NextResponse.json({ topics: [] });
     }
 
-    const existingBlogTopics = input.existingBlogs
-      .map((blog) => ({ keyword: blog.keyword || blog.title }))
-      .filter((blog) => blog.keyword.trim());
-    const existingTopics = [...input.existingTopics, ...existingBlogTopics];
-    let discoveryCandidates: TopicCandidate[] = [];
+    const productId = castProductId(input.productId);
 
-    try {
-      const queries = buildTopicBatchDiscoveryQueries({
-        product: input.product,
+    if (hasBlogAiWorkerJob()) {
+      const token = await getConvexAuthToken();
+      const jobId = await createBlogAiJob({
+        input: {
+          input: {
+            ...input,
+            blankDates,
+          },
+          type: "topic.batchPlan",
+        },
+        productId,
+        token,
       });
-      const records = await runGoogleSearchScraper({
-        includeAiMode: false,
-        queries,
-        timeoutMs: 15000,
-      });
-      const signals = extractSerpSignals(records);
-      const discovery = await generateTopicIdeas({
-        existingBlogs: input.existingBlogs,
-        existingTopics: input.existingTopics.map((topic) => topic.keyword),
-        product: input.product,
-        signals,
-      });
-      discoveryCandidates = buildTopicCandidatesFromDiscovery(discovery);
-    } catch {
-      discoveryCandidates = [];
-    }
+      const job = await waitForBlogAiJob({ jobId, token });
+      const result = job?.result as
+        | { createdCount?: number; skippedCount?: number; topics?: unknown[] }
+        | undefined;
 
-    let expansionOffset = 0;
-    const expansionBatchSize = Math.max(
-      blankDates.length,
-      topicExpansionPatterns.length,
-    );
-    const expandedCandidates: TopicCandidate[] = [];
-    let uniqueCandidates: TopicCandidate[] = [];
-
-    while (uniqueCandidates.length < blankDates.length) {
-      const expansionBatch = buildExpandedTopicCandidates({
-        limit: expansionBatchSize,
-        offset: expansionOffset,
-        product: input.product,
-      });
-
-      if (expansionBatch.length === 0) {
-        break;
+      if (job?.status === "failed") {
+        throw new Error(job.error || "Could not fill the calendar yet.");
       }
 
-      expandedCandidates.push(...expansionBatch);
-      uniqueCandidates = buildUniqueTopicCandidates({
-        candidates: [...discoveryCandidates, ...expandedCandidates],
-        existingTopics,
-      });
-      expansionOffset += expansionBatchSize;
+      return NextResponse.json(
+        {
+          createdCount: result?.createdCount,
+          jobId,
+          skippedCount: result?.skippedCount,
+          status: job?.status || "queued",
+          topics: result?.topics,
+        },
+        { status: job?.status === "succeeded" ? 200 : 202 },
+      );
     }
 
-    const topics = assignTopicCandidatesToDates({
-      candidates: uniqueCandidates,
-      dates: blankDates,
+    const topics = await planTopicBatch({
+      ...input,
+      blankDates,
     });
 
     return NextResponse.json({ topics });

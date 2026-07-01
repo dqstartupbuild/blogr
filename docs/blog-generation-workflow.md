@@ -11,19 +11,20 @@ It researches the topic, applies the active workspace settings, retrieves produc
 1. The workspace marks the topic as `writing` through the signed-in Convex client.
 2. `POST /api/blogs/generate` checks the signed-in user.
 3. The workspace sends the selected keyword, current product profile, current blog generation settings, and optional pasted source text to the route.
-4. The route removes internal gap-planning lead-ins from the primary keyword before research and writing.
-5. Firecrawl Search collects source pages.
-6. The workflow searches the active product workspace's RAG namespace for context that matches the keyword.
-7. Active internal links are scored against the keyword, then limited by the workspace setting. Links marked "do not use" are ignored.
-8. Associate brand links from workspace settings are passed to the writer as optional links that should only appear when they help the reader.
-9. YouTube videos are found only when the workspace setting is on. The YouTube Data API is used when `YOUTUBE_API_KEY` exists. Otherwise the workflow searches YouTube video pages through Exa when `EXA_API_KEY` exists, then Firecrawl when `FIRECRAWL_API_KEY` exists.
-10. Replicate writer generation uses the article style, writing rules, retrieved product context, selected internal links, associate brand links, optional repurposing source, toggles, and no image list before returning blog metadata and MDX in a simple XML shape.
-11. Clean tags are built from the keyword, title, SEO title, excerpt, and topic brief.
-12. The image-planning reviewer uses `REPLICATE_IMAGE_PLANNER_MODEL`, defaulting to `openai/gpt-5-mini`, to pick the sections that need visuals and write section-specific image prompts.
-13. Replicate image generation creates the number of images chosen in settings when `REPLICATE_API_TOKEN` exists. Multiple images are generated one after another so every requested image gets its own model run.
-14. The generated image URLs are downloaded into R2. The route uses the Convex R2 action when a Convex token is available, and otherwise writes directly to the same R2 bucket with the signed-in user's ID.
-15. The MDX cleanup updates the feature image, inserts generated images near section headings, converts YouTube markdown links into playable iframe embeds, and adds found YouTube videos when the writer did not include them.
-16. The workspace saves the blog, tags, and image R2 keys through `upsertGeneratedBlog`, which marks the topic as written.
+4. When the Cloud Run Job worker env vars are set, the route creates a durable Convex AI job and dispatches the Google Cloud AI worker. Otherwise it runs the same workflow locally.
+5. The workflow removes internal gap-planning lead-ins from the primary keyword before research and writing.
+6. Firecrawl Search collects source pages.
+7. The workflow searches the active product workspace's RAG namespace for context that matches the keyword.
+8. Active internal links are scored against the keyword, then limited by the workspace setting. Links marked "do not use" are ignored.
+9. Associate brand links from workspace settings are passed to the writer as optional links that should only appear when they help the reader.
+10. YouTube videos are found only when the workspace setting is on. The YouTube Data API is used when `YOUTUBE_API_KEY` exists. Otherwise the workflow searches YouTube video pages through Exa when `EXA_API_KEY` exists, then Firecrawl when `FIRECRAWL_API_KEY` exists.
+11. Replicate writer generation uses the article style, writing rules, retrieved product context, selected internal links, associate brand links, optional repurposing source, toggles, and no image list before returning blog metadata and MDX in a simple XML shape.
+12. Clean tags are built from the keyword, title, SEO title, excerpt, and topic brief.
+13. The image-planning reviewer uses `REPLICATE_IMAGE_PLANNER_MODEL`, defaulting to `openai/gpt-5-mini`, to pick the sections that need visuals and write section-specific image prompts.
+14. Replicate image generation creates the number of images chosen in settings when `REPLICATE_API_TOKEN` exists. Multiple images are generated one after another so every requested image gets its own model run.
+15. The generated image URLs are downloaded into R2. The worker or route uses the Convex R2 action when a Convex token is available, and otherwise writes directly to the same R2 bucket with the signed-in user's ID.
+16. The MDX cleanup updates the feature image, inserts generated images near section headings, converts YouTube markdown links into playable iframe embeds, and adds found YouTube videos when the writer did not include them.
+17. The workspace saves the blog, tags, and image R2 keys through `upsertGeneratedBlog`, which marks the topic as written.
 
 If research search is unavailable, the writer still uses the saved product
 profile, active internal links, and associate brand links. If an image fails, the blog still finishes with the
@@ -33,6 +34,8 @@ as failed with a short error.
 ## Relevant Code
 
 - `src/app/api/blogs/generate/route.ts`
+- `src/app/api/worker/blog-ai/route.ts`
+- `src/server/blogAiWorker/`
 - `src/features/workspace/hooks/useLiveWorkspace.ts`
 - `src/server/blog/generateBlogForKeyword.ts`
 - `src/server/blog/normalizeBlogKeyword.ts`
@@ -117,6 +120,7 @@ src/server/rag/
 src/server/firecrawl/
 src/server/exa/
 src/server/replicate/
+src/server/blogAiWorker/
 convex/rag/
 convex/r2/
 convex/blogs/

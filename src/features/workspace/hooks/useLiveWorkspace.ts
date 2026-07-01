@@ -35,7 +35,6 @@ import { mapConvexProduct } from "../mappers/mapConvexProduct";
 import { mapConvexTopic } from "../mappers/mapConvexTopic";
 import { mapProductScanResult } from "../mappers/mapProductScanResult";
 import { buildBlogRefreshSeedKeyword } from "../utils/buildBlogRefreshSeedKeyword";
-import { buildExistingTopicBriefNotes } from "../utils/buildExistingTopicBriefNotes";
 import { filterActiveLinks } from "../utils/filterActiveLinks";
 import { formatCalendarMonthLabel } from "../utils/formatCalendarMonthLabel";
 import { getCalendarMonthDateKeys } from "../utils/getCalendarMonthDateKeys";
@@ -565,7 +564,11 @@ export const useLiveWorkspace = (
         });
       }
 
-      setProductScanMessage("Saved your product details.");
+      setProductScanMessage(
+        data.status && data.status !== "succeeded"
+          ? "Scanning in the background. You can leave and come back."
+          : "Saved your product details.",
+      );
     } catch (error) {
       const message =
         error instanceof Error ? error.message : "Could not scan that site yet.";
@@ -785,6 +788,7 @@ export const useLiveWorkspace = (
           })),
           existingTopics: topicKeywordResults || [],
           product: discoveryProduct,
+          productId: activeProductId,
         }),
         headers: {
           "Content-Type": "application/json",
@@ -795,18 +799,35 @@ export const useLiveWorkspace = (
         .json()
         .catch(() => ({}))) as CalendarBatchPlanResponse;
 
-      if (!response.ok || !data.topics) {
+      if (!response.ok || (!data.topics && !data.jobId)) {
         throw new Error(data.error || "Could not fill the calendar yet.");
       }
 
-      if (data.topics.length === 0) {
+      if (data.createdCount !== undefined) {
+        setCalendarMessage(
+          data.createdCount > 0
+            ? `Saved ${data.createdCount} new topics.`
+            : "No unique topics found yet.",
+        );
+        resetTopicPagination();
+        return;
+      }
+
+      if (data.jobId && !data.topics) {
+        setCalendarMessage("Filling the calendar in the background.");
+        return;
+      }
+
+      const topics = data.topics || [];
+
+      if (topics.length === 0) {
         setCalendarMessage("No unique topics found yet.");
         return;
       }
 
       const result = await createScheduledTopicBatch({
         productId: convexProductId,
-        topics: data.topics,
+        topics,
       });
 
       setCalendarMessage(
@@ -867,6 +888,7 @@ export const useLiveWorkspace = (
         })),
         includeAiAnswers,
         product: discoveryProduct,
+        productId: activeProductId,
         seedKeyword,
       }),
       headers: {
@@ -878,8 +900,12 @@ export const useLiveWorkspace = (
       .json()
       .catch(() => ({}))) as TopicDiscoveryResponse;
 
-    if (!response.ok || !data.discovery) {
+    if (!response.ok || (!data.discovery && !data.jobId)) {
       throw new Error(data.error || "Could not find topic ideas yet.");
+    }
+
+    if (!data.discovery) {
+      throw new Error("Topic search started in the background.");
     }
 
     return data.discovery;
@@ -896,21 +922,58 @@ export const useLiveWorkspace = (
       throw new Error("Choose a workspace first.");
     }
 
-    const discovery = await discoverTopicIdeas({
-      includeAiAnswers: false,
-      seedKeyword: topic.keyword,
+    const discoveryProduct = productResult
+      ? {
+          audience: productResult.audience,
+          competitors: productResult.competitors,
+          description: productResult.description,
+          name: productResult.name,
+          niche: productResult.niche,
+          rawContext: productResult.rawContext,
+          siteLinks: filterActiveLinks(productResult.siteLinks),
+          websiteUrl: productResult.websiteUrl,
+        }
+      : {
+          ...product,
+          siteLinks: filterActiveLinks(product.siteLinks),
+        };
+    const response = await fetch(`/api/topics/${topicId}/brief`, {
+      body: JSON.stringify({
+        existingBlogs: blogs.map((blog) => ({
+          excerpt: blog.excerpt,
+          keyword: blog.keyword,
+          title: blog.title,
+          updatedAt: blog.updatedAt,
+        })),
+        existingTopics: (topicKeywordResults || visibleTopics).map((item) => ({
+          keyword: item.keyword,
+        })),
+        includeAiAnswers: false,
+        product: discoveryProduct,
+        productId: activeProductId,
+        seedKeyword: topic.keyword,
+      }),
+      headers: {
+        "Content-Type": "application/json",
+      },
+      method: "POST",
     });
-    const notes = buildExistingTopicBriefNotes(topic, discovery);
+    const data = (await response.json().catch(() => ({}))) as {
+      error?: string;
+      jobId?: string;
+      notes?: string;
+      status?: "queued" | "running" | "succeeded" | "failed";
+    };
 
-    if (!notes.trim()) {
-      throw new Error("No search brief was found for this topic.");
+    if (!response.ok || (!data.notes && !data.jobId)) {
+      throw new Error(data.error || "Could not find a brief yet.");
     }
 
-    await updateTopicNotes({
-      notes,
-      productId: convexProductId,
-      topicId: castTopicId(topicId),
-    });
+    const notes = data.notes || "";
+
+    if (!notes.trim()) {
+      throw new Error("Brief search started in the background.");
+    }
 
     return notes;
   };
@@ -991,6 +1054,7 @@ export const useLiveWorkspace = (
         })),
         includeAiAnswers,
         product: discoveryProduct,
+        productId: activeProductId,
         seedKeyword: searchKeyword,
       }),
       headers: {
@@ -1002,8 +1066,12 @@ export const useLiveWorkspace = (
       .json()
       .catch(() => ({}))) as TopicDiscoveryResponse;
 
-    if (!response.ok || !data.discovery) {
+    if (!response.ok || (!data.discovery && !data.jobId)) {
       throw new Error(data.error || "Could not find refresh ideas yet.");
+    }
+
+    if (!data.discovery) {
+      throw new Error("Refresh search started in the background.");
     }
 
     return data.discovery;
@@ -1107,6 +1175,7 @@ export const useLiveWorkspace = (
           productId: activeProductId,
           sourceText: sourceText || undefined,
           topicBrief: topic.notes,
+          topicId,
         }),
         headers: {
           "Content-Type": "application/json",
@@ -1117,19 +1186,25 @@ export const useLiveWorkspace = (
         .json()
         .catch(() => ({}))) as BlogGenerateResponse;
 
-      if (!response.ok || !data.blog) {
+      if (!response.ok || (!data.blog && !data.blogId && !data.jobId)) {
         throw new Error(data.error || "Could not write that blog yet.");
       }
 
-      const blogId = await upsertGeneratedBlog({
-        ...data.blog,
-        productId: convexProductId,
-        topicId: convexTopicId,
-      });
+      const blogId =
+        data.blogId ||
+        (data.blog
+          ? await upsertGeneratedBlog({
+              ...data.blog,
+              productId: convexProductId,
+              topicId: convexTopicId,
+            })
+          : "");
 
-      setSelectedBlogId(blogId);
-      resetBlogPagination();
-      setMode("blogs");
+      if (blogId) {
+        setSelectedBlogId(blogId);
+        resetBlogPagination();
+        setMode("blogs");
+      }
     } catch (error) {
       const message =
         error instanceof Error ? error.message : "Could not write that blog yet.";

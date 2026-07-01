@@ -12,7 +12,7 @@ The content calendar also uses discovery data for batch planning. In that flow, 
 
 ## How It Works
 
-The client calls `POST /api/topics/discover` with the current product profile, existing topics, existing blogs, a seed keyword, and whether to check AI answers.
+The client calls `POST /api/topics/discover` with the current product profile, existing topics, existing blogs, a seed keyword, and whether to check AI answers. When the Cloud Run Job worker env vars are set, the route creates a durable Convex AI job and dispatches the Google Cloud AI worker. Otherwise it runs the same workflow locally.
 
 The route builds a small set of Google searches from the product name, niche, audience, and seed keyword. It runs Apify Google Search Scraper through `src/server/apify/runGoogleSearchScraper.ts`, then normalizes:
 
@@ -61,10 +61,16 @@ APIFY_TOKEN=
 
 `REPLICATE_API_TOKEN` is optional for this feature. Without it, the route still returns fallback ideas from scraped search signals.
 
+Production deployments can set the Cloud Run Job worker env vars and
+`BLOG_AI_WORKER_SECRET` to run Apify search and Replicate topic generation in
+the Google Cloud AI worker.
+
 ## Relevant Code
 
 - `src/app/api/topics/discover/route.ts`
 - `src/app/api/topics/discover/schema.ts`
+- `src/app/api/worker/blog-ai/route.ts`
+- `src/server/blogAiWorker/`
 - `src/server/apify/runGoogleSearchScraper.ts`
 - `src/server/apify/getApifyToken.ts`
 - `src/server/topics/buildTopicDiscoveryQueries.ts`

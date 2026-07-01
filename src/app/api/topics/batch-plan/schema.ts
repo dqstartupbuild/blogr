@@ -37,4 +37,5 @@ export const topicBatchPlanRequestSchema = z.object({
   existingBlogs: z.array(existingBlogSchema).default([]),
   existingTopics: z.array(existingTopicSchema).default([]),
   product: batchPlanProductSchema,
+  productId: z.string().min(1, "Choose a workspace first."),
 });

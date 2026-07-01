@@ -10,14 +10,15 @@ This gives the writer enough context to understand the product and place interna
 
 1. The Settings page saves the website and niche to the active product workspace through Convex right away.
 2. `POST /api/product/scan` checks the signed-in user.
-3. `scanProductWebsite` normalizes the URL and calls Firecrawl.
-4. The scanner reads homepage markdown, branding, links, screenshots, sitemap links, and crawl links.
-5. It picks detail pages like pricing, features, product, docs, about, and use-case pages.
-6. It asks the configured Replicate writer model to turn the scraped context into a simple product profile.
-7. The scan route downloads logo/Open Graph assets and product screenshots into R2. It uses the Convex R2 action when Convex auth is available and otherwise writes directly to the same R2 bucket with the signed-in user's ID.
-8. The scan route indexes the product profile, internal links, and raw scanned context in the Convex RAG component under the active product workspace.
-9. The Settings page saves the finished product profile and R2 image keys through the signed-in Convex client.
-10. Users can refresh scanned links without running the full product profile scan. Refreshing links uses the same sitemap, homepage link, and crawl collection logic, then saves the refreshed link list through Convex.
+3. When the Cloud Run Job worker env vars are set, the route creates a durable Convex AI job and dispatches the Google Cloud AI worker for scanning, product-profile extraction, and scanned image storage. Otherwise it runs the same workflow locally.
+4. `scanProductWebsite` normalizes the URL and calls Firecrawl.
+5. The scanner reads homepage markdown, branding, links, screenshots, sitemap links, and crawl links.
+6. It picks detail pages like pricing, features, product, docs, about, and use-case pages.
+7. It asks the configured Replicate writer model to turn the scraped context into a simple product profile.
+8. The worker or route downloads logo/Open Graph assets and product screenshots into R2. It uses the Convex R2 action when Convex auth is available and otherwise writes directly to the same R2 bucket with the signed-in user's ID.
+9. The scan route indexes the product profile, internal links, and raw scanned context in the Convex RAG component under the active product workspace.
+10. The Settings page saves the finished product profile and R2 image keys through the signed-in Convex client.
+11. Users can refresh scanned links without running the full product profile scan. Refreshing links uses the same sitemap, homepage link, and crawl collection logic, then saves the refreshed link list through Convex.
 
 The route allows a longer runtime because Firecrawl plus AI extraction can take
 more than a quick request. The workspace shows scan progress, success, and any
@@ -41,6 +42,7 @@ Scanned links can be marked as "do not use" and turned back on later. The link s
 
 - `src/app/api/product/scan/route.ts`
 - `src/app/api/product/scan/schema.ts`
+- `src/app/api/worker/blog-ai/route.ts`
 - `src/app/api/product/links/refresh/route.ts`
 - `src/app/api/product/links/refresh/schema.ts`
 - `src/features/workspace/components/ProductSetupPanel.tsx`
@@ -48,6 +50,7 @@ Scanned links can be marked as "do not use" and turned back on later. The link s
 - `src/features/workspace/hooks/useLiveWorkspace.ts`
 - `src/features/workspace/mappers/buildInitialProductScanProduct.ts`
 - `src/server/product/scanProductWebsite.ts`
+- `src/server/product/scanAndStoreProductWebsite.ts`
 - `src/server/product/refreshProductSiteLinks.ts`
 - `src/server/product/collectProductSiteLinkUrls.ts`
 - `src/server/product/storeProductScanImages.ts`

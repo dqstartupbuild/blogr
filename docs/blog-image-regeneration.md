@@ -24,12 +24,14 @@ The API route resolves the target image with `resolveRegenerateImageTarget`:
 - If no stored prompt exists, it builds a prompt from the image's alt text so even untracked images can be refreshed.
 - If the image isn't in the `images` array yet, the new image is appended instead of replacing one.
 
-It regenerates the image through `regenerateBlogImage` (Replicate + R2 storage), then updates the blog's `images`, the `featureImageUrl` (when needed), and the MDX body. The MDX swap (`replaceImageUrlInMdx`) replaces the old URL everywhere it appears, falling back to a path match if the exact old URL isn't present.
+When the Cloud Run Job worker env vars are set, the route creates a durable Convex AI job and dispatches the Google Cloud AI worker for Replicate generation and R2 storage. Otherwise it runs `regenerateBlogImage` locally. After the new image returns, the worker or route updates the blog's `images`, the `featureImageUrl` (when needed), and the MDX body. The MDX swap (`replaceImageUrlInMdx`) replaces the old URL everywhere it appears, falling back to a path match if the exact old URL isn't present.
 
 ## Relevant Code
 
 - `src/app/api/blogs/[blogId]/regenerate-image/route.ts`
 - `src/app/api/blogs/[blogId]/regenerate-image/schema.ts`
+- `src/app/api/worker/blog-ai/route.ts`
+- `src/server/blogAiWorker/`
 - `convex/blogs/updateBlogImage.ts`
 - `src/server/convex/references/updateBlogImageMutation.ts`
 - `src/server/blog/regenerateBlogImage.ts`

@@ -1,6 +1,9 @@
 import { fetchMutation, fetchQuery } from "convex/nextjs";
 import { NextResponse } from "next/server";
 import { getConvexAuthToken } from "@/server/auth/getConvexAuthToken";
+import { createBlogAiJob } from "@/server/blogAiWorker/createBlogAiJob";
+import { hasBlogAiWorkerJob } from "@/server/blogAiWorker/hasBlogAiWorkerJob";
+import { waitForBlogAiJob } from "@/server/blogAiWorker/waitForBlogAiJob";
 import { requireRouteUserId } from "@/server/auth/requireRouteUserId";
 import { regenerateBlogImage } from "@/server/blog/regenerateBlogImage";
 import { replaceImageUrlInMdx } from "@/server/blog/replaceImageUrlInMdx";
@@ -62,6 +65,49 @@ export async function POST(request: Request, context: RegenerateImageRouteContex
       );
     }
 
+    const previousImage =
+      target.imageIndex !== null ? blog.images[target.imageIndex] : undefined;
+    const previousUrl = previousImage?.url || input.src;
+    const isFeatureImage =
+      input.isFeatureImage || target.imageIndex === 0;
+
+    if (hasBlogAiWorkerJob()) {
+      const jobId = await createBlogAiJob({
+        blogId,
+        input: {
+          convexAuthToken: token,
+          input: {
+            alt: target.alt,
+            currentFeatureImageUrl: blog.featureImageUrl,
+            imageIndex: target.imageIndex ?? undefined,
+            isFeatureImage,
+            mdx: blog.mdx,
+            previousUrl,
+            productId: input.productId,
+            prompt: target.prompt,
+          },
+          type: "blog.regenerateImage",
+          userId,
+        },
+        productId,
+        token,
+      });
+      const job = await waitForBlogAiJob({ jobId, token });
+
+      if (job?.status === "failed") {
+        throw new Error(job.error || "Could not refresh that image.");
+      }
+
+      return NextResponse.json(
+        {
+          jobId,
+          ...(job?.result && typeof job.result === "object" ? job.result : {}),
+          status: job?.status || "queued",
+        },
+        { status: job?.status === "succeeded" ? 200 : 202 },
+      );
+    }
+
     const nextImage = await regenerateBlogImage({
       alt: target.alt,
       prompt: target.prompt,
@@ -76,11 +122,6 @@ export async function POST(request: Request, context: RegenerateImageRouteContex
       );
     }
 
-    const previousImage =
-      target.imageIndex !== null ? blog.images[target.imageIndex] : undefined;
-    const previousUrl = previousImage?.url || input.src;
-    const isFeatureImage =
-      input.isFeatureImage || target.imageIndex === 0;
     const nextFeatureImageUrl = isFeatureImage
       ? nextImage.url
       : blog.featureImageUrl;

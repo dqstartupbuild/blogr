@@ -8,6 +8,21 @@
  * @module
  */
 
+import type * as aiJobs_aiJobStatusValidator from "../aiJobs/aiJobStatusValidator.js";
+import type * as aiJobs_aiJobTypeValidator from "../aiJobs/aiJobTypeValidator.js";
+import type * as aiJobs_assertAiWorkerSecret from "../aiJobs/assertAiWorkerSecret.js";
+import type * as aiJobs_claimNextAiJob from "../aiJobs/claimNextAiJob.js";
+import type * as aiJobs_completeAiJob from "../aiJobs/completeAiJob.js";
+import type * as aiJobs_completeBlogGenerateAiJob from "../aiJobs/completeBlogGenerateAiJob.js";
+import type * as aiJobs_completeImageRegenerationAiJob from "../aiJobs/completeImageRegenerationAiJob.js";
+import type * as aiJobs_completeProductScanAiJob from "../aiJobs/completeProductScanAiJob.js";
+import type * as aiJobs_completeTopicBatchPlanAiJob from "../aiJobs/completeTopicBatchPlanAiJob.js";
+import type * as aiJobs_completeTopicBriefAiJob from "../aiJobs/completeTopicBriefAiJob.js";
+import type * as aiJobs_createAiJob from "../aiJobs/createAiJob.js";
+import type * as aiJobs_failAiJob from "../aiJobs/failAiJob.js";
+import type * as aiJobs_getAiJob from "../aiJobs/getAiJob.js";
+import type * as aiJobs_imageValidator from "../aiJobs/imageValidator.js";
+import type * as aiJobs_linkValidator from "../aiJobs/linkValidator.js";
 import type * as blogs_buildBlogSearchText from "../blogs/buildBlogSearchText.js";
 import type * as blogs_countBlogImageUrls from "../blogs/countBlogImageUrls.js";
 import type * as blogs_deleteBlog from "../blogs/deleteBlog.js";
@@ -95,6 +110,21 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  "aiJobs/aiJobStatusValidator": typeof aiJobs_aiJobStatusValidator;
+  "aiJobs/aiJobTypeValidator": typeof aiJobs_aiJobTypeValidator;
+  "aiJobs/assertAiWorkerSecret": typeof aiJobs_assertAiWorkerSecret;
+  "aiJobs/claimNextAiJob": typeof aiJobs_claimNextAiJob;
+  "aiJobs/completeAiJob": typeof aiJobs_completeAiJob;
+  "aiJobs/completeBlogGenerateAiJob": typeof aiJobs_completeBlogGenerateAiJob;
+  "aiJobs/completeImageRegenerationAiJob": typeof aiJobs_completeImageRegenerationAiJob;
+  "aiJobs/completeProductScanAiJob": typeof aiJobs_completeProductScanAiJob;
+  "aiJobs/completeTopicBatchPlanAiJob": typeof aiJobs_completeTopicBatchPlanAiJob;
+  "aiJobs/completeTopicBriefAiJob": typeof aiJobs_completeTopicBriefAiJob;
+  "aiJobs/createAiJob": typeof aiJobs_createAiJob;
+  "aiJobs/failAiJob": typeof aiJobs_failAiJob;
+  "aiJobs/getAiJob": typeof aiJobs_getAiJob;
+  "aiJobs/imageValidator": typeof aiJobs_imageValidator;
+  "aiJobs/linkValidator": typeof aiJobs_linkValidator;
   "blogs/buildBlogSearchText": typeof blogs_buildBlogSearchText;
   "blogs/countBlogImageUrls": typeof blogs_countBlogImageUrls;
   "blogs/deleteBlog": typeof blogs_deleteBlog;

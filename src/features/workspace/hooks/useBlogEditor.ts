@@ -169,6 +169,7 @@ export const useBlogEditor = ({
         existingTopics: [],
         includeAiAnswers,
         product: discoveryProduct,
+        productId: activeWorkspaceId,
         seedKeyword: searchKeyword,
       }),
       headers: {
@@ -180,8 +181,12 @@ export const useBlogEditor = ({
       .json()
       .catch(() => ({}))) as TopicDiscoveryResponse;
 
-    if (!response.ok || !data.discovery) {
+    if (!response.ok || (!data.discovery && !data.jobId)) {
       throw new Error(data.error || "Could not find refresh ideas yet.");
+    }
+
+    if (!data.discovery) {
+      throw new Error("Refresh search started in the background.");
     }
 
     return data.discovery;

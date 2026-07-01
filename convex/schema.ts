@@ -5,6 +5,22 @@ import { blogPublishingIntegrationValidator } from "./products/blogPublishingInt
 import { topicSourceTypeValidator } from "./topics/topicSourceTypeValidator";
 import { topicStatusValidator } from "./topics/topicStatusValidator";
 
+const aiJobStatusValidator = v.union(
+  v.literal("queued"),
+  v.literal("running"),
+  v.literal("succeeded"),
+  v.literal("failed"),
+);
+
+const aiJobTypeValidator = v.union(
+  v.literal("blog.generate"),
+  v.literal("topic.discover"),
+  v.literal("topic.brief"),
+  v.literal("topic.batchPlan"),
+  v.literal("blog.regenerateImage"),
+  v.literal("product.scan"),
+);
+
 const linkValidator = v.object({
   isActive: v.optional(v.boolean()),
   title: v.string(),
@@ -121,4 +137,25 @@ export default defineSchema({
       searchField: "searchText",
       filterFields: ["userId"],
     }),
+
+  aiJobs: defineTable({
+    userId: v.string(),
+    productId: v.optional(v.id("products")),
+    topicId: v.optional(v.id("topics")),
+    blogId: v.optional(v.id("blogs")),
+    type: aiJobTypeValidator,
+    status: aiJobStatusValidator,
+    input: v.any(),
+    result: v.optional(v.any()),
+    error: v.optional(v.string()),
+    attempts: v.number(),
+    leaseExpiresAt: v.optional(v.number()),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+    completedAt: v.optional(v.number()),
+  })
+    .index("by_userId_createdAt", ["userId", "createdAt"])
+    .index("by_productId_createdAt", ["productId", "createdAt"])
+    .index("by_status_createdAt", ["status", "createdAt"])
+    .index("by_status_updatedAt", ["status", "updatedAt"]),
 });
