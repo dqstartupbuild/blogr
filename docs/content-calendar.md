@@ -6,6 +6,8 @@ The content calendar plans one keyword per day for the next 30 days. The window 
 
 Users can add a topic to an empty day, remove a topic from a day, delete a topic, edit or refresh a brief, repurpose source text, write an article, and open a written article preview from the calendar. Calendar topics are normal topic records with a scheduled date, so the existing Topics and Articles workflows still work.
 
+The calendar renders as a seven-column weekday board. The 30-day window is aligned to the correct weekday with muted blank slots before and after the scheduled range.
+
 The **Fill empty days** action creates scheduled topic records only. It does not write full blog drafts. It fills blank days in the 30-day window and leaves already-filled days alone.
 
 ## How It Works

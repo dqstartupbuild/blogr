@@ -1,15 +1,20 @@
 "use client";
 
 import { useState } from "react";
-import { Eye, Link2Off } from "lucide-react";
-import { DeleteActionButton } from "./DeleteActionButton";
+import {
+  ClipboardPen,
+  Eye,
+  FileSearch,
+  Link2Off,
+  Pencil,
+  Sparkles,
+} from "lucide-react";
+import { CalendarTopicActionButton } from "./CalendarTopicActionButton";
+import { CalendarTopicDeleteButton } from "./CalendarTopicDeleteButton";
 import { StatusBadge } from "./StatusBadge";
-import { TopicBriefButton } from "./TopicBriefButton";
 import { TopicBriefDialog } from "./TopicBriefDialog";
-import { TopicRepurposeButton } from "./TopicRepurposeButton";
 import { TopicRepurposeDialog } from "./TopicRepurposeDialog";
 import { TopicSourceBadge } from "./TopicSourceBadge";
-import { TopicWriteButton } from "./TopicWriteButton";
 import type { DeleteTopic } from "../types/DeleteTopic";
 import type { RemoveTopicFromCalendar } from "../types/RemoveTopicFromCalendar";
 import type { SaveTopicBrief } from "../types/SaveTopicBrief";
@@ -44,64 +49,68 @@ export const CalendarTopicCard = ({
   const hasBrief = Boolean(topic.notes?.trim());
 
   return (
-    <div className="grid min-h-40 gap-3 rounded-lg border border-black/10 bg-white p-3 shadow-sm">
+    <div className="grid gap-2 rounded-md border border-black/10 bg-black/[0.03] p-2">
       <div className="grid gap-2">
         <div className="flex flex-wrap items-center gap-2">
           <StatusBadge status={topic.status} />
           <TopicSourceBadge sourceType={topic.sourceType} />
         </div>
-        <p className="text-sm font-semibold leading-6 text-black">
+        <p className="line-clamp-3 text-sm font-semibold leading-5 text-black">
           {topic.keyword}
         </p>
         {topic.notes ? (
-          <p className="line-clamp-3 text-sm leading-6 text-black/60">
+          <p className="line-clamp-2 text-xs leading-5 text-black/60">
             {topic.notes}
           </p>
         ) : null}
       </div>
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-wrap gap-1.5">
         {topic.blogId ? (
-          <button
-            className="inline-flex h-9 items-center justify-center gap-2 rounded-md border border-black/15 bg-white px-3 text-sm font-semibold text-black transition hover:border-black hover:bg-black hover:text-white"
+          <CalendarTopicActionButton
+            label="Open article"
             onClick={() => openBlogPreview(topic.blogId || "")}
-            type="button"
           >
             <Eye size={15} aria-hidden="true" />
-            Article
-          </button>
+          </CalendarTopicActionButton>
         ) : null}
-        <TopicBriefButton
+        <CalendarTopicActionButton
           disabled={isWriting}
-          hasBrief={hasBrief}
-          onOpen={() => setIsBriefOpen(true)}
-        />
-        <TopicRepurposeButton
+          label={hasBrief ? "Edit brief" : "Find brief"}
+          onClick={() => setIsBriefOpen(true)}
+        >
+          {hasBrief ? (
+            <Pencil size={15} aria-hidden="true" />
+          ) : (
+            <FileSearch size={15} aria-hidden="true" />
+          )}
+        </CalendarTopicActionButton>
+        <CalendarTopicActionButton
           disabled={isWriting}
-          onOpen={() => setIsRepurposeOpen(true)}
-        />
-        <TopicWriteButton
+          label="Repurpose"
+          onClick={() => setIsRepurposeOpen(true)}
+        >
+          <ClipboardPen size={15} aria-hidden="true" />
+        </CalendarTopicActionButton>
+        <CalendarTopicActionButton
           disabled={isWriting}
-          onWrite={() => {
+          label="Write blog"
+          onClick={() => {
             void Promise.resolve(writeBlog(topic.id)).catch(() => undefined);
           }}
-        />
-        <button
-          className="inline-flex h-10 items-center justify-center gap-2 whitespace-nowrap rounded-md border border-black/15 bg-white px-4 text-sm font-semibold text-black shadow-sm transition hover:border-black hover:bg-black hover:text-white"
+        >
+          <Sparkles size={15} aria-hidden="true" />
+        </CalendarTopicActionButton>
+        <CalendarTopicActionButton
+          label="Remove from calendar"
           onClick={() => {
             void Promise.resolve(removeTopicFromCalendar(topic.id)).catch(
               () => undefined,
             );
           }}
-          type="button"
         >
-          <Link2Off size={16} aria-hidden="true" />
-          Remove
-        </button>
-        <DeleteActionButton
-          confirmMessage="Delete this topic? Articles already created from it will stay in Articles."
-          label="Delete"
-          onDelete={() => deleteTopic(topic.id)}
-        />
+          <Link2Off size={15} aria-hidden="true" />
+        </CalendarTopicActionButton>
+        <CalendarTopicDeleteButton deleteTopic={() => deleteTopic(topic.id)} />
       </div>
       {isBriefOpen ? (
         <TopicBriefDialog

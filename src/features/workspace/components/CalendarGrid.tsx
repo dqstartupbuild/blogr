@@ -1,4 +1,7 @@
 import { CalendarDayCell } from "./CalendarDayCell";
+import { CalendarSpacerCell } from "./CalendarSpacerCell";
+import { CalendarWeekdayHeader } from "./CalendarWeekdayHeader";
+import { buildCalendarDateSlots } from "../utils/buildCalendarDateSlots";
 import type { AddScheduledTopic } from "../types/AddScheduledTopic";
 import type { DeleteTopic } from "../types/DeleteTopic";
 import type { RemoveTopicFromCalendar } from "../types/RemoveTopicFromCalendar";
@@ -32,22 +35,34 @@ export const CalendarGrid = ({
   topics,
   writeBlog,
 }: CalendarGridProps) => {
+  const dateSlots = buildCalendarDateSlots(dateKeys);
+
   return (
-    <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-      {dateKeys.map((dateKey) => (
-        <CalendarDayCell
-          addScheduledTopic={addScheduledTopic}
-          dateKey={dateKey}
-          deleteTopic={deleteTopic}
-          key={dateKey}
-          openBlogPreview={openBlogPreview}
-          refreshTopicBrief={refreshTopicBrief}
-          removeTopicFromCalendar={removeTopicFromCalendar}
-          saveTopicBrief={saveTopicBrief}
-          topic={topics.find((topic) => topic.scheduledDate === dateKey)}
-          writeBlog={writeBlog}
-        />
-      ))}
+    <div className="overflow-x-auto rounded-lg border border-black/10 bg-white shadow-sm">
+      <div className="min-w-[980px]">
+        <CalendarWeekdayHeader />
+        <div className="grid grid-cols-7">
+          {dateSlots.map((dateKey, index) =>
+            dateKey ? (
+              <CalendarDayCell
+                addScheduledTopic={addScheduledTopic}
+                dateKey={dateKey}
+                deleteTopic={deleteTopic}
+                isToday={dateKey === dateKeys[0]}
+                key={dateKey}
+                openBlogPreview={openBlogPreview}
+                refreshTopicBrief={refreshTopicBrief}
+                removeTopicFromCalendar={removeTopicFromCalendar}
+                saveTopicBrief={saveTopicBrief}
+                topic={topics.find((topic) => topic.scheduledDate === dateKey)}
+                writeBlog={writeBlog}
+              />
+            ) : (
+              <CalendarSpacerCell key={`spacer-${index}`} />
+            ),
+          )}
+        </div>
+      </div>
     </div>
   );
 };

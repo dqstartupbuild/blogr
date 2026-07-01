@@ -2,6 +2,7 @@ import { CalendarFillButton } from "./CalendarFillButton";
 import { CalendarGrid } from "./CalendarGrid";
 import { EmptyState } from "./EmptyState";
 import { WorkspacePageHeader } from "./WorkspacePageHeader";
+import { formatCalendarRangeLabel } from "../utils/formatCalendarRangeLabel";
 import type { AddScheduledTopic } from "../types/AddScheduledTopic";
 import type { CalendarState } from "../types/CalendarState";
 import type { DeleteTopic } from "../types/DeleteTopic";
@@ -41,12 +42,13 @@ export const CalendarPanel = ({
 }: CalendarPanelProps) => {
   const filledCount = topics.length;
   const blankCount = calendarState.dateKeys.length - filledCount;
+  const rangeLabel = formatCalendarRangeLabel(calendarState.dateKeys);
 
   return (
     <section className="space-y-5">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <WorkspacePageHeader
-          description="Plan one keyword per day for the next 30 days."
+          description={`Plan one keyword per day from ${rangeLabel}.`}
           title="Calendar"
         />
         <CalendarFillButton
