@@ -8,7 +8,7 @@ The app does not save every scraped idea automatically. It shows a review queue 
 
 The discovery dialog also shows planning ideas from the same search run. Users can save questions, gaps, comparison ideas, clusters, refresh notes, AI answer notes, and difficulty notes as planning topics.
 
-The content calendar also uses discovery data for batch planning. In that flow, the app converts normal ideas, gaps, questions, comparison ideas, AI answer notes, and difficulty notes into one shared candidate shape before saving anything. Similar candidates are grouped into one canonical scheduled topic so the calendar does not create several articles that compete for the same search intent.
+The content calendar also uses discovery data for batch planning. In that flow, the app converts normal ideas, gaps, questions, comparison ideas, AI answer notes, and difficulty notes into one shared candidate shape before saving anything. Similar candidates are grouped into one canonical scheduled topic so the calendar does not create several articles that compete for the same search intent. The calendar then adds product-niche expansion candidates so every blank day can still be filled when discovery is sparse.
 
 ## How It Works
 
@@ -97,7 +97,7 @@ APIFY_TOKEN=
 - Refresh older blogs with questions and angles that now appear in search.
 - Refresh the brief for a topic that was saved before discovery existed.
 - Add a refresh plan directly to an existing blog draft.
-- Fill blank calendar days with unique scheduled topics.
+- Fill blank calendar days with unique scheduled topics, even when search or AI returns only a few usable ideas.
 - Merge duplicate discovery buckets before creating a 30-day plan.
 
 ## File Tree

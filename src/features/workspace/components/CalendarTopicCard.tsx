@@ -1,19 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import {
-  ClipboardPen,
-  Eye,
-  FileSearch,
-  Link2Off,
-  Pencil,
-  Sparkles,
-} from "lucide-react";
-import { CalendarTopicActionButton } from "./CalendarTopicActionButton";
-import { CalendarTopicDeleteButton } from "./CalendarTopicDeleteButton";
+import { CalendarTopicDialog } from "./CalendarTopicDialog";
 import { StatusBadge } from "./StatusBadge";
-import { TopicBriefDialog } from "./TopicBriefDialog";
-import { TopicRepurposeDialog } from "./TopicRepurposeDialog";
 import { TopicSourceBadge } from "./TopicSourceBadge";
 import type { DeleteTopic } from "../types/DeleteTopic";
 import type { RemoveTopicFromCalendar } from "../types/RemoveTopicFromCalendar";
@@ -43,17 +32,23 @@ export const CalendarTopicCard = ({
   topic,
   writeBlog,
 }: CalendarTopicCardProps) => {
-  const [isBriefOpen, setIsBriefOpen] = useState(false);
-  const [isRepurposeOpen, setIsRepurposeOpen] = useState(false);
-  const isWriting = topic.status === "writing";
-  const hasBrief = Boolean(topic.notes?.trim());
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   return (
-    <div className="grid min-w-0 gap-1 rounded-md border border-black/10 bg-black/[0.03] p-1 sm:gap-2 sm:p-2">
-      <div className="grid min-w-0 gap-1 sm:gap-2">
+    <>
+      <button
+        aria-label={`Open ${topic.keyword}`}
+        className="grid w-full min-w-0 gap-1 rounded-md border border-black/10 bg-black/[0.03] p-1 text-left transition hover:border-black/25 hover:bg-black/[0.06] focus:outline-none focus:ring-2 focus:ring-black sm:gap-2 sm:p-2"
+        onClick={() => setIsDialogOpen(true)}
+        type="button"
+      >
         <div className="hidden flex-wrap items-center gap-2 sm:flex">
-          <StatusBadge status={topic.status} />
-          <TopicSourceBadge sourceType={topic.sourceType} />
+          <span className="min-w-0">
+            <StatusBadge status={topic.status} />
+          </span>
+          <span className="min-w-0">
+            <TopicSourceBadge sourceType={topic.sourceType} />
+          </span>
         </div>
         <p className="line-clamp-3 min-w-0 break-words text-[11px] font-semibold leading-4 text-black sm:text-sm sm:leading-5">
           {topic.keyword}
@@ -63,70 +58,19 @@ export const CalendarTopicCard = ({
             {topic.notes}
           </p>
         ) : null}
-      </div>
-      <div className="flex min-w-0 flex-wrap gap-1 sm:gap-1.5">
-        {topic.blogId ? (
-          <CalendarTopicActionButton
-            label="Open article"
-            onClick={() => openBlogPreview(topic.blogId || "")}
-          >
-            <Eye size={15} aria-hidden="true" />
-          </CalendarTopicActionButton>
-        ) : null}
-        <CalendarTopicActionButton
-          disabled={isWriting}
-          label={hasBrief ? "Edit brief" : "Find brief"}
-          onClick={() => setIsBriefOpen(true)}
-        >
-          {hasBrief ? (
-            <Pencil size={15} aria-hidden="true" />
-          ) : (
-            <FileSearch size={15} aria-hidden="true" />
-          )}
-        </CalendarTopicActionButton>
-        <CalendarTopicActionButton
-          disabled={isWriting}
-          label="Repurpose"
-          onClick={() => setIsRepurposeOpen(true)}
-        >
-          <ClipboardPen size={15} aria-hidden="true" />
-        </CalendarTopicActionButton>
-        <CalendarTopicActionButton
-          disabled={isWriting}
-          label="Write blog"
-          onClick={() => {
-            void Promise.resolve(writeBlog(topic.id)).catch(() => undefined);
-          }}
-        >
-          <Sparkles size={15} aria-hidden="true" />
-        </CalendarTopicActionButton>
-        <CalendarTopicActionButton
-          label="Remove from calendar"
-          onClick={() => {
-            void Promise.resolve(removeTopicFromCalendar(topic.id)).catch(
-              () => undefined,
-            );
-          }}
-        >
-          <Link2Off size={15} aria-hidden="true" />
-        </CalendarTopicActionButton>
-        <CalendarTopicDeleteButton deleteTopic={() => deleteTopic(topic.id)} />
-      </div>
-      {isBriefOpen ? (
-        <TopicBriefDialog
-          key={topic.id}
-          onClose={() => setIsBriefOpen(false)}
+      </button>
+      {isDialogOpen ? (
+        <CalendarTopicDialog
+          deleteTopic={deleteTopic}
+          onClose={() => setIsDialogOpen(false)}
+          openBlogPreview={openBlogPreview}
           refreshTopicBrief={refreshTopicBrief}
+          removeTopicFromCalendar={removeTopicFromCalendar}
           saveTopicBrief={saveTopicBrief}
           topic={topic}
+          writeBlog={writeBlog}
         />
       ) : null}
-      <TopicRepurposeDialog
-        isOpen={isRepurposeOpen}
-        onClose={() => setIsRepurposeOpen(false)}
-        onRepurpose={(sourceText) => writeBlog(topic.id, { sourceText })}
-        topic={topic}
-      />
-    </div>
+    </>
   );
 };

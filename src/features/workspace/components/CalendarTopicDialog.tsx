@@ -1,0 +1,145 @@
+"use client";
+
+import { useState } from "react";
+import { CalendarOpenArticleButton } from "./CalendarOpenArticleButton";
+import { CalendarRemoveTopicButton } from "./CalendarRemoveTopicButton";
+import { DeleteActionButton } from "./DeleteActionButton";
+import { SecondaryButton } from "./SecondaryButton";
+import { StatusBadge } from "./StatusBadge";
+import { TopicBriefButton } from "./TopicBriefButton";
+import { TopicBriefDialog } from "./TopicBriefDialog";
+import { TopicRepurposeButton } from "./TopicRepurposeButton";
+import { TopicRepurposeDialog } from "./TopicRepurposeDialog";
+import { TopicSourceBadge } from "./TopicSourceBadge";
+import { TopicWriteButton } from "./TopicWriteButton";
+import { formatCalendarDateBadge } from "../utils/formatCalendarDateBadge";
+import type { DeleteTopic } from "../types/DeleteTopic";
+import type { RemoveTopicFromCalendar } from "../types/RemoveTopicFromCalendar";
+import type { SaveTopicBrief } from "../types/SaveTopicBrief";
+import type { TopicItem } from "../types/TopicItem";
+import type { WriteBlogOptions } from "../types/WriteBlogOptions";
+
+type CalendarTopicDialogProps = {
+  deleteTopic: DeleteTopic;
+  onClose: () => void;
+  openBlogPreview: (blogId: string) => void;
+  refreshTopicBrief: (topicId: string) => Promise<string>;
+  removeTopicFromCalendar: RemoveTopicFromCalendar;
+  saveTopicBrief: SaveTopicBrief;
+  topic: TopicItem;
+  writeBlog: (
+    topicId: string,
+    options?: WriteBlogOptions,
+  ) => Promise<void> | void;
+};
+
+export const CalendarTopicDialog = ({
+  deleteTopic,
+  onClose,
+  openBlogPreview,
+  refreshTopicBrief,
+  removeTopicFromCalendar,
+  saveTopicBrief,
+  topic,
+  writeBlog,
+}: CalendarTopicDialogProps) => {
+  const [isBriefOpen, setIsBriefOpen] = useState(false);
+  const [isRepurposeOpen, setIsRepurposeOpen] = useState(false);
+  const isWriting = topic.status === "writing";
+  const hasBrief = Boolean(topic.notes?.trim());
+
+  const handleOpenBlog = (blogId: string) => {
+    openBlogPreview(blogId);
+    onClose();
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 grid place-items-center overflow-y-auto bg-black/40 px-4 py-6">
+      <article
+        aria-modal="true"
+        className="grid max-h-[calc(100dvh-3rem)] w-full max-w-2xl gap-5 overflow-y-auto rounded-lg border border-black bg-white p-5"
+        role="dialog"
+      >
+        <div className="flex items-start justify-between gap-4">
+          <div className="min-w-0">
+            <p className="text-sm font-semibold text-black/50">
+              {topic.scheduledDate
+                ? formatCalendarDateBadge(topic.scheduledDate)
+                : "Scheduled topic"}
+            </p>
+            <h2 className="mt-1 break-words text-xl font-semibold leading-7 text-black">
+              {topic.keyword}
+            </h2>
+          </div>
+          <SecondaryButton onClick={onClose} type="button">
+            Close
+          </SecondaryButton>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <StatusBadge status={topic.status} />
+          <TopicSourceBadge sourceType={topic.sourceType} />
+        </div>
+        {topic.notes ? (
+          <p className="whitespace-pre-line rounded-md border border-black/10 bg-black/[0.03] p-3 text-sm leading-6 text-black/70">
+            {topic.notes}
+          </p>
+        ) : (
+          <p className="rounded-md border border-black/10 bg-black/[0.03] p-3 text-sm leading-6 text-black/60">
+            No brief yet.
+          </p>
+        )}
+        <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
+          {topic.blogId ? (
+            <CalendarOpenArticleButton
+              blogId={topic.blogId}
+              onOpen={handleOpenBlog}
+            />
+          ) : null}
+          <TopicBriefButton
+            disabled={isWriting}
+            hasBrief={hasBrief}
+            onOpen={() => setIsBriefOpen(true)}
+          />
+          <TopicRepurposeButton
+            disabled={isWriting}
+            onOpen={() => setIsRepurposeOpen(true)}
+          />
+          <TopicWriteButton
+            disabled={isWriting}
+            onWrite={() => {
+              void Promise.resolve(writeBlog(topic.id)).catch(() => undefined);
+            }}
+          />
+          <CalendarRemoveTopicButton
+            onRemoved={onClose}
+            removeTopicFromCalendar={removeTopicFromCalendar}
+            topicId={topic.id}
+          />
+          <DeleteActionButton
+            confirmMessage="Delete this topic? Articles already created from it will stay in Articles."
+            label="Delete"
+            onDelete={async () => {
+              await deleteTopic(topic.id);
+              onClose();
+            }}
+          />
+        </div>
+        {isBriefOpen ? (
+          <TopicBriefDialog
+            key={topic.id}
+            onClose={() => setIsBriefOpen(false)}
+            refreshTopicBrief={refreshTopicBrief}
+            saveTopicBrief={saveTopicBrief}
+            topic={topic}
+          />
+        ) : null}
+        <TopicRepurposeDialog
+          isOpen={isRepurposeOpen}
+          onClose={() => setIsRepurposeOpen(false)}
+          onRepurpose={(sourceText) => writeBlog(topic.id, { sourceText })}
+          topic={topic}
+        />
+      </article>
+    </div>
+  );
+};

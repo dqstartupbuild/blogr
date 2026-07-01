@@ -4,11 +4,13 @@ import type { GoogleSearchScraperRecord } from "./types/GoogleSearchScraperRecor
 type RunGoogleSearchScraperOptions = {
   includeAiMode?: boolean;
   queries: string[];
+  timeoutMs?: number;
 };
 
 export const runGoogleSearchScraper = async ({
   includeAiMode = false,
   queries,
+  timeoutMs = 240000,
 }: RunGoogleSearchScraperOptions): Promise<GoogleSearchScraperRecord[]> => {
   const cleanQueries = Array.from(
     new Set(queries.map((query) => query.trim()).filter(Boolean)),
@@ -58,7 +60,7 @@ export const runGoogleSearchScraper = async ({
       "Content-Type": "application/json",
     },
     method: "POST",
-    signal: AbortSignal.timeout(240000),
+    signal: AbortSignal.timeout(timeoutMs),
   });
 
   if (!response.ok) {
