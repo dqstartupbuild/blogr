@@ -2,6 +2,7 @@ import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
 import { blogGenerationSettingsValidator } from "./products/blogGenerationSettingsValidator";
 import { blogPublishingIntegrationValidator } from "./products/blogPublishingIntegrationValidator";
+import { topicSourceTypeValidator } from "./topics/topicSourceTypeValidator";
 
 const linkValidator = v.object({
   isActive: v.optional(v.boolean()),
@@ -52,8 +53,12 @@ export default defineSchema({
     userId: v.string(),
     productId: v.optional(v.id("products")),
     keyword: v.string(),
+    canonicalKeyword: v.optional(v.string()),
+    intentKey: v.optional(v.string()),
     searchText: v.optional(v.string()),
     notes: v.optional(v.string()),
+    scheduledDate: v.optional(v.string()),
+    sourceType: v.optional(topicSourceTypeValidator),
     status: v.union(
       v.literal("saved"),
       v.literal("writing"),
@@ -71,6 +76,11 @@ export default defineSchema({
       "userId",
       "productId",
       "createdAt",
+    ])
+    .index("by_userId_productId_scheduledDate", [
+      "userId",
+      "productId",
+      "scheduledDate",
     ])
     .searchIndex("search_user_topics", {
       searchField: "searchText",

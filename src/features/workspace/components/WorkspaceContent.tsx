@@ -4,6 +4,7 @@ import { useState } from "react";
 import { BlogPreviewSidebar } from "./BlogPreviewSidebar";
 import { BlogPublishingIntegrationPanel } from "./BlogPublishingIntegrationPanel";
 import { BlogsPanel } from "./BlogsPanel";
+import { CalendarPanel } from "./CalendarPanel";
 import { DashboardPanel } from "./DashboardPanel";
 import { ProductLinksPanel } from "./ProductLinksPanel";
 import { ProductSetupPanel } from "./ProductSetupPanel";
@@ -14,14 +15,18 @@ import { WorkspaceShell } from "./WorkspaceShell";
 import type { BlogItem } from "../types/BlogItem";
 import type { BlogGenerationSettings } from "../types/BlogGenerationSettings";
 import type { BlogListViewState } from "../types/BlogListViewState";
+import type { AddScheduledTopic } from "../types/AddScheduledTopic";
+import type { CalendarState } from "../types/CalendarState";
 import type { DeleteBlog } from "../types/DeleteBlog";
 import type { DeleteTopic } from "../types/DeleteTopic";
 import type { DiscoverBlogRefreshIdeas } from "../types/DiscoverBlogRefreshIdeas";
+import type { FillCalendarBlankDays } from "../types/FillCalendarBlankDays";
 import type { ProductProfile } from "../types/ProductProfile";
 import type { ProductLinksState } from "../types/ProductLinksState";
 import type { ProductScanState } from "../types/ProductScanState";
 import type { RefreshProductLinks } from "../types/RefreshProductLinks";
 import type { RefreshTopicBrief } from "../types/RefreshTopicBrief";
+import type { RemoveTopicFromCalendar } from "../types/RemoveTopicFromCalendar";
 import type { SaveTopicBrief } from "../types/SaveTopicBrief";
 import type { RegenerateBlogImage } from "../types/RegenerateBlogImage";
 import type { SetProductLinkActive } from "../types/SetProductLinkActive";
@@ -35,14 +40,18 @@ import type { BlogPublishingIntegrationDraft } from "../types/integrations/BlogP
 import type { DiscoverTopicIdeas } from "../types/topicDiscovery/DiscoverTopicIdeas";
 
 type WorkspaceContentProps = {
+  addScheduledTopic: AddScheduledTopic;
   addTopic: (keyword: string, notes?: string) => void | Promise<void>;
   blogGenerationSettings: BlogGenerationSettings;
   blogListState: BlogListViewState;
   blogs: BlogItem[];
+  calendarState: CalendarState;
+  calendarTopics: TopicItem[];
   deleteBlog: DeleteBlog;
   deleteTopic: DeleteTopic;
   discoverBlogRefreshIdeas: DiscoverBlogRefreshIdeas;
   discoverTopicIdeas: DiscoverTopicIdeas;
+  fillCalendarBlankDays: FillCalendarBlankDays;
   isSavingBlogPublishingIntegration: boolean;
   isSavingBlogGenerationSettings: boolean;
   mode: WorkspaceViewMode;
@@ -52,6 +61,7 @@ type WorkspaceContentProps = {
   productScanState: ProductScanState;
   refreshTopicBrief: RefreshTopicBrief;
   refreshProductLinks: RefreshProductLinks;
+  removeTopicFromCalendar: RemoveTopicFromCalendar;
   regenerateImage?: RegenerateBlogImage;
   saveTopicBrief: SaveTopicBrief;
   saveBlogGenerationSettings: (
@@ -78,14 +88,18 @@ type WorkspaceContentProps = {
 };
 
 export const WorkspaceContent = ({
+  addScheduledTopic,
   addTopic,
   blogGenerationSettings,
   blogListState,
   blogs,
+  calendarState,
+  calendarTopics,
   deleteBlog,
   deleteTopic,
   discoverBlogRefreshIdeas,
   discoverTopicIdeas,
+  fillCalendarBlankDays,
   isSavingBlogPublishingIntegration,
   isSavingBlogGenerationSettings,
   mode,
@@ -95,6 +109,7 @@ export const WorkspaceContent = ({
   productScanState,
   refreshTopicBrief,
   refreshProductLinks,
+  removeTopicFromCalendar,
   regenerateImage,
   saveTopicBrief,
   saveBlogGenerationSettings,
@@ -163,6 +178,20 @@ export const WorkspaceContent = ({
               selectedBlogId={selectedBlogId}
             />
           ) : null}
+          {mode === "calendar" ? (
+            <CalendarPanel
+              addScheduledTopic={addScheduledTopic}
+              calendarState={calendarState}
+              deleteTopic={deleteTopic}
+              fillCalendarBlankDays={fillCalendarBlankDays}
+              openBlogPreview={openBlogPreview}
+              refreshTopicBrief={refreshTopicBrief}
+              removeTopicFromCalendar={removeTopicFromCalendar}
+              saveTopicBrief={saveTopicBrief}
+              topics={calendarTopics}
+              writeBlog={writeBlog}
+            />
+          ) : null}
           {mode === "settings" ? (
             <div className="space-y-5">
               <WorkspacePageHeader
@@ -203,7 +232,7 @@ export const WorkspaceContent = ({
             </div>
           ) : null}
         </main>
-        {mode === "dashboard" || mode === "blogs" ? (
+        {mode === "dashboard" || mode === "blogs" || mode === "calendar" ? (
           <BlogPreviewSidebar
             blog={selectedBlog}
             deleteBlog={deleteBlogAndClosePreview}

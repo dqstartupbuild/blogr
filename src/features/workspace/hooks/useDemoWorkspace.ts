@@ -19,6 +19,7 @@ import { filterBlogsByStatus } from "../utils/filterBlogsByStatus";
 import { filterBlogsByTopic } from "../utils/filterBlogsByTopic";
 import { filterTopicsBySearch } from "../utils/filterTopicsBySearch";
 import { filterTopicsByStatus } from "../utils/filterTopicsByStatus";
+import { getNextCalendarDateKeys } from "../utils/getNextCalendarDateKeys";
 import { getUniqueBlogTopics } from "../utils/getUniqueBlogTopics";
 import { mergePreviewBlogs } from "../utils/mergePreviewBlogs";
 import { countPublishedBlogs } from "../utils/countPublishedBlogs";
@@ -83,6 +84,9 @@ export const useDemoWorkspace = (initialMode: WorkspaceViewMode) => {
     useState<BlogStatusFilter>("unpublished");
   const [blogSearchQuery, setBlogSearchQuery] = useState("");
   const [blogTopicFilter, setBlogTopicFilter] = useState("all");
+  const [calendarMessage, setCalendarMessage] = useState("");
+  const [isFillingCalendar, setIsFillingCalendar] = useState(false);
+  const calendarDateKeys = useMemo(() => getNextCalendarDateKeys(30), []);
   const {
     canGoPrevious: canGoToPreviousTopicPage,
     goToNextPage: goToNextTopicPage,
@@ -161,6 +165,22 @@ export const useDemoWorkspace = (initialMode: WorkspaceViewMode) => {
       topicCount: workspaceTopics.length,
     }),
     [workspaceBlogs, workspaceTopics],
+  );
+  const calendarTopics = useMemo(
+    () =>
+      workspaceTopics.filter((topic) =>
+        calendarDateKeys.includes(topic.scheduledDate || ""),
+      ),
+    [calendarDateKeys, workspaceTopics],
+  );
+  const calendarState = useMemo(
+    () => ({
+      dateKeys: calendarDateKeys,
+      isFilling: isFillingCalendar,
+      isLoading: false,
+      message: calendarMessage,
+    }),
+    [calendarDateKeys, calendarMessage, isFillingCalendar],
   );
   const topicListState: TopicListViewState = useMemo(
     () => ({
@@ -365,12 +385,112 @@ export const useDemoWorkspace = (initialMode: WorkspaceViewMode) => {
     resetTopicPagination();
   };
 
+  const addScheduledTopic = (
+    keyword: string,
+    scheduledDate: string,
+    notes?: string,
+  ) => {
+    const trimmed = keyword.trim();
+    if (!trimmed) return;
+
+    const topicId = `topic-${Date.now()}-${Math.random()
+      .toString(16)
+      .slice(2)}`;
+
+    setTopicsByWorkspace((current) => ({
+      ...current,
+      [activeWorkspaceId]: [
+        {
+          id: topicId,
+          keyword: trimmed,
+          notes,
+          scheduledDate,
+          sourceType: "manual",
+          status: "saved",
+        },
+        ...(current[activeWorkspaceId] || []),
+      ],
+    }));
+    setCalendarMessage("Topic added.");
+    resetTopicPagination();
+  };
+
+  const removeTopicFromCalendar = (topicId: string) => {
+    setTopicsByWorkspace((current) => ({
+      ...current,
+      [activeWorkspaceId]: (current[activeWorkspaceId] || []).map((topic) =>
+        topic.id === topicId
+          ? {
+              ...topic,
+              scheduledDate: undefined,
+            }
+          : topic,
+      ),
+    }));
+    setCalendarMessage("Topic removed from the calendar.");
+  };
+
+  const fillCalendarBlankDays = () => {
+    const occupiedDates = new Set(
+      calendarTopics
+        .map((topic) => topic.scheduledDate)
+        .filter((date): date is string => Boolean(date)),
+    );
+    const blankDates = calendarDateKeys.filter(
+      (date) => !occupiedDates.has(date),
+    );
+    const existingKeywords = new Set(
+      workspaceTopics.map((topic) => topic.keyword.toLowerCase()),
+    );
+    const ideas = demoTopicDiscoveryResult.ideas.filter(
+      (idea) => !existingKeywords.has(idea.title.toLowerCase()),
+    );
+
+    if (blankDates.length === 0) {
+      setCalendarMessage("No empty days to fill.");
+      return;
+    }
+
+    setIsFillingCalendar(true);
+
+    const topicsToAdd = blankDates.slice(0, ideas.length).map((date, index) => ({
+      id: `topic-calendar-${Date.now()}-${index}`,
+      keyword: ideas[index].title,
+      notes: buildExistingTopicBriefNotes(
+        {
+          id: `topic-calendar-${index}`,
+          keyword: ideas[index].title,
+          status: "saved" as const,
+        },
+        demoTopicDiscoveryResult,
+      ),
+      scheduledDate: date,
+      sourceType: "discovery" as const,
+      status: "saved" as const,
+    }));
+
+    setTopicsByWorkspace((current) => ({
+      ...current,
+      [activeWorkspaceId]: [
+        ...topicsToAdd,
+        ...(current[activeWorkspaceId] || []),
+      ],
+    }));
+    setCalendarMessage(
+      topicsToAdd.length > 0
+        ? `Saved ${topicsToAdd.length} new topics.`
+        : "No unique topics found yet.",
+    );
+    setIsFillingCalendar(false);
+    resetTopicPagination();
+  };
+
   const discoverTopicIdeas = async () => {
     return demoTopicDiscoveryResult;
   };
 
   const refreshTopicBrief = async (topicId: string) => {
-    const topic = topics.find((item) => item.id === topicId);
+    const topic = workspaceTopics.find((item) => item.id === topicId);
 
     if (!topic) {
       throw new Error("Topic not found.");
@@ -391,7 +511,7 @@ export const useDemoWorkspace = (initialMode: WorkspaceViewMode) => {
   const saveTopicBrief = async (topicId: string, notes: string) => {
     const trimmedNotes = notes.trim();
 
-    if (!topics.some((topic) => topic.id === topicId)) {
+    if (!workspaceTopics.some((topic) => topic.id === topicId)) {
       throw new Error("Topic not found.");
     }
 
@@ -417,7 +537,7 @@ export const useDemoWorkspace = (initialMode: WorkspaceViewMode) => {
     setBlogsByWorkspace((current) => ({
       ...current,
       [activeWorkspaceId]: (current[activeWorkspaceId] || []).map((blog) =>
-        topics.find((topic) => topic.id === topicId)?.blogId === blog.id
+        workspaceTopics.find((topic) => topic.id === topicId)?.blogId === blog.id
           ? { ...blog, updatedAt: Date.now() }
           : blog,
       ),
@@ -430,7 +550,7 @@ export const useDemoWorkspace = (initialMode: WorkspaceViewMode) => {
   };
 
   const writeBlog = (topicId: string, options?: WriteBlogOptions) => {
-    const topic = topics.find((item) => item.id === topicId);
+    const topic = workspaceTopics.find((item) => item.id === topicId);
     if (!topic) return;
 
     const sourceText = options?.sourceText?.trim();
@@ -599,6 +719,7 @@ export const useDemoWorkspace = (initialMode: WorkspaceViewMode) => {
   };
 
   return {
+    addScheduledTopic,
     mode,
     setMode,
     blogGenerationSettings,
@@ -618,6 +739,8 @@ export const useDemoWorkspace = (initialMode: WorkspaceViewMode) => {
     topics,
     topicListState,
     blogs,
+    calendarState,
+    calendarTopics,
     workspaceSummary,
     selectedBlog,
     selectedBlogId,
@@ -627,10 +750,12 @@ export const useDemoWorkspace = (initialMode: WorkspaceViewMode) => {
     addTopic,
     discoverBlogRefreshIdeas,
     discoverTopicIdeas,
+    fillCalendarBlankDays,
     deleteBlog,
     deleteTopic,
     refreshTopicBrief,
     refreshProductLinks,
+    removeTopicFromCalendar,
     saveTopicBrief,
     saveBlogGenerationSettings,
     saveBlogPublishingIntegration,

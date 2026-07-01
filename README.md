@@ -73,6 +73,7 @@ npx convex env set R2_BUCKET <bucket>
 - [Product link management](docs/product-link-management.md)
 - [Topic workspace](docs/topic-workspace.md)
 - [Topic discovery](docs/topic-discovery.md)
+- [Content calendar](docs/content-calendar.md)
 - [Blog generation workflow](docs/blog-generation-workflow.md)
 - [Associate brand links](docs/associate-brand-links.md)
 - [Article image planning agent](docs/article-image-planning-agent.md)

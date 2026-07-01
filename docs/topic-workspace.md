@@ -6,6 +6,8 @@ The workspace lets a user paste a keyword, save it as a topic, come back later, 
 
 The Topics tab can also find search-informed topic ideas. Users review suggested ideas in a checkbox queue before saving them, and saved discovered topics carry a writing brief in topic notes.
 
+The Calendar tab plans one keyword per day for the next 30 days. Users can add a topic to an empty day, remove a topic from a day, fill blank days in one batch, edit or refresh briefs, write articles, and open written articles from the calendar.
+
 Users can filter the topic list by status: all, saved, writing, written, or failed. Users can also filter blogs by all, unpublished, published, or topic.
 
 The Topics and Articles tabs load 10 rows per page. Previous and Next controls move through matching rows without loading the whole list into the tab.
@@ -42,6 +44,8 @@ Topic discovery calls `POST /api/topics/discover`, runs Apify Google Search Scra
 
 The discovery dialog also exposes non-topic insights as planning rows. Users can save People Also Ask questions, content gaps, comparison ideas, clusters, refresh suggestions, AI answer notes, and difficulty notes as topics with notes. Content gap rows save the actual gap title as the topic, while the row badge shows that it came from a gap.
 
+The calendar batch flow calls `POST /api/topics/batch-plan`, dedupes discovery outputs into canonical topic candidates, and saves them through `createScheduledTopicBatch`. It fills only blank dates in the 30-day window and never replaces already scheduled topics.
+
 Blog rows and the blog editor expose **Find refresh ideas** for existing blogs. In the blog list, users can filter unpublished and published posts, then save a refresh plan as a topic. In the editor, users can save the plan or add it directly to the draft.
 
 The Settings tab includes product setup, article settings, and a **Publishing** panel for the active product. The Publishing panel includes a setup guide, a copyable Codex prompt for the receiving app, webhook details, and the per-product connection fields. The selected blog preview exposes **Publish**, which sends the current blog to that product's saved webhook destination through `POST /api/blogs/publish`.
@@ -70,6 +74,9 @@ The Settings tab includes product setup, article settings, and a **Publishing** 
 - `src/features/workspace/components/BlogRefreshDialog.tsx`
 - `src/features/workspace/components/BlogPublishingIntegrationPanel.tsx`
 - `src/features/workspace/components/BlogPublishButton.tsx`
+- `src/features/workspace/components/CalendarPanel.tsx`
+- `src/features/workspace/components/CalendarGrid.tsx`
+- `src/features/workspace/components/CalendarDayCell.tsx`
 - `src/features/workspace/components/FilteredBlogList.tsx`
 - `src/features/workspace/components/FilteredTopicList.tsx`
 - `src/features/workspace/components/ListPaginationControls.tsx`
@@ -85,6 +92,10 @@ The Settings tab includes product setup, article settings, and a **Publishing** 
 - `convex/products/setActiveProductWorkspace.ts`
 - `convex/products/createProductWorkspace.ts`
 - `convex/topics/createTopic.ts`
+- `convex/topics/createScheduledTopic.ts`
+- `convex/topics/createScheduledTopicBatch.ts`
+- `convex/topics/listScheduledTopics.ts`
+- `convex/topics/updateTopicScheduledDate.ts`
 - `convex/topics/listTopics.ts`
 - `convex/blogs/listBlogs.ts`
 - `convex/blogs/listBlogTopicKeywords.ts`
@@ -109,6 +120,10 @@ The Settings tab includes product setup, article settings, and a **Publishing** 
 - Connect publishing for each product from Settings.
 - Publish a generated blog to a connected blog app.
 - Keep topics separate from finished blogs.
+- Plan the next 30 days of scheduled keywords from `/calendar`.
+- Fill empty calendar days without overwriting days that already have topics.
+- Remove a topic from the calendar while keeping the topic in the workspace.
+- Open a scheduled topic's written article preview from the calendar.
 - Revisit the blog list on `/blogs`.
 - Keep each product or client project separate.
 - Check the whole layout before auth keys are available.
@@ -118,11 +133,13 @@ The Settings tab includes product setup, article settings, and a **Publishing** 
 ```text
 src/app/page.tsx
 src/app/blogs/page.tsx
+src/app/calendar/page.tsx
 src/features/workspace/components/
 src/features/workspace/hooks/
 src/features/workspace/mappers/
 src/features/workspace/types/
 src/app/api/topics/discover/
+src/app/api/topics/batch-plan/
 src/server/apify/
 src/server/topics/
 convex/products/

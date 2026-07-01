@@ -2,7 +2,7 @@
 
 ## What It Does
 
-Convex stores product workspaces, blog generation settings, blog publishing integrations, R2 image keys, active workspace selections, saved topics, generated blogs, list search metadata, blog tags, and component-managed product context embeddings.
+Convex stores product workspaces, blog generation settings, blog publishing integrations, R2 image keys, active workspace selections, saved topics, scheduled topic dates, topic dedupe metadata, generated blogs, list search metadata, blog tags, and component-managed product context embeddings.
 
 ## Tables
 
@@ -24,6 +24,15 @@ Product `siteLinks` include optional `isActive`. Missing values are active. Link
 Generated blog images can include an `r2Key` beside the served image URL. Blog and product queries use those keys to return fresh signed URLs from the Convex R2 component.
 
 Topics and blogs can store `searchText` so list search can use Convex search indexes while still returning one paginated page at a time.
+
+Topics can also store optional calendar fields:
+
+- `scheduledDate`
+- `sourceType`
+- `canonicalKeyword`
+- `intentKey`
+
+The calendar uses these fields to plan one keyword per day for the next 30 days. Batch scheduling uses `intentKey` and canonical keywords to skip duplicates and avoid overwriting filled days.
 
 Generated blogs store a visible article title and can store a separate `seoTitle`. Existing blogs without `seoTitle` fall back to the visible title in the UI. New generated posts normalize SEO titles to 70 to 110 characters and meta descriptions to 110 to 160 characters.
 

@@ -8,6 +8,8 @@ The app does not save every scraped idea automatically. It shows a review queue 
 
 The discovery dialog also shows planning ideas from the same search run. Users can save questions, gaps, comparison ideas, clusters, refresh notes, AI answer notes, and difficulty notes as planning topics.
 
+The content calendar also uses discovery data for batch planning. In that flow, the app converts normal ideas, gaps, questions, comparison ideas, AI answer notes, and difficulty notes into one shared candidate shape before saving anything. Similar candidates are grouped into one canonical scheduled topic so the calendar does not create several articles that compete for the same search intent.
+
 ## How It Works
 
 The client calls `POST /api/topics/discover` with the current product profile, existing topics, existing blogs, a seed keyword, and whether to check AI answers.
@@ -43,6 +45,8 @@ When the user writes a blog from that topic, `useLiveWorkspace` sends the saved 
 
 When a user clicks **Save plan** on a non-topic insight, the app saves that insight as a topic with its source context in notes. That gives users a simple way to turn gaps, refresh ideas, comparison angles, AI answer notes, and difficulty notes into work they can write or plan from later. Content gap plans save the actual gap title instead of an internal instruction like `Cover this gap`.
 
+When the calendar fills empty days, those same insight types are not saved as separate planning rows. They are first deduped by canonical keyword and intent key, then merged into the notes for one scheduled topic.
+
 Existing topics also have a **Find brief** or **View brief** action. Users can review the saved notes, refresh the brief from a new search, and then write the topic with that brief.
 
 Existing blogs have **Find refresh ideas**. Users can search again for the blog keyword, save refresh plans as topics, or add a plan directly to the draft from the blog editor.
@@ -67,6 +71,9 @@ APIFY_TOKEN=
 - `src/server/topics/extractSerpSignals.ts`
 - `src/server/topics/generateTopicIdeas.ts`
 - `src/server/topics/createFallbackTopicDiscoveryResult.ts`
+- `src/app/api/topics/batch-plan/route.ts`
+- `src/server/topics/buildTopicCandidatesFromDiscovery.ts`
+- `src/server/topics/buildUniqueTopicCandidates.ts`
 - `src/features/workspace/components/TopicDiscoveryLauncher.tsx`
 - `src/features/workspace/components/TopicDiscoveryDialog.tsx`
 - `src/features/workspace/components/TopicDiscoveryPlanList.tsx`
@@ -90,6 +97,8 @@ APIFY_TOKEN=
 - Refresh older blogs with questions and angles that now appear in search.
 - Refresh the brief for a topic that was saved before discovery existed.
 - Add a refresh plan directly to an existing blog draft.
+- Fill blank calendar days with unique scheduled topics.
+- Merge duplicate discovery buckets before creating a 30-day plan.
 
 ## File Tree
 

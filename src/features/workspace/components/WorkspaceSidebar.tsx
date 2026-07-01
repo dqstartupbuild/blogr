@@ -1,6 +1,6 @@
 "use client";
 
-import { FileText, Home, ListChecks, Settings2 } from "lucide-react";
+import { CalendarDays, FileText, Home, ListChecks, Settings2 } from "lucide-react";
 import { AuthActions } from "@/features/auth/components/AuthActions";
 import { WorkspaceLogo } from "./WorkspaceLogo";
 import { WorkspaceSidebarLink } from "./WorkspaceSidebarLink";
@@ -33,7 +33,7 @@ export const WorkspaceSidebar = ({
       </div>
       <nav
         aria-label="Workspace"
-        className="fixed inset-x-0 bottom-0 z-50 grid grid-cols-4 gap-1 border-t border-black/10 bg-white px-2 pb-[calc(0.5rem+env(safe-area-inset-bottom))] pt-2 shadow-[0_-8px_24px_rgba(0,0,0,0.08)] lg:static lg:mt-6 lg:grid-cols-1 lg:border-t-0 lg:bg-transparent lg:p-0 lg:shadow-none"
+        className="fixed inset-x-0 bottom-0 z-50 grid grid-cols-5 gap-1 border-t border-black/10 bg-white px-2 pb-[calc(0.5rem+env(safe-area-inset-bottom))] pt-2 shadow-[0_-8px_24px_rgba(0,0,0,0.08)] lg:static lg:mt-6 lg:grid-cols-1 lg:border-t-0 lg:bg-transparent lg:p-0 lg:shadow-none"
       >
         <WorkspaceSidebarLink
           href="/"
@@ -49,6 +49,14 @@ export const WorkspaceSidebar = ({
           isActive={mode === "topics"}
           label="Topics"
           mode="topics"
+          setMode={setMode}
+        />
+        <WorkspaceSidebarLink
+          href="/calendar"
+          icon={CalendarDays}
+          isActive={mode === "calendar"}
+          label="Calendar"
+          mode="calendar"
           setMode={setMode}
         />
         <WorkspaceSidebarLink

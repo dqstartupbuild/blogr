@@ -28,8 +28,12 @@ export const updateTopicNotes = mutation({
 
     await ctx.db.patch(args.topicId, {
       searchText: buildTopicSearchText({
+        canonicalKeyword: topic.canonicalKeyword,
+        intentKey: topic.intentKey,
         keyword: topic.keyword,
         notes,
+        scheduledDate: topic.scheduledDate,
+        sourceType: topic.sourceType,
       }),
       notes: notes || undefined,
       productId: topic.productId || args.productId,

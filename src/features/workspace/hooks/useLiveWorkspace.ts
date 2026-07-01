@@ -4,6 +4,8 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery } from "convex/react";
 import { castBlogId } from "@/server/convex/castBlogId";
 import { castProductId } from "@/server/convex/castProductId";
+import { createScheduledTopicMutation } from "@/server/convex/references/createScheduledTopicMutation";
+import { createScheduledTopicBatchMutation } from "@/server/convex/references/createScheduledTopicBatchMutation";
 import { createTopicMutation } from "@/server/convex/references/createTopicMutation";
 import { deleteBlogMutation } from "@/server/convex/references/deleteBlogMutation";
 import { deleteTopicMutation } from "@/server/convex/references/deleteTopicMutation";
@@ -12,11 +14,14 @@ import { getCurrentProductQuery } from "@/server/convex/references/getCurrentPro
 import { getWorkspaceSummaryQuery } from "@/server/convex/references/getWorkspaceSummaryQuery";
 import { listBlogTopicKeywordsQuery } from "@/server/convex/references/listBlogTopicKeywordsQuery";
 import { listBlogsQuery } from "@/server/convex/references/listBlogsQuery";
+import { listScheduledTopicsQuery } from "@/server/convex/references/listScheduledTopicsQuery";
+import { listTopicKeywordsQuery } from "@/server/convex/references/listTopicKeywordsQuery";
 import { listTopicsQuery } from "@/server/convex/references/listTopicsQuery";
 import { saveProductScanMutation } from "@/server/convex/references/saveProductScanMutation";
 import { updateBlogPublishingIntegrationMutation } from "@/server/convex/references/updateBlogPublishingIntegrationMutation";
 import { updateProductSiteLinksMutation } from "@/server/convex/references/updateProductSiteLinksMutation";
 import { updateTopicNotesMutation } from "@/server/convex/references/updateTopicNotesMutation";
+import { updateTopicScheduledDateMutation } from "@/server/convex/references/updateTopicScheduledDateMutation";
 import { updateTopicStatusMutation } from "@/server/convex/references/updateTopicStatusMutation";
 import { updateBlogGenerationSettingsMutation } from "@/server/convex/references/updateBlogGenerationSettingsMutation";
 import { upsertGeneratedBlogMutation } from "@/server/convex/references/upsertGeneratedBlogMutation";
@@ -31,10 +36,12 @@ import { mapProductScanResult } from "../mappers/mapProductScanResult";
 import { buildBlogRefreshSeedKeyword } from "../utils/buildBlogRefreshSeedKeyword";
 import { buildExistingTopicBriefNotes } from "../utils/buildExistingTopicBriefNotes";
 import { filterActiveLinks } from "../utils/filterActiveLinks";
+import { getNextCalendarDateKeys } from "../utils/getNextCalendarDateKeys";
 import { mergeProductLinkStates } from "../utils/mergeProductLinkStates";
 import { mergePreviewBlogs } from "../utils/mergePreviewBlogs";
 import { normalizeBlogGenerationSettings } from "../utils/normalizeBlogGenerationSettings";
 import { setProductLinkActiveState } from "../utils/setProductLinkActiveState";
+import type { CalendarBatchPlanResponse } from "../types/calendar/CalendarBatchPlanResponse";
 import type { BlogGenerateResponse } from "../types/BlogGenerateResponse";
 import type { BlogGenerationSettings } from "../types/BlogGenerationSettings";
 import type { BlogListViewState } from "../types/BlogListViewState";
@@ -90,6 +97,9 @@ export const useLiveWorkspace = (
     useState<BlogStatusFilter>("unpublished");
   const [blogSearchQuery, setBlogSearchQuery] = useState("");
   const [blogTopicFilter, setBlogTopicFilter] = useState("all");
+  const [calendarMessage, setCalendarMessage] = useState("");
+  const [isFillingCalendar, setIsFillingCalendar] = useState(false);
+  const calendarDateKeys = useMemo(() => getNextCalendarDateKeys(30), []);
   const {
     canGoPrevious: canGoToPreviousTopicPage,
     goToNextPage: goToNextTopicPage,
@@ -158,7 +168,23 @@ export const useLiveWorkspace = (
   );
   const blogTopicKeywordResults = useQuery(
     listBlogTopicKeywordsQuery,
-    convexProductId && mode === "blogs"
+    convexProductId && (mode === "blogs" || mode === "calendar")
+      ? { productId: convexProductId }
+      : "skip",
+  );
+  const scheduledTopicResults = useQuery(
+    listScheduledTopicsQuery,
+    convexProductId && mode === "calendar"
+      ? {
+          endDate: calendarDateKeys[calendarDateKeys.length - 1],
+          productId: convexProductId,
+          startDate: calendarDateKeys[0],
+        }
+      : "skip",
+  );
+  const topicKeywordResults = useQuery(
+    listTopicKeywordsQuery,
+    convexProductId && mode === "calendar"
       ? { productId: convexProductId }
       : "skip",
   );
@@ -167,6 +193,10 @@ export const useLiveWorkspace = (
     convexProductId && mode === "dashboard"
       ? { productId: convexProductId }
       : "skip",
+  );
+  const createScheduledTopic = useMutation(createScheduledTopicMutation);
+  const createScheduledTopicBatch = useMutation(
+    createScheduledTopicBatchMutation,
   );
   const createTopic = useMutation(createTopicMutation);
   const deleteBlogRecord = useMutation(deleteBlogMutation);
@@ -180,6 +210,9 @@ export const useLiveWorkspace = (
     updateBlogPublishingIntegrationMutation,
   );
   const updateTopicNotes = useMutation(updateTopicNotesMutation);
+  const updateTopicScheduledDate = useMutation(
+    updateTopicScheduledDateMutation,
+  );
   const updateTopicStatus = useMutation(updateTopicStatusMutation);
   const upsertGeneratedBlog = useMutation(upsertGeneratedBlogMutation);
 
@@ -215,6 +248,37 @@ export const useLiveWorkspace = (
   const blogs: BlogItem[] = useMemo(
     () => (blogResults?.page || []).map(mapConvexBlog),
     [blogResults],
+  );
+  const calendarTopics = useMemo(
+    () => (scheduledTopicResults || []).map(mapConvexTopic),
+    [scheduledTopicResults],
+  );
+  const visibleTopics = useMemo(() => {
+    const topicMap = new Map<string, ReturnType<typeof mapConvexTopic>>();
+
+    [...topics, ...calendarTopics].forEach((topic) => {
+      topicMap.set(topic.id, topic);
+    });
+
+    return Array.from(topicMap.values());
+  }, [calendarTopics, topics]);
+  const calendarState = useMemo(
+    () => ({
+      dateKeys: calendarDateKeys,
+      isFilling: isFillingCalendar,
+      isLoading: Boolean(
+        convexProductId && mode === "calendar" && !scheduledTopicResults,
+      ),
+      message: calendarMessage,
+    }),
+    [
+      calendarDateKeys,
+      calendarMessage,
+      convexProductId,
+      isFillingCalendar,
+      mode,
+      scheduledTopicResults,
+    ],
   );
   const blogTopicOptions = useMemo(
     () => [
@@ -510,6 +574,134 @@ export const useLiveWorkspace = (
     resetTopicPagination();
   };
 
+  const addScheduledTopic = async (
+    keyword: string,
+    scheduledDate: string,
+    notes?: string,
+  ) => {
+    if (!convexProductId) {
+      return;
+    }
+
+    await createScheduledTopic({
+      keyword,
+      notes,
+      productId: convexProductId,
+      scheduledDate,
+      sourceType: "manual",
+    });
+    setCalendarMessage("Topic added.");
+    resetTopicPagination();
+  };
+
+  const removeTopicFromCalendar = async (topicId: string) => {
+    if (!convexProductId) {
+      return;
+    }
+
+    await updateTopicScheduledDate({
+      productId: convexProductId,
+      scheduledDate: null,
+      topicId: castTopicId(topicId),
+    });
+    setCalendarMessage("Topic removed from the calendar.");
+    resetTopicPagination();
+  };
+
+  const fillCalendarBlankDays = async () => {
+    if (!convexProductId) {
+      return;
+    }
+
+    const occupiedDates = new Set(
+      calendarTopics
+        .map((topic) => topic.scheduledDate)
+        .filter((date): date is string => Boolean(date)),
+    );
+    const blankDates = calendarDateKeys.filter(
+      (date) => !occupiedDates.has(date),
+    );
+
+    if (blankDates.length === 0) {
+      setCalendarMessage("No empty days to fill.");
+      return;
+    }
+
+    const discoveryProduct = productResult
+      ? {
+          audience: productResult.audience,
+          competitors: productResult.competitors,
+          description: productResult.description,
+          name: productResult.name,
+          niche: productResult.niche,
+          rawContext: productResult.rawContext,
+          siteLinks: filterActiveLinks(productResult.siteLinks),
+          websiteUrl: productResult.websiteUrl,
+        }
+      : {
+          ...product,
+          siteLinks: filterActiveLinks(product.siteLinks),
+        };
+
+    if (!discoveryProduct.niche?.trim() && !discoveryProduct.description?.trim()) {
+      setCalendarMessage("Add a product niche before filling the calendar.");
+      return;
+    }
+
+    setIsFillingCalendar(true);
+    setCalendarMessage("Finding topics.");
+
+    try {
+      const response = await fetch("/api/topics/batch-plan", {
+        body: JSON.stringify({
+          blankDates,
+          existingBlogs: (blogTopicKeywordResults || []).map((keyword) => ({
+            keyword,
+            title: keyword,
+          })),
+          existingTopics: topicKeywordResults || [],
+          product: discoveryProduct,
+        }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+        method: "POST",
+      });
+      const data = (await response
+        .json()
+        .catch(() => ({}))) as CalendarBatchPlanResponse;
+
+      if (!response.ok || !data.topics) {
+        throw new Error(data.error || "Could not fill the calendar yet.");
+      }
+
+      if (data.topics.length === 0) {
+        setCalendarMessage("No unique topics found yet.");
+        return;
+      }
+
+      const result = await createScheduledTopicBatch({
+        productId: convexProductId,
+        topics: data.topics,
+      });
+
+      setCalendarMessage(
+        result.createdCount > 0
+          ? `Saved ${result.createdCount} new topics.`
+          : "No unique topics found yet.",
+      );
+      resetTopicPagination();
+    } catch (error) {
+      setCalendarMessage(
+        error instanceof Error
+          ? error.message
+          : "Could not fill the calendar yet.",
+      );
+    } finally {
+      setIsFillingCalendar(false);
+    }
+  };
+
   const discoverTopicIdeas = async ({
     includeAiAnswers,
     seedKeyword,
@@ -546,7 +738,7 @@ export const useLiveWorkspace = (
           title: blog.title,
           updatedAt: blog.updatedAt,
         })),
-        existingTopics: topics.map((topic) => ({
+        existingTopics: (topicKeywordResults || visibleTopics).map((topic) => ({
           keyword: topic.keyword,
         })),
         includeAiAnswers,
@@ -570,7 +762,7 @@ export const useLiveWorkspace = (
   };
 
   const refreshTopicBrief = async (topicId: string) => {
-    const topic = topics.find((item) => item.id === topicId);
+    const topic = visibleTopics.find((item) => item.id === topicId);
 
     if (!topic) {
       throw new Error("Topic not found.");
@@ -600,7 +792,7 @@ export const useLiveWorkspace = (
   };
 
   const saveTopicBrief = async (topicId: string, notes: string) => {
-    const topic = topics.find((item) => item.id === topicId);
+    const topic = visibleTopics.find((item) => item.id === topicId);
     const trimmedNotes = notes.trim();
 
     if (!topic) {
@@ -670,7 +862,7 @@ export const useLiveWorkspace = (
             updatedAt: blog.updatedAt,
           },
         ],
-        existingTopics: topics.map((topic) => ({
+        existingTopics: visibleTopics.map((topic) => ({
           keyword: topic.keyword,
         })),
         includeAiAnswers,
@@ -753,7 +945,7 @@ export const useLiveWorkspace = (
   };
 
   const writeBlog = async (topicId: string, options?: WriteBlogOptions) => {
-    const topic = topics.find((item) => item.id === topicId);
+    const topic = visibleTopics.find((item) => item.id === topicId);
     const sourceText = options?.sourceText?.trim();
 
     if (!topic) {
@@ -872,14 +1064,18 @@ export const useLiveWorkspace = (
   };
 
   return {
+    addScheduledTopic,
     addTopic,
     blogGenerationSettings,
     blogListState,
     blogs,
+    calendarState,
+    calendarTopics,
     deleteBlog,
     deleteTopic,
     discoverBlogRefreshIdeas,
     discoverTopicIdeas,
+    fillCalendarBlankDays,
     isSavingBlogPublishingIntegration,
     isSavingBlogGenerationSettings,
     mode,
@@ -896,6 +1092,7 @@ export const useLiveWorkspace = (
     regenerateImage,
     refreshProductLinks,
     refreshTopicBrief,
+    removeTopicFromCalendar,
     saveTopicBrief,
     saveBlogGenerationSettings,
     saveBlogPublishingIntegration,

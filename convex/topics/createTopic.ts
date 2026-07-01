@@ -1,6 +1,7 @@
 import { v } from "convex/values";
 import { mutation } from "../_generated/server";
 import { requireUserId } from "../identity/requireUserId";
+import { buildTopicIntentKey } from "./buildTopicIntentKey";
 import { buildTopicSearchText } from "./buildTopicSearchText";
 import { normalizeTopicKeyword } from "./normalizeTopicKeyword";
 
@@ -14,6 +15,7 @@ export const createTopic = mutation({
     const userId = await requireUserId(ctx);
     const product = await ctx.db.get(args.productId);
     const keyword = normalizeTopicKeyword(args.keyword);
+    const intentKey = buildTopicIntentKey(keyword) || keyword.toLowerCase();
     const notes = args.notes?.trim();
 
     if (!product || product.userId !== userId) {
@@ -29,9 +31,18 @@ export const createTopic = mutation({
     return await ctx.db.insert("topics", {
       userId,
       productId: args.productId,
+      canonicalKeyword: keyword,
+      intentKey: intentKey || keyword.toLowerCase(),
       keyword,
-      searchText: buildTopicSearchText({ keyword, notes }),
+      searchText: buildTopicSearchText({
+        canonicalKeyword: keyword,
+        intentKey,
+        keyword,
+        notes,
+        sourceType: "manual",
+      }),
       notes: notes || undefined,
+      sourceType: "manual",
       status: "saved",
       createdAt: now,
       updatedAt: now,
