@@ -53,6 +53,12 @@ export const updateTopicScheduledDate = mutation({
         scheduledDate,
         sourceType: topic.sourceType,
       }),
+      status:
+        scheduledDate && topic.status === "saved"
+          ? "scheduled"
+          : !scheduledDate && topic.status === "scheduled"
+            ? "saved"
+            : topic.status,
       updatedAt: Date.now(),
     });
   },

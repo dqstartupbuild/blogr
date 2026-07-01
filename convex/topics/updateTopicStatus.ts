@@ -1,17 +1,13 @@
 import { v } from "convex/values";
 import { mutation } from "../_generated/server";
 import { requireUserId } from "../identity/requireUserId";
+import { topicStatusValidator } from "./topicStatusValidator";
 
 export const updateTopicStatus = mutation({
   args: {
     topicId: v.id("topics"),
     productId: v.optional(v.id("products")),
-    status: v.union(
-      v.literal("saved"),
-      v.literal("writing"),
-      v.literal("written"),
-      v.literal("failed"),
-    ),
+    status: topicStatusValidator,
     blogId: v.optional(v.id("blogs")),
     lastError: v.optional(v.string()),
   },

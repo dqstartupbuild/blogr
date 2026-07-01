@@ -3,6 +3,10 @@ export const getTopicStatusLabel = (status: string) => {
     return "Saved";
   }
 
+  if (status === "scheduled") {
+    return "Scheduled";
+  }
+
   if (status === "writing") {
     return "Writing";
   }

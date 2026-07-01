@@ -8,6 +8,6 @@ export type TopicItem = {
   notes?: string;
   scheduledDate?: string;
   sourceType?: TopicSourceType;
-  status: "saved" | "writing" | "written" | "failed";
+  status: "saved" | "scheduled" | "writing" | "written" | "failed";
   blogId?: string;
 };

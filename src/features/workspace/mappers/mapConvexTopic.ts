@@ -1,4 +1,5 @@
 import type { TopicItem } from "../types/TopicItem";
+import { getScheduledAwareTopicStatus } from "../utils/getScheduledAwareTopicStatus";
 
 type ConvexTopicLike = {
   _id?: string;
@@ -22,6 +23,9 @@ export const mapConvexTopic = (topic: ConvexTopicLike): TopicItem => {
     notes: topic.notes,
     scheduledDate: topic.scheduledDate,
     sourceType: topic.sourceType,
-    status: topic.status || "saved",
+    status: getScheduledAwareTopicStatus({
+      scheduledDate: topic.scheduledDate,
+      status: topic.status,
+    }),
   };
 };

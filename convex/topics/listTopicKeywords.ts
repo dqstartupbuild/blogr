@@ -32,7 +32,7 @@ export const listTopicKeywords = query({
         | "refresh"
         | "aeo"
         | "difficulty";
-      status: "saved" | "writing" | "written" | "failed";
+      status: "saved" | "scheduled" | "writing" | "written" | "failed";
     }[] = [];
 
     if (productId) {

@@ -79,6 +79,7 @@ import type * as topics_removeTopicPlannerPrefix from "../topics/removeTopicPlan
 import type * as topics_tokenizeTopicIntent from "../topics/tokenizeTopicIntent.js";
 import type * as topics_topicIntentStopWords from "../topics/topicIntentStopWords.js";
 import type * as topics_topicSourceTypeValidator from "../topics/topicSourceTypeValidator.js";
+import type * as topics_topicStatusValidator from "../topics/topicStatusValidator.js";
 import type * as topics_updateTopicNotes from "../topics/updateTopicNotes.js";
 import type * as topics_updateTopicScheduledDate from "../topics/updateTopicScheduledDate.js";
 import type * as topics_updateTopicStatus from "../topics/updateTopicStatus.js";
@@ -163,6 +164,7 @@ declare const fullApi: ApiFromModules<{
   "topics/tokenizeTopicIntent": typeof topics_tokenizeTopicIntent;
   "topics/topicIntentStopWords": typeof topics_topicIntentStopWords;
   "topics/topicSourceTypeValidator": typeof topics_topicSourceTypeValidator;
+  "topics/topicStatusValidator": typeof topics_topicStatusValidator;
   "topics/updateTopicNotes": typeof topics_updateTopicNotes;
   "topics/updateTopicScheduledDate": typeof topics_updateTopicScheduledDate;
   "topics/updateTopicStatus": typeof topics_updateTopicStatus;

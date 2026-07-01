@@ -23,6 +23,8 @@ Scheduled topics are stored in the existing `topics` table with optional calenda
 
 The shared topic action dialog is used by both the Calendar and Topics views. It contains the writing controls and the calendar scheduling control, so a saved topic from the Topics page can be added to any open day in the current 30-day window.
 
+Topics on the calendar use the `scheduled` status. New calendar topics are saved with `status: "scheduled"`, and older records that still have `status: "saved"` plus a `scheduledDate` are treated as Scheduled in the UI and topic filters.
+
 When the user clicks **Fill empty days**, the client sends the blank dates, product profile, existing topics, and existing article keywords to `POST /api/topics/batch-plan`. The route tries Google discovery through Apify with a short calendar-specific timeout, generates topic discovery data when search is available, converts normal ideas, gaps, questions, comparison ideas, AI answer notes, and difficulty notes into one shared candidate shape, and adds a deep product-niche expansion pool. Similar candidates are grouped before scheduling, then one unique candidate is returned for each blank date.
 
 The client saves returned candidates through `createScheduledTopicBatch`. The mutation re-checks ownership, occupied dates, existing keywords, article keywords, and intent keys before inserting rows. If the calendar changed while planning was running, filled dates are skipped instead of overwritten.
@@ -63,11 +65,13 @@ The route builds enough long-tail product-niche candidates to fill the requested
 - `convex/topics/createScheduledTopic.ts`
 - `convex/topics/createScheduledTopicBatch.ts`
 - `convex/topics/updateTopicScheduledDate.ts`
+- `convex/topics/topicStatusValidator.ts`
 
 ## Use Cases
 
 - Plan the next 30 days of content without manually saving each keyword.
 - Fill only the blank days after manually adding a few priority topics.
+- Filter the Topics page to show scheduled topics.
 - Place a saved topic on a blank calendar day without creating a duplicate topic.
 - Add or move a saved topic from the Topics page through the shared topic dialog.
 - Keep similar keyword ideas from turning into competing articles.

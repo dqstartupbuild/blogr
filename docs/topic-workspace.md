@@ -109,7 +109,7 @@ The Settings tab includes product setup, article settings, and a **Publishing** 
 - Find search-informed topic ideas from a product profile and optional seed keyword.
 - Review noisy search results before saving topics.
 - Save search gaps, refresh notes, AI answer notes, and difficulty notes as planning topics.
-- Filter topics by status.
+- Filter topics by status, including scheduled topics that are already on the calendar.
 - Filter blogs by published status.
 - Browse topics and blogs in pages of 10.
 - Find or refresh a search brief for a saved topic.

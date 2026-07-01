@@ -118,7 +118,7 @@ export const createScheduledTopicBatch = mutation({
           sourceType,
         }),
         sourceType,
-        status: "saved",
+        status: "scheduled",
         updatedAt: now,
         userId,
       });

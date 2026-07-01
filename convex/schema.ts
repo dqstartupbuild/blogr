@@ -3,6 +3,7 @@ import { v } from "convex/values";
 import { blogGenerationSettingsValidator } from "./products/blogGenerationSettingsValidator";
 import { blogPublishingIntegrationValidator } from "./products/blogPublishingIntegrationValidator";
 import { topicSourceTypeValidator } from "./topics/topicSourceTypeValidator";
+import { topicStatusValidator } from "./topics/topicStatusValidator";
 
 const linkValidator = v.object({
   isActive: v.optional(v.boolean()),
@@ -59,12 +60,7 @@ export default defineSchema({
     notes: v.optional(v.string()),
     scheduledDate: v.optional(v.string()),
     sourceType: v.optional(topicSourceTypeValidator),
-    status: v.union(
-      v.literal("saved"),
-      v.literal("writing"),
-      v.literal("written"),
-      v.literal("failed"),
-    ),
+    status: topicStatusValidator,
     blogId: v.optional(v.id("blogs")),
     lastError: v.optional(v.string()),
     createdAt: v.number(),

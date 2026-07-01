@@ -377,7 +377,7 @@ export const useDemoWorkspace = (initialMode: WorkspaceViewMode) => {
           id: topicId,
           keyword: trimmed,
           notes,
-          status: "saved",
+          status: "scheduled",
         },
         ...(current[activeWorkspaceId] || []),
       ],
@@ -406,7 +406,7 @@ export const useDemoWorkspace = (initialMode: WorkspaceViewMode) => {
           notes,
           scheduledDate,
           sourceType: "manual",
-          status: "saved",
+          status: "scheduled",
         },
         ...(current[activeWorkspaceId] || []),
       ],
@@ -423,6 +423,7 @@ export const useDemoWorkspace = (initialMode: WorkspaceViewMode) => {
           ? {
               ...topic,
               scheduledDate: undefined,
+              status: topic.status === "scheduled" ? "saved" : topic.status,
             }
           : topic,
       ),
@@ -447,6 +448,7 @@ export const useDemoWorkspace = (initialMode: WorkspaceViewMode) => {
           ? {
               ...topic,
               scheduledDate,
+              status: topic.status === "saved" ? "scheduled" : topic.status,
             }
           : topic,
       ),
@@ -491,7 +493,7 @@ export const useDemoWorkspace = (initialMode: WorkspaceViewMode) => {
       ),
       scheduledDate: date,
       sourceType: "discovery" as const,
-      status: "saved" as const,
+      status: "scheduled" as const,
     }));
 
     setTopicsByWorkspace((current) => ({
@@ -636,7 +638,7 @@ export const useDemoWorkspace = (initialMode: WorkspaceViewMode) => {
           ? {
               ...topic,
               blogId: undefined,
-              status: "saved",
+              status: topic.scheduledDate ? "scheduled" : "saved",
             }
           : topic,
       ),

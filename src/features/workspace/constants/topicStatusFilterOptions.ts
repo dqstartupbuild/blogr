@@ -6,6 +6,7 @@ export const topicStatusFilterOptions: {
 }[] = [
   { label: "All", value: "all" },
   { label: "Saved", value: "saved" },
+  { label: "Scheduled", value: "scheduled" },
   { label: "Writing", value: "writing" },
   { label: "Written", value: "written" },
   { label: "Failed", value: "failed" },

@@ -36,6 +36,7 @@ import { mapProductScanResult } from "../mappers/mapProductScanResult";
 import { buildBlogRefreshSeedKeyword } from "../utils/buildBlogRefreshSeedKeyword";
 import { buildExistingTopicBriefNotes } from "../utils/buildExistingTopicBriefNotes";
 import { filterActiveLinks } from "../utils/filterActiveLinks";
+import { getScheduledAwareTopicStatus } from "../utils/getScheduledAwareTopicStatus";
 import { getNextCalendarDateKeys } from "../utils/getNextCalendarDateKeys";
 import { mergeProductLinkStates } from "../utils/mergeProductLinkStates";
 import { mergePreviewBlogs } from "../utils/mergePreviewBlogs";
@@ -280,7 +281,10 @@ export const useLiveWorkspace = (
         notes: topic.notes,
         scheduledDate: topic.scheduledDate,
         sourceType: topic.sourceType,
-        status: topic.status,
+        status: getScheduledAwareTopicStatus({
+          scheduledDate: topic.scheduledDate,
+          status: topic.status,
+        }),
       });
     });
 

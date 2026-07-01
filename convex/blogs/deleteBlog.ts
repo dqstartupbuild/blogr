@@ -25,7 +25,7 @@ export const deleteBlog = mutation({
       if (topic?.userId === userId && topic.blogId === args.blogId) {
         await ctx.db.patch(blog.topicId, {
           blogId: undefined,
-          status: "saved",
+          status: topic.scheduledDate ? "scheduled" : "saved",
           updatedAt: Date.now(),
         });
       }

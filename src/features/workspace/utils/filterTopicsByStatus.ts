@@ -1,5 +1,6 @@
 import type { TopicItem } from "../types/TopicItem";
 import type { TopicStatusFilter } from "../types/TopicStatusFilter";
+import { getScheduledAwareTopicStatus } from "./getScheduledAwareTopicStatus";
 
 export const filterTopicsByStatus = (
   topics: TopicItem[],
@@ -9,5 +10,11 @@ export const filterTopicsByStatus = (
     return topics;
   }
 
-  return topics.filter((topic) => topic.status === filter);
+  return topics.filter(
+    (topic) =>
+      getScheduledAwareTopicStatus({
+        scheduledDate: topic.scheduledDate,
+        status: topic.status,
+      }) === filter,
+  );
 };
