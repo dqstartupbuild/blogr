@@ -5,18 +5,21 @@ type ConvexTopicLike = {
   _id?: string;
   blogId?: string;
   canonicalKeyword?: string;
+  createdAt?: number;
   intentKey?: string;
   keyword?: string;
   notes?: string;
   scheduledDate?: string;
   sourceType?: TopicItem["sourceType"];
   status?: TopicItem["status"];
+  updatedAt?: number;
 };
 
 export const mapConvexTopic = (topic: ConvexTopicLike): TopicItem => {
   return {
     blogId: topic.blogId,
     canonicalKeyword: topic.canonicalKeyword,
+    createdAt: topic.createdAt,
     id: topic._id || "",
     intentKey: topic.intentKey,
     keyword: topic.keyword || "",
@@ -27,5 +30,6 @@ export const mapConvexTopic = (topic: ConvexTopicLike): TopicItem => {
       scheduledDate: topic.scheduledDate,
       status: topic.status,
     }),
+    updatedAt: topic.updatedAt,
   };
 };

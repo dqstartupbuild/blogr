@@ -1,4 +1,5 @@
 import { Clock, Edit3 } from "lucide-react";
+import { ArticleDateSummary } from "./ArticleDateSummary";
 import { ArticleStatsPanel } from "./ArticleStatsPanel";
 import { ArticleStatusPanel } from "./ArticleStatusPanel";
 import { BlogPublishButton } from "./BlogPublishButton";
@@ -11,7 +12,6 @@ import { StatusBadge } from "./StatusBadge";
 import { countBlogWords } from "../utils/countBlogWords";
 import { estimateReadTimeMinutes } from "../utils/estimateReadTimeMinutes";
 import { formatCountLabel } from "../utils/formatCountLabel";
-import { formatWorkspaceDate } from "../utils/formatWorkspaceDate";
 import type { BlogItem } from "../types/BlogItem";
 import type { DeleteBlog } from "../types/DeleteBlog";
 import type { RegenerateBlogImage } from "../types/RegenerateBlogImage";
@@ -64,7 +64,10 @@ export const BlogPreviewPanel = ({
           </h2>
           <div className="mt-3 flex flex-wrap items-center gap-3 text-sm text-black/60">
             <StatusBadge status={blog.status} />
-            <span>{formatWorkspaceDate(blog.updatedAt)}</span>
+            <ArticleDateSummary
+              blog={blog}
+              className="inline-flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-black/60"
+            />
             <span>{formatCountLabel(wordCount, "word")}</span>
             <span className="inline-flex items-center gap-1.5">
               <Clock size={15} aria-hidden="true" />

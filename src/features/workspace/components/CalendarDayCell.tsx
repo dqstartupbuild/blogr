@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { CalendarAddTopicDialog } from "./CalendarAddTopicDialog";
 import { CalendarEmptyDay } from "./CalendarEmptyDay";
+import { CalendarPastEmptyDay } from "./CalendarPastEmptyDay";
 import { CalendarTopicCard } from "./CalendarTopicCard";
 import { formatCalendarDayNumber } from "../utils/formatCalendarDayNumber";
 import { formatCalendarMonthName } from "../utils/formatCalendarMonthName";
@@ -17,6 +18,7 @@ import type { WriteBlogOptions } from "../types/WriteBlogOptions";
 type CalendarDayCellProps = {
   addScheduledTopic: AddScheduledTopic;
   calendarDateKeys: string[];
+  canAddTopic: boolean;
   dateKey: string;
   deleteTopic: DeleteTopic;
   isToday: boolean;
@@ -27,7 +29,7 @@ type CalendarDayCellProps = {
   saveTopicBrief: SaveTopicBrief;
   savedTopics: TopicItem[];
   scheduleTopicOnCalendar: ScheduleTopicOnCalendar;
-  topic?: TopicItem;
+  topics: TopicItem[];
   writeBlog: (
     topicId: string,
     options?: WriteBlogOptions,
@@ -37,6 +39,7 @@ type CalendarDayCellProps = {
 export const CalendarDayCell = ({
   addScheduledTopic,
   calendarDateKeys,
+  canAddTopic,
   dateKey,
   deleteTopic,
   isToday,
@@ -47,7 +50,7 @@ export const CalendarDayCell = ({
   saveTopicBrief,
   savedTopics,
   scheduleTopicOnCalendar,
-  topic,
+  topics,
   writeBlog,
 }: CalendarDayCellProps) => {
   const [isAddOpen, setIsAddOpen] = useState(false);
@@ -73,21 +76,28 @@ export const CalendarDayCell = ({
           </span>
         ) : null}
       </div>
-      {topic ? (
-        <CalendarTopicCard
-          calendarDateKeys={calendarDateKeys}
-          deleteTopic={deleteTopic}
-          occupiedCalendarDates={occupiedCalendarDates}
-          openBlogPreview={openBlogPreview}
-          refreshTopicBrief={refreshTopicBrief}
-          removeTopicFromCalendar={removeTopicFromCalendar}
-          saveTopicBrief={saveTopicBrief}
-          scheduleTopicOnCalendar={scheduleTopicOnCalendar}
-          topic={topic}
-          writeBlog={writeBlog}
-        />
-      ) : (
+      {topics.length > 0 ? (
+        <div className="grid min-w-0 gap-1.5">
+          {topics.map((topic) => (
+            <CalendarTopicCard
+              calendarDateKeys={calendarDateKeys}
+              deleteTopic={deleteTopic}
+              key={topic.id}
+              occupiedCalendarDates={occupiedCalendarDates}
+              openBlogPreview={openBlogPreview}
+              refreshTopicBrief={refreshTopicBrief}
+              removeTopicFromCalendar={removeTopicFromCalendar}
+              saveTopicBrief={saveTopicBrief}
+              scheduleTopicOnCalendar={scheduleTopicOnCalendar}
+              topic={topic}
+              writeBlog={writeBlog}
+            />
+          ))}
+        </div>
+      ) : canAddTopic ? (
         <CalendarEmptyDay onAdd={() => setIsAddOpen(true)} />
+      ) : (
+        <CalendarPastEmptyDay />
       )}
       {isAddOpen ? (
         <CalendarAddTopicDialog

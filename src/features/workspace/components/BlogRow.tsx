@@ -1,11 +1,11 @@
 import Link from "next/link";
 import { Edit3, FileText } from "lucide-react";
+import { ArticleDateSummary } from "./ArticleDateSummary";
 import { BlogRefreshLauncher } from "./BlogRefreshLauncher";
 import { DeleteActionButton } from "./DeleteActionButton";
 import { StatusBadge } from "./StatusBadge";
 import { countBlogWords } from "../utils/countBlogWords";
 import { formatCountLabel } from "../utils/formatCountLabel";
-import { formatWorkspaceDate } from "../utils/formatWorkspaceDate";
 import type { BlogItem } from "../types/BlogItem";
 import type { DeleteBlog } from "../types/DeleteBlog";
 import type { DiscoverBlogRefreshIdeas } from "../types/DiscoverBlogRefreshIdeas";
@@ -32,7 +32,7 @@ export const BlogRow = ({
 
   return (
     <article
-      className={`grid gap-4 border-b border-black/10 bg-white p-4 text-black last:border-b-0 xl:grid-cols-[minmax(0,1.4fr)_minmax(160px,0.7fr)_120px_120px_340px] xl:items-center ${
+      className={`grid gap-4 border-b border-black/10 bg-white p-4 text-black last:border-b-0 xl:grid-cols-[minmax(0,1.4fr)_minmax(160px,0.7fr)_120px_minmax(160px,0.8fr)_340px] xl:items-center ${
         isSelected ? "bg-black/5" : ""
       }`}
     >
@@ -69,11 +69,9 @@ export const BlogRow = ({
       </div>
       <div>
         <p className="mb-1 text-xs font-semibold text-black/50 xl:hidden">
-          Updated
+          Dates
         </p>
-        <p className="text-sm text-black/60">
-          {formatWorkspaceDate(blog.updatedAt)}
-        </p>
+        <ArticleDateSummary blog={blog} />
       </div>
       <div className="flex flex-col gap-2 sm:flex-row xl:justify-end">
         <Link

@@ -2,6 +2,8 @@ import { CalendarDayCell } from "./CalendarDayCell";
 import { CalendarSpacerCell } from "./CalendarSpacerCell";
 import { CalendarWeekdayHeader } from "./CalendarWeekdayHeader";
 import { buildCalendarDateSlots } from "../utils/buildCalendarDateSlots";
+import { getLocalDateKey } from "../utils/getLocalDateKey";
+import { getSchedulableCalendarDateKeys } from "../utils/getSchedulableCalendarDateKeys";
 import type { AddScheduledTopic } from "../types/AddScheduledTopic";
 import type { DeleteTopic } from "../types/DeleteTopic";
 import type { RemoveTopicFromCalendar } from "../types/RemoveTopicFromCalendar";
@@ -43,6 +45,8 @@ export const CalendarGrid = ({
   writeBlog,
 }: CalendarGridProps) => {
   const dateSlots = buildCalendarDateSlots(dateKeys);
+  const todayDateKey = getLocalDateKey(new Date());
+  const schedulableDateSet = new Set(getSchedulableCalendarDateKeys(dateKeys));
 
   return (
     <div className="w-full overflow-hidden rounded-lg border border-black/10 bg-white shadow-sm">
@@ -53,9 +57,10 @@ export const CalendarGrid = ({
             <CalendarDayCell
               addScheduledTopic={addScheduledTopic}
               calendarDateKeys={dateKeys}
+              canAddTopic={schedulableDateSet.has(dateKey)}
               dateKey={dateKey}
               deleteTopic={deleteTopic}
-              isToday={dateKey === dateKeys[0]}
+              isToday={dateKey === todayDateKey}
               occupiedCalendarDates={occupiedCalendarDates}
               key={dateKey}
               openBlogPreview={openBlogPreview}
@@ -64,7 +69,7 @@ export const CalendarGrid = ({
               saveTopicBrief={saveTopicBrief}
               savedTopics={savedTopics}
               scheduleTopicOnCalendar={scheduleTopicOnCalendar}
-              topic={topics.find((topic) => topic.scheduledDate === dateKey)}
+              topics={topics.filter((topic) => topic.scheduledDate === dateKey)}
               writeBlog={writeBlog}
             />
           ) : (

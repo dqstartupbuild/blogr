@@ -1,5 +1,5 @@
+import { ArticleDateSummary } from "./ArticleDateSummary";
 import { StatusBadge } from "./StatusBadge";
-import { formatWorkspaceDate } from "../utils/formatWorkspaceDate";
 import type { BlogItem } from "../types/BlogItem";
 
 type ArticleStatusPanelProps = {
@@ -13,9 +13,7 @@ export const ArticleStatusPanel = ({ blog }: ArticleStatusPanelProps) => {
       <div className="mt-4">
         <StatusBadge status={blog.status} />
       </div>
-      <p className="mt-4 text-sm leading-6 text-black/60">
-        Last updated on {formatWorkspaceDate(blog.updatedAt)}.
-      </p>
+      <ArticleDateSummary blog={blog} className="mt-4 grid gap-1 text-sm leading-6 text-black/60" />
     </section>
   );
 };

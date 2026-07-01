@@ -2,6 +2,7 @@ import type { TopicSourceType } from "./TopicSourceType";
 
 export type TopicItem = {
   canonicalKeyword?: string;
+  createdAt?: number;
   id: string;
   intentKey?: string;
   keyword: string;
@@ -10,4 +11,5 @@ export type TopicItem = {
   sourceType?: TopicSourceType;
   status: "saved" | "scheduled" | "writing" | "written" | "failed";
   blogId?: string;
+  updatedAt?: number;
 };

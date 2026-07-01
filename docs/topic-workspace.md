@@ -6,7 +6,7 @@ The workspace lets a user paste a keyword, save it as a topic, come back later, 
 
 The Topics tab can also find search-informed topic ideas. Users review suggested ideas in a checkbox queue before saving them, and saved discovered topics carry a writing brief in topic notes.
 
-The Calendar tab plans one keyword per day for the next 30 days. Users can add a topic to an empty day, remove a topic from a day, fill blank days in one batch, edit or refresh briefs, write articles, and open written articles from the calendar.
+The Calendar tab shows a navigable month view. Users can add a topic to an empty day, remove a topic from a day, fill up to 30 blank days from today forward in one batch, edit or refresh briefs, write articles, and open written articles from the calendar. Written article topics stay visible on past months as history.
 
 Users can filter the topic list by status: all, saved, writing, written, or failed. Users can also filter blogs by all, unpublished, published, or topic.
 
@@ -44,7 +44,9 @@ Topic discovery calls `POST /api/topics/discover`, runs Apify Google Search Scra
 
 The discovery dialog also exposes non-topic insights as planning rows. Users can save People Also Ask questions, content gaps, comparison ideas, clusters, refresh suggestions, AI answer notes, and difficulty notes as topics with notes. Content gap rows save the actual gap title as the topic, while the row badge shows that it came from a gap.
 
-The calendar batch flow calls `POST /api/topics/batch-plan`, dedupes discovery outputs and product-niche expansion ideas into canonical topic candidates, and saves them through `createScheduledTopicBatch`. It fills only blank dates in the 30-day window and never replaces already scheduled topics. Scheduled topics and topic rows open the shared topic action dialog with edit, repurpose, write, article preview, calendar scheduling, removal, and delete controls. Calendar scheduling is only offered for Saved and Failed topics.
+The calendar batch flow calls `POST /api/topics/batch-plan`, dedupes discovery outputs and product-niche expansion ideas into canonical topic candidates, and saves them through `createScheduledTopicBatch`. It fills up to 30 blank dates from today forward and never replaces already scheduled topics. Scheduled topics and topic rows open the shared topic action dialog with edit, repurpose, write, article preview, calendar scheduling, removal, and delete controls. Calendar scheduling is only offered for Saved and Failed topics.
+
+When a live workspace opens the calendar, existing articles are backfilled onto calendar history through their linked topic. The topic creation day is used first, and the article creation day is used as the fallback. Written article topics stay visible as history instead of offering calendar removal.
 
 Blog rows and the blog editor expose **Find refresh ideas** for existing blogs. In the blog list, users can filter unpublished and published posts, then save a refresh plan as a topic. In the editor, users can save the plan or add it directly to the draft.
 
@@ -77,6 +79,7 @@ The Settings tab includes product setup, article settings, and a **Publishing** 
 - `src/features/workspace/components/BlogPublishingIntegrationPanel.tsx`
 - `src/features/workspace/components/BlogPublishButton.tsx`
 - `src/features/workspace/components/CalendarPanel.tsx`
+- `src/features/workspace/components/CalendarMonthControls.tsx`
 - `src/features/workspace/components/CalendarGrid.tsx`
 - `src/features/workspace/components/CalendarDayCell.tsx`
 - `src/features/workspace/components/FilteredBlogList.tsx`
@@ -98,6 +101,7 @@ The Settings tab includes product setup, article settings, and a **Publishing** 
 - `convex/topics/createScheduledTopicBatch.ts`
 - `convex/topics/listScheduledTopics.ts`
 - `convex/topics/updateTopicScheduledDate.ts`
+- `convex/topics/backfillWrittenTopicCalendarDates.ts`
 - `convex/topics/listTopics.ts`
 - `convex/blogs/listBlogs.ts`
 - `convex/blogs/listBlogTopicKeywords.ts`
@@ -122,8 +126,9 @@ The Settings tab includes product setup, article settings, and a **Publishing** 
 - Connect publishing for each product from Settings.
 - Publish a generated blog to a connected blog app.
 - Keep topics separate from finished blogs.
-- Plan the next 30 days of scheduled keywords from `/calendar`.
+- Plan up to 30 scheduled keywords from `/calendar`.
 - Fill empty calendar days without overwriting days that already have topics.
+- Move between months to review older written article history.
 - Remove a topic from the calendar while keeping the topic in the workspace.
 - Open a scheduled topic's written article preview from the calendar.
 - Revisit the blog list on `/blogs`.

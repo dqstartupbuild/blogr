@@ -1,5 +1,6 @@
 import { CalendarFillButton } from "./CalendarFillButton";
 import { CalendarGrid } from "./CalendarGrid";
+import { CalendarMonthControls } from "./CalendarMonthControls";
 import { EmptyState } from "./EmptyState";
 import { WorkspacePageHeader } from "./WorkspacePageHeader";
 import { formatCalendarRangeLabel } from "../utils/formatCalendarRangeLabel";
@@ -45,29 +46,44 @@ export const CalendarPanel = ({
   topics,
   writeBlog,
 }: CalendarPanelProps) => {
-  const filledCount = topics.length;
-  const blankCount = calendarState.dateKeys.length - filledCount;
   const rangeLabel = formatCalendarRangeLabel(calendarState.dateKeys);
   const occupiedCalendarDates = topics
     .map((topic) => topic.scheduledDate)
     .filter((date): date is string => Boolean(date));
+  const occupiedCalendarDateSet = new Set(occupiedCalendarDates);
+  const filledCount = occupiedCalendarDateSet.size;
+  const blankCount = calendarState.dateKeys.filter(
+    (date) => !occupiedCalendarDateSet.has(date),
+  ).length;
+  const fillableBlankCount = calendarState.fillableDateKeys.filter(
+    (date) => !occupiedCalendarDateSet.has(date),
+  ).length;
 
   return (
     <section className="space-y-5">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <WorkspacePageHeader
-          description={`Plan one keyword per day from ${rangeLabel}.`}
+          description={`Fill up to 30 blank days in ${calendarState.monthLabel}. Written articles stay here for history.`}
           title="Calendar"
         />
-        <CalendarFillButton
-          disabled={
-            calendarState.isFilling ||
-            calendarState.isLoading ||
-            blankCount === 0
-          }
-          fillCalendarBlankDays={fillCalendarBlankDays}
-          isFilling={calendarState.isFilling}
-        />
+        <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center lg:justify-end">
+          <CalendarMonthControls
+            isCurrentMonth={calendarState.isCurrentMonth}
+            monthLabel={calendarState.monthLabel}
+            onCurrentMonth={calendarState.goToCurrentMonth}
+            onNextMonth={calendarState.goToNextMonth}
+            onPreviousMonth={calendarState.goToPreviousMonth}
+          />
+          <CalendarFillButton
+            disabled={
+              calendarState.isFilling ||
+              calendarState.isLoading ||
+              fillableBlankCount === 0
+            }
+            fillCalendarBlankDays={fillCalendarBlankDays}
+            isFilling={calendarState.isFilling}
+          />
+        </div>
       </div>
       <div className="grid gap-3 rounded-lg border border-black/10 bg-white p-4 sm:grid-cols-3">
         <div>
@@ -86,9 +102,11 @@ export const CalendarPanel = ({
         </div>
         <div>
           <p className="text-xs font-semibold uppercase text-black/40">
-            Window
+            Range
           </p>
-          <p className="mt-1 text-2xl font-semibold text-black">30 days</p>
+          <p className="mt-1 text-base font-semibold leading-7 text-black">
+            {rangeLabel}
+          </p>
         </div>
       </div>
       {calendarState.message ? (

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { demoBlogs } from "../constants/demoBlogs";
 import { demoProduct } from "../constants/demoProduct";
 import { demoProductWorkspace } from "../constants/demoProductWorkspace";
@@ -13,18 +13,24 @@ import { useCursorPagination } from "./useCursorPagination";
 import { buildInitialProductLink } from "../mappers/buildInitialProductLink";
 import { buildProductWorkspaceName } from "../mappers/buildProductWorkspaceName";
 import { buildExistingTopicBriefNotes } from "../utils/buildExistingTopicBriefNotes";
+import { backfillDemoTopicCalendarDates } from "../utils/backfillDemoTopicCalendarDates";
 import { filterActiveLinks } from "../utils/filterActiveLinks";
 import { filterBlogsBySearch } from "../utils/filterBlogsBySearch";
 import { filterBlogsByStatus } from "../utils/filterBlogsByStatus";
 import { filterBlogsByTopic } from "../utils/filterBlogsByTopic";
 import { filterTopicsBySearch } from "../utils/filterTopicsBySearch";
 import { filterTopicsByStatus } from "../utils/filterTopicsByStatus";
-import { getNextCalendarDateKeys } from "../utils/getNextCalendarDateKeys";
+import { formatCalendarMonthLabel } from "../utils/formatCalendarMonthLabel";
+import { getCalendarMonthDateKeys } from "../utils/getCalendarMonthDateKeys";
+import { getCalendarMonthStartDate } from "../utils/getCalendarMonthStartDate";
+import { getSchedulableCalendarDateKeys } from "../utils/getSchedulableCalendarDateKeys";
 import { getUniqueBlogTopics } from "../utils/getUniqueBlogTopics";
+import { isSameCalendarMonth } from "../utils/isSameCalendarMonth";
 import { mergePreviewBlogs } from "../utils/mergePreviewBlogs";
 import { countPublishedBlogs } from "../utils/countPublishedBlogs";
 import { countWorkspaceImages } from "../utils/countWorkspaceImages";
 import { setProductLinkActiveState } from "../utils/setProductLinkActiveState";
+import { shiftCalendarMonthDate } from "../utils/shiftCalendarMonthDate";
 import type { BlogItem } from "../types/BlogItem";
 import type { BlogGenerationSettings } from "../types/BlogGenerationSettings";
 import type { BlogListViewState } from "../types/BlogListViewState";
@@ -86,7 +92,34 @@ export const useDemoWorkspace = (initialMode: WorkspaceViewMode) => {
   const [blogTopicFilter, setBlogTopicFilter] = useState("all");
   const [calendarMessage, setCalendarMessage] = useState("");
   const [isFillingCalendar, setIsFillingCalendar] = useState(false);
-  const calendarDateKeys = useMemo(() => getNextCalendarDateKeys(30), []);
+  const [calendarMonthDate, setCalendarMonthDate] = useState(() =>
+    getCalendarMonthStartDate(new Date()),
+  );
+  const calendarDateKeys = useMemo(
+    () => getCalendarMonthDateKeys(calendarMonthDate),
+    [calendarMonthDate],
+  );
+  const fillableCalendarDateKeys = useMemo(
+    () => getSchedulableCalendarDateKeys(calendarDateKeys),
+    [calendarDateKeys],
+  );
+  const monthLabel = useMemo(
+    () => formatCalendarMonthLabel(calendarMonthDate),
+    [calendarMonthDate],
+  );
+  const isCurrentMonth = useMemo(
+    () => isSameCalendarMonth(calendarMonthDate, new Date()),
+    [calendarMonthDate],
+  );
+  const goToCurrentMonth = useCallback(() => {
+    setCalendarMonthDate(getCalendarMonthStartDate(new Date()));
+  }, []);
+  const goToNextMonth = useCallback(() => {
+    setCalendarMonthDate((current) => shiftCalendarMonthDate(current, 1));
+  }, []);
+  const goToPreviousMonth = useCallback(() => {
+    setCalendarMonthDate((current) => shiftCalendarMonthDate(current, -1));
+  }, []);
   const {
     canGoPrevious: canGoToPreviousTopicPage,
     goToNextPage: goToNextTopicPage,
@@ -104,13 +137,21 @@ export const useDemoWorkspace = (initialMode: WorkspaceViewMode) => {
   const product = productsByWorkspace[activeWorkspaceId] || emptyProduct;
   const blogGenerationSettings =
     settingsByWorkspace[activeWorkspaceId] || defaultBlogGenerationSettings;
-  const workspaceTopics = useMemo(
+  const rawWorkspaceTopics = useMemo(
     () => topicsByWorkspace[activeWorkspaceId] || [],
     [activeWorkspaceId, topicsByWorkspace],
   );
   const workspaceBlogs = useMemo(
     () => blogsByWorkspace[activeWorkspaceId] || [],
     [activeWorkspaceId, blogsByWorkspace],
+  );
+  const workspaceTopics = useMemo(
+    () =>
+      backfillDemoTopicCalendarDates({
+        blogs: workspaceBlogs,
+        topics: rawWorkspaceTopics,
+      }),
+    [rawWorkspaceTopics, workspaceBlogs],
   );
   const filteredTopics = useMemo(
     () =>
@@ -176,11 +217,27 @@ export const useDemoWorkspace = (initialMode: WorkspaceViewMode) => {
   const calendarState = useMemo(
     () => ({
       dateKeys: calendarDateKeys,
+      fillableDateKeys: fillableCalendarDateKeys,
+      goToCurrentMonth,
+      goToNextMonth,
+      goToPreviousMonth,
+      isCurrentMonth,
       isFilling: isFillingCalendar,
       isLoading: false,
       message: calendarMessage,
+      monthLabel,
     }),
-    [calendarDateKeys, calendarMessage, isFillingCalendar],
+    [
+      calendarDateKeys,
+      calendarMessage,
+      fillableCalendarDateKeys,
+      goToCurrentMonth,
+      goToNextMonth,
+      goToPreviousMonth,
+      isCurrentMonth,
+      isFillingCalendar,
+      monthLabel,
+    ],
   );
   const topicListState: TopicListViewState = useMemo(
     () => ({
@@ -366,7 +423,8 @@ export const useDemoWorkspace = (initialMode: WorkspaceViewMode) => {
     const trimmed = keyword.trim();
     if (!trimmed) return;
 
-    const topicId = `topic-${Date.now()}-${Math.random()
+    const now = Date.now();
+    const topicId = `topic-${now}-${Math.random()
       .toString(16)
       .slice(2)}`;
 
@@ -374,10 +432,12 @@ export const useDemoWorkspace = (initialMode: WorkspaceViewMode) => {
       ...current,
       [activeWorkspaceId]: [
         {
+          createdAt: now,
           id: topicId,
           keyword: trimmed,
           notes,
-          status: "scheduled",
+          status: "saved",
+          updatedAt: now,
         },
         ...(current[activeWorkspaceId] || []),
       ],
@@ -393,7 +453,8 @@ export const useDemoWorkspace = (initialMode: WorkspaceViewMode) => {
     const trimmed = keyword.trim();
     if (!trimmed) return;
 
-    const topicId = `topic-${Date.now()}-${Math.random()
+    const now = Date.now();
+    const topicId = `topic-${now}-${Math.random()
       .toString(16)
       .slice(2)}`;
 
@@ -401,12 +462,14 @@ export const useDemoWorkspace = (initialMode: WorkspaceViewMode) => {
       ...current,
       [activeWorkspaceId]: [
         {
+          createdAt: now,
           id: topicId,
           keyword: trimmed,
           notes,
           scheduledDate,
           sourceType: "manual",
           status: "scheduled",
+          updatedAt: now,
         },
         ...(current[activeWorkspaceId] || []),
       ],
@@ -416,6 +479,8 @@ export const useDemoWorkspace = (initialMode: WorkspaceViewMode) => {
   };
 
   const removeTopicFromCalendar = (topicId: string) => {
+    const now = Date.now();
+
     setTopicsByWorkspace((current) => ({
       ...current,
       [activeWorkspaceId]: (current[activeWorkspaceId] || []).map((topic) =>
@@ -424,6 +489,7 @@ export const useDemoWorkspace = (initialMode: WorkspaceViewMode) => {
               ...topic,
               scheduledDate: undefined,
               status: topic.status === "scheduled" ? "saved" : topic.status,
+              updatedAt: now,
             }
           : topic,
       ),
@@ -441,6 +507,8 @@ export const useDemoWorkspace = (initialMode: WorkspaceViewMode) => {
       throw new Error("That day already has a topic.");
     }
 
+    const now = Date.now();
+
     setTopicsByWorkspace((current) => ({
       ...current,
       [activeWorkspaceId]: (current[activeWorkspaceId] || []).map((topic) =>
@@ -449,6 +517,7 @@ export const useDemoWorkspace = (initialMode: WorkspaceViewMode) => {
               ...topic,
               scheduledDate,
               status: topic.status === "saved" ? "scheduled" : topic.status,
+              updatedAt: now,
             }
           : topic,
       ),
@@ -463,9 +532,9 @@ export const useDemoWorkspace = (initialMode: WorkspaceViewMode) => {
         .map((topic) => topic.scheduledDate)
         .filter((date): date is string => Boolean(date)),
     );
-    const blankDates = calendarDateKeys.filter(
-      (date) => !occupiedDates.has(date),
-    );
+    const blankDates = fillableCalendarDateKeys
+      .filter((date) => !occupiedDates.has(date))
+      .slice(0, 30);
     const existingKeywords = new Set(
       workspaceTopics.map((topic) => topic.keyword.toLowerCase()),
     );
@@ -474,14 +543,16 @@ export const useDemoWorkspace = (initialMode: WorkspaceViewMode) => {
     );
 
     if (blankDates.length === 0) {
-      setCalendarMessage("No empty days to fill.");
+      setCalendarMessage("No upcoming empty days to fill.");
       return;
     }
 
     setIsFillingCalendar(true);
 
+    const now = Date.now();
     const topicsToAdd = blankDates.slice(0, ideas.length).map((date, index) => ({
-      id: `topic-calendar-${Date.now()}-${index}`,
+      createdAt: now,
+      id: `topic-calendar-${now}-${index}`,
       keyword: ideas[index].title,
       notes: buildExistingTopicBriefNotes(
         {
@@ -494,6 +565,7 @@ export const useDemoWorkspace = (initialMode: WorkspaceViewMode) => {
       scheduledDate: date,
       sourceType: "discovery" as const,
       status: "scheduled" as const,
+      updatedAt: now,
     }));
 
     setTopicsByWorkspace((current) => ({
@@ -581,10 +653,12 @@ export const useDemoWorkspace = (initialMode: WorkspaceViewMode) => {
     if (!topic) return;
 
     const sourceText = options?.sourceText?.trim();
-    const blogId = `blog-${Date.now()}`;
+    const now = Date.now();
+    const blogId = `blog-${now}`;
     const title = `A Simple Guide to ${topic.keyword}`;
     const seoTitle = `A Simple Guide to ${topic.keyword} With Practical Steps, Examples, and Common Mistakes`;
     const nextBlog: BlogItem = {
+      createdAt: now,
       id: blogId,
       keyword: topic.keyword,
       title,
@@ -600,7 +674,7 @@ export const useDemoWorkspace = (initialMode: WorkspaceViewMode) => {
           )}`
         : `# ${title}\n\nThis draft is ready for the live AI workflow. Add your keys, scan your site, and the app will replace this with the full researched post.`,
       images: [],
-      updatedAt: Date.now(),
+      updatedAt: now,
       internalLinks: filterActiveLinks(product.siteLinks).slice(
         0,
         blogGenerationSettings.internalLinksPerArticle,
@@ -616,7 +690,9 @@ export const useDemoWorkspace = (initialMode: WorkspaceViewMode) => {
     setTopicsByWorkspace((current) => ({
       ...current,
       [activeWorkspaceId]: (current[activeWorkspaceId] || []).map((item) =>
-        item.id === topicId ? { ...item, status: "written", blogId } : item,
+        item.id === topicId
+          ? { ...item, blogId, status: "written", updatedAt: now }
+          : item,
       ),
     }));
     setSelectedBlogId(blogId);

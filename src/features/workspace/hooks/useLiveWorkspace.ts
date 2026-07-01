@@ -1,7 +1,8 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useMutation, useQuery } from "convex/react";
+import { backfillWrittenTopicCalendarDatesMutation } from "@/server/convex/references/backfillWrittenTopicCalendarDatesMutation";
 import { castBlogId } from "@/server/convex/castBlogId";
 import { castProductId } from "@/server/convex/castProductId";
 import { createScheduledTopicMutation } from "@/server/convex/references/createScheduledTopicMutation";
@@ -36,12 +37,17 @@ import { mapProductScanResult } from "../mappers/mapProductScanResult";
 import { buildBlogRefreshSeedKeyword } from "../utils/buildBlogRefreshSeedKeyword";
 import { buildExistingTopicBriefNotes } from "../utils/buildExistingTopicBriefNotes";
 import { filterActiveLinks } from "../utils/filterActiveLinks";
+import { formatCalendarMonthLabel } from "../utils/formatCalendarMonthLabel";
+import { getCalendarMonthDateKeys } from "../utils/getCalendarMonthDateKeys";
+import { getCalendarMonthStartDate } from "../utils/getCalendarMonthStartDate";
+import { getSchedulableCalendarDateKeys } from "../utils/getSchedulableCalendarDateKeys";
 import { getScheduledAwareTopicStatus } from "../utils/getScheduledAwareTopicStatus";
-import { getNextCalendarDateKeys } from "../utils/getNextCalendarDateKeys";
+import { isSameCalendarMonth } from "../utils/isSameCalendarMonth";
 import { mergeProductLinkStates } from "../utils/mergeProductLinkStates";
 import { mergePreviewBlogs } from "../utils/mergePreviewBlogs";
 import { normalizeBlogGenerationSettings } from "../utils/normalizeBlogGenerationSettings";
 import { setProductLinkActiveState } from "../utils/setProductLinkActiveState";
+import { shiftCalendarMonthDate } from "../utils/shiftCalendarMonthDate";
 import type { CalendarBatchPlanResponse } from "../types/calendar/CalendarBatchPlanResponse";
 import type { BlogGenerateResponse } from "../types/BlogGenerateResponse";
 import type { BlogGenerationSettings } from "../types/BlogGenerationSettings";
@@ -101,7 +107,35 @@ export const useLiveWorkspace = (
   const [blogTopicFilter, setBlogTopicFilter] = useState("all");
   const [calendarMessage, setCalendarMessage] = useState("");
   const [isFillingCalendar, setIsFillingCalendar] = useState(false);
-  const calendarDateKeys = useMemo(() => getNextCalendarDateKeys(30), []);
+  const [calendarMonthDate, setCalendarMonthDate] = useState(() =>
+    getCalendarMonthStartDate(new Date()),
+  );
+  const backfilledCalendarKeyRef = useRef("");
+  const calendarDateKeys = useMemo(
+    () => getCalendarMonthDateKeys(calendarMonthDate),
+    [calendarMonthDate],
+  );
+  const fillableCalendarDateKeys = useMemo(
+    () => getSchedulableCalendarDateKeys(calendarDateKeys),
+    [calendarDateKeys],
+  );
+  const monthLabel = useMemo(
+    () => formatCalendarMonthLabel(calendarMonthDate),
+    [calendarMonthDate],
+  );
+  const isCurrentMonth = useMemo(
+    () => isSameCalendarMonth(calendarMonthDate, new Date()),
+    [calendarMonthDate],
+  );
+  const goToCurrentMonth = useCallback(() => {
+    setCalendarMonthDate(getCalendarMonthStartDate(new Date()));
+  }, []);
+  const goToNextMonth = useCallback(() => {
+    setCalendarMonthDate((current) => shiftCalendarMonthDate(current, 1));
+  }, []);
+  const goToPreviousMonth = useCallback(() => {
+    setCalendarMonthDate((current) => shiftCalendarMonthDate(current, -1));
+  }, []);
   const {
     canGoPrevious: canGoToPreviousTopicPage,
     goToNextPage: goToNextTopicPage,
@@ -196,6 +230,9 @@ export const useLiveWorkspace = (
       ? { productId: convexProductId }
       : "skip",
   );
+  const backfillWrittenTopicCalendarDates = useMutation(
+    backfillWrittenTopicCalendarDatesMutation,
+  );
   const createScheduledTopic = useMutation(createScheduledTopicMutation);
   const createScheduledTopicBatch = useMutation(
     createScheduledTopicBatchMutation,
@@ -235,6 +272,32 @@ export const useLiveWorkspace = (
     blogStatusFilter,
     blogTopicFilter,
     resetBlogPagination,
+  ]);
+
+  useEffect(() => {
+    if (!convexProductId || mode !== "calendar") {
+      return;
+    }
+
+    const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    const backfillKey = `${activeProductId}:${timeZone}`;
+
+    if (backfilledCalendarKeyRef.current === backfillKey) {
+      return;
+    }
+
+    backfilledCalendarKeyRef.current = backfillKey;
+    void backfillWrittenTopicCalendarDates({
+      productId: convexProductId,
+      timeZone,
+    }).catch(() => {
+      backfilledCalendarKeyRef.current = "";
+    });
+  }, [
+    activeProductId,
+    backfillWrittenTopicCalendarDates,
+    convexProductId,
+    mode,
   ]);
 
   const visibleScannedProduct =
@@ -297,18 +360,30 @@ export const useLiveWorkspace = (
   const calendarState = useMemo(
     () => ({
       dateKeys: calendarDateKeys,
+      fillableDateKeys: fillableCalendarDateKeys,
+      goToCurrentMonth,
+      goToNextMonth,
+      goToPreviousMonth,
+      isCurrentMonth,
       isFilling: isFillingCalendar,
       isLoading: Boolean(
         convexProductId && mode === "calendar" && !scheduledTopicResults,
       ),
       message: calendarMessage,
+      monthLabel,
     }),
     [
       calendarDateKeys,
       calendarMessage,
+      fillableCalendarDateKeys,
       convexProductId,
+      goToCurrentMonth,
+      goToNextMonth,
+      goToPreviousMonth,
+      isCurrentMonth,
       isFillingCalendar,
       mode,
+      monthLabel,
       scheduledTopicResults,
     ],
   );
@@ -667,12 +742,12 @@ export const useLiveWorkspace = (
         .map((topic) => topic.scheduledDate)
         .filter((date): date is string => Boolean(date)),
     );
-    const blankDates = calendarDateKeys.filter(
-      (date) => !occupiedDates.has(date),
-    );
+    const blankDates = fillableCalendarDateKeys
+      .filter((date) => !occupiedDates.has(date))
+      .slice(0, 30);
 
     if (blankDates.length === 0) {
-      setCalendarMessage("No empty days to fill.");
+      setCalendarMessage("No upcoming empty days to fill.");
       return;
     }
 

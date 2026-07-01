@@ -14,6 +14,7 @@ import { TopicRepurposeDialog } from "./TopicRepurposeDialog";
 import { TopicSourceBadge } from "./TopicSourceBadge";
 import { TopicWriteButton } from "./TopicWriteButton";
 import { canAddTopicToCalendar } from "../utils/canAddTopicToCalendar";
+import { canRemoveTopicFromCalendar } from "../utils/canRemoveTopicFromCalendar";
 import { formatCalendarDateBadge } from "../utils/formatCalendarDateBadge";
 import type { DeleteTopic } from "../types/DeleteTopic";
 import type { RemoveTopicFromCalendar } from "../types/RemoveTopicFromCalendar";
@@ -57,6 +58,7 @@ export const TopicActionDialog = ({
   const isWriting = topic.status === "writing";
   const hasBrief = Boolean(topic.notes?.trim());
   const canShowCalendarScheduleControl = canAddTopicToCalendar(topic);
+  const canShowCalendarRemoveControl = canRemoveTopicFromCalendar(topic);
 
   const handleOpenBlog = (blogId: string) => {
     openBlogPreview(blogId);
@@ -138,7 +140,7 @@ export const TopicActionDialog = ({
               void Promise.resolve(writeBlog(topic.id)).catch(() => undefined);
             }}
           />
-          {topic.scheduledDate ? (
+          {canShowCalendarRemoveControl ? (
             <TopicRemoveFromCalendarButton
               onRemoved={onClose}
               removeTopicFromCalendar={removeTopicFromCalendar}

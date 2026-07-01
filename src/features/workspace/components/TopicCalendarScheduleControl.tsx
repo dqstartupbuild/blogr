@@ -4,6 +4,7 @@ import { useMemo, useState, type FormEvent } from "react";
 import { CalendarPlus } from "lucide-react";
 import { PrimaryButton } from "./PrimaryButton";
 import { formatCalendarDateBadge } from "../utils/formatCalendarDateBadge";
+import { getSchedulableCalendarDateKeys } from "../utils/getSchedulableCalendarDateKeys";
 import type { ScheduleTopicOnCalendar } from "../types/ScheduleTopicOnCalendar";
 import type { TopicItem } from "../types/TopicItem";
 
@@ -27,7 +28,9 @@ export const TopicCalendarScheduleControl = ({
       occupiedCalendarDates.filter((date) => date !== topic.scheduledDate),
     );
 
-    return calendarDateKeys.filter((date) => !occupiedDates.has(date));
+    return getSchedulableCalendarDateKeys(calendarDateKeys).filter(
+      (date) => !occupiedDates.has(date),
+    );
   }, [calendarDateKeys, occupiedCalendarDates, topic.scheduledDate]);
   const [selectedDate, setSelectedDate] = useState(
     topic.scheduledDate || openDateKeys[0] || "",
@@ -63,7 +66,7 @@ export const TopicCalendarScheduleControl = ({
   if (openDateKeys.length === 0) {
     return (
       <p className="min-w-0 rounded-md border border-black/10 bg-black/[0.03] p-3 text-sm leading-6 text-black/60">
-        No open days in this 30-day calendar.
+        No open days in this month.
       </p>
     );
   }

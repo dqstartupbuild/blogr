@@ -1,7 +1,12 @@
 import type { BlogItem } from "../types/BlogItem";
 
+const demoNow = Date.now();
+const teamPrioritiesCreatedAt = demoNow - 1000 * 60 * 60 * 24 * 3;
+const weeklyCheckInsCreatedAt = demoNow - 1000 * 60 * 60 * 24 * 10;
+
 export const demoBlogs: BlogItem[] = [
   {
+    createdAt: teamPrioritiesCreatedAt,
     id: "blog-team-priorities",
     keyword: "how to choose team priorities",
     title: "How to Choose Team Priorities Without Turning It Into a Meeting Marathon",
@@ -12,7 +17,7 @@ export const demoBlogs: BlogItem[] = [
       "Learn a simple way to choose the few priorities that matter this week, keep the team focused, and stop every task from feeling urgent.",
     tags: ["team priorities", "weekly planning", "team focus"],
     status: "ready",
-    updatedAt: Date.now() - 1000 * 60 * 45,
+    updatedAt: demoNow - 1000 * 60 * 45,
     featureImageUrl: undefined,
     images: [],
     internalLinks: [
@@ -73,6 +78,7 @@ If a priority does not change what someone does today, it is probably too vague.
 `,
   },
   {
+    createdAt: weeklyCheckInsCreatedAt,
     id: "blog-weekly-team-check-ins",
     keyword: "weekly team check ins",
     title: "A Better Weekly Check-In for Busy Teams",
@@ -83,7 +89,7 @@ If a priority does not change what someone does today, it is probably too vague.
       "Use a short weekly check-in format that helps everyone share wins, blockers, and next steps without dragging the team off track.",
     tags: ["weekly check ins", "team updates", "meeting planning"],
     status: "published",
-    updatedAt: Date.now() - 1000 * 60 * 60 * 6,
+    updatedAt: demoNow - 1000 * 60 * 60 * 6,
     featureImageUrl: undefined,
     images: [],
     internalLinks: [

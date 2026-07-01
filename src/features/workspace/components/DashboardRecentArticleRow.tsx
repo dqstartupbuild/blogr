@@ -1,6 +1,6 @@
 import { ChevronRight, FileText } from "lucide-react";
+import { ArticleDateSummary } from "./ArticleDateSummary";
 import { StatusBadge } from "./StatusBadge";
-import { formatWorkspaceDate } from "../utils/formatWorkspaceDate";
 import type { BlogItem } from "../types/BlogItem";
 
 type DashboardRecentArticleRowProps = {
@@ -32,9 +32,7 @@ export const DashboardRecentArticleRow = ({
         </span>
       </span>
       <StatusBadge status={blog.status} />
-      <span className="text-sm text-black/60">
-        {formatWorkspaceDate(blog.updatedAt)}
-      </span>
+      <ArticleDateSummary blog={blog} />
       <ChevronRight size={18} aria-hidden="true" />
     </button>
   );
