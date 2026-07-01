@@ -1,13 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import { CalendarOpenArticleButton } from "./CalendarOpenArticleButton";
-import { CalendarRemoveTopicButton } from "./CalendarRemoveTopicButton";
 import { DeleteActionButton } from "./DeleteActionButton";
 import { SecondaryButton } from "./SecondaryButton";
 import { StatusBadge } from "./StatusBadge";
 import { TopicBriefButton } from "./TopicBriefButton";
 import { TopicBriefDialog } from "./TopicBriefDialog";
+import { TopicCalendarScheduleControl } from "./TopicCalendarScheduleControl";
+import { TopicOpenArticleButton } from "./TopicOpenArticleButton";
+import { TopicRemoveFromCalendarButton } from "./TopicRemoveFromCalendarButton";
 import { TopicRepurposeButton } from "./TopicRepurposeButton";
 import { TopicRepurposeDialog } from "./TopicRepurposeDialog";
 import { TopicSourceBadge } from "./TopicSourceBadge";
@@ -16,16 +17,20 @@ import { formatCalendarDateBadge } from "../utils/formatCalendarDateBadge";
 import type { DeleteTopic } from "../types/DeleteTopic";
 import type { RemoveTopicFromCalendar } from "../types/RemoveTopicFromCalendar";
 import type { SaveTopicBrief } from "../types/SaveTopicBrief";
+import type { ScheduleTopicOnCalendar } from "../types/ScheduleTopicOnCalendar";
 import type { TopicItem } from "../types/TopicItem";
 import type { WriteBlogOptions } from "../types/WriteBlogOptions";
 
-type CalendarTopicDialogProps = {
+type TopicActionDialogProps = {
+  calendarDateKeys: string[];
   deleteTopic: DeleteTopic;
+  occupiedCalendarDates: string[];
   onClose: () => void;
   openBlogPreview: (blogId: string) => void;
   refreshTopicBrief: (topicId: string) => Promise<string>;
   removeTopicFromCalendar: RemoveTopicFromCalendar;
   saveTopicBrief: SaveTopicBrief;
+  scheduleTopicOnCalendar: ScheduleTopicOnCalendar;
   topic: TopicItem;
   writeBlog: (
     topicId: string,
@@ -33,16 +38,19 @@ type CalendarTopicDialogProps = {
   ) => Promise<void> | void;
 };
 
-export const CalendarTopicDialog = ({
+export const TopicActionDialog = ({
+  calendarDateKeys,
   deleteTopic,
+  occupiedCalendarDates,
   onClose,
   openBlogPreview,
   refreshTopicBrief,
   removeTopicFromCalendar,
   saveTopicBrief,
+  scheduleTopicOnCalendar,
   topic,
   writeBlog,
-}: CalendarTopicDialogProps) => {
+}: TopicActionDialogProps) => {
   const [isBriefOpen, setIsBriefOpen] = useState(false);
   const [isRepurposeOpen, setIsRepurposeOpen] = useState(false);
   const isWriting = topic.status === "writing";
@@ -54,7 +62,14 @@ export const CalendarTopicDialog = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 grid place-items-center overflow-x-hidden overflow-y-auto bg-black/40 px-3 py-6 sm:px-4">
+    <div
+      className="fixed inset-0 z-50 grid place-items-center overflow-x-hidden overflow-y-auto bg-black/40 px-3 py-6 sm:px-4"
+      onMouseDown={(event) => {
+        if (event.target === event.currentTarget) {
+          onClose();
+        }
+      }}
+    >
       <article
         aria-modal="true"
         className="grid max-h-[calc(100dvh-3rem)] w-full max-w-2xl min-w-0 gap-5 overflow-x-hidden overflow-y-auto rounded-lg border border-black bg-white p-4 sm:p-5"
@@ -65,7 +80,7 @@ export const CalendarTopicDialog = ({
             <p className="text-sm font-semibold text-black/50">
               {topic.scheduledDate
                 ? formatCalendarDateBadge(topic.scheduledDate)
-                : "Scheduled topic"}
+                : "Saved topic"}
             </p>
             <h2 className="mt-1 min-w-0 break-words text-lg font-semibold leading-7 text-black sm:text-xl">
               {topic.keyword}
@@ -90,9 +105,16 @@ export const CalendarTopicDialog = ({
             No brief yet.
           </p>
         )}
+        <TopicCalendarScheduleControl
+          calendarDateKeys={calendarDateKeys}
+          occupiedCalendarDates={occupiedCalendarDates}
+          onScheduled={onClose}
+          scheduleTopicOnCalendar={scheduleTopicOnCalendar}
+          topic={topic}
+        />
         <div className="flex min-w-0 flex-col items-stretch gap-2 sm:flex-row sm:flex-wrap">
           {topic.blogId ? (
-            <CalendarOpenArticleButton
+            <TopicOpenArticleButton
               blogId={topic.blogId}
               onOpen={handleOpenBlog}
             />
@@ -112,11 +134,13 @@ export const CalendarTopicDialog = ({
               void Promise.resolve(writeBlog(topic.id)).catch(() => undefined);
             }}
           />
-          <CalendarRemoveTopicButton
-            onRemoved={onClose}
-            removeTopicFromCalendar={removeTopicFromCalendar}
-            topicId={topic.id}
-          />
+          {topic.scheduledDate ? (
+            <TopicRemoveFromCalendarButton
+              onRemoved={onClose}
+              removeTopicFromCalendar={removeTopicFromCalendar}
+              topicId={topic.id}
+            />
+          ) : null}
           <DeleteActionButton
             confirmMessage="Delete this topic? Articles already created from it will stay in Articles."
             label="Delete"

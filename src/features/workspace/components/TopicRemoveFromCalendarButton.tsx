@@ -5,17 +5,17 @@ import { Link2Off } from "lucide-react";
 import { SecondaryButton } from "./SecondaryButton";
 import type { RemoveTopicFromCalendar } from "../types/RemoveTopicFromCalendar";
 
-type CalendarRemoveTopicButtonProps = {
+type TopicRemoveFromCalendarButtonProps = {
   onRemoved: () => void;
   removeTopicFromCalendar: RemoveTopicFromCalendar;
   topicId: string;
 };
 
-export const CalendarRemoveTopicButton = ({
+export const TopicRemoveFromCalendarButton = ({
   onRemoved,
   removeTopicFromCalendar,
   topicId,
-}: CalendarRemoveTopicButtonProps) => {
+}: TopicRemoveFromCalendarButtonProps) => {
   const [isRemoving, setIsRemoving] = useState(false);
 
   const handleRemove = async () => {

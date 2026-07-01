@@ -1,87 +1,72 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
-import { PrimaryButton } from "./PrimaryButton";
+import { CalendarAddExistingTopicForm } from "./CalendarAddExistingTopicForm";
+import { CalendarCreateTopicForm } from "./CalendarCreateTopicForm";
 import { SecondaryButton } from "./SecondaryButton";
-import { TextField } from "./TextField";
 import { formatCalendarDateBadge } from "../utils/formatCalendarDateBadge";
 import type { AddScheduledTopic } from "../types/AddScheduledTopic";
+import type { ScheduleTopicOnCalendar } from "../types/ScheduleTopicOnCalendar";
+import type { TopicItem } from "../types/TopicItem";
 
 type CalendarAddTopicDialogProps = {
   addScheduledTopic: AddScheduledTopic;
   dateKey: string;
   onClose: () => void;
+  savedTopics: TopicItem[];
+  scheduleTopicOnCalendar: ScheduleTopicOnCalendar;
 };
 
 export const CalendarAddTopicDialog = ({
   addScheduledTopic,
   dateKey,
   onClose,
+  savedTopics,
+  scheduleTopicOnCalendar,
 }: CalendarAddTopicDialogProps) => {
-  const [keyword, setKeyword] = useState("");
-  const [notes, setNotes] = useState("");
-  const [message, setMessage] = useState("");
-  const [isSaving, setIsSaving] = useState(false);
-
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    setIsSaving(true);
-    setMessage("");
-
-    void Promise.resolve(addScheduledTopic(keyword, dateKey, notes))
-      .then(() => onClose())
-      .catch((error) => {
-        setMessage(
-          error instanceof Error ? error.message : "Could not add that topic.",
-        );
-      })
-      .finally(() => setIsSaving(false));
-  };
-
   return (
-    <div className="fixed inset-0 z-50 grid place-items-center bg-black/40 px-4 py-6">
-      <form
+    <div
+      className="fixed inset-0 z-50 grid place-items-center overflow-x-hidden overflow-y-auto bg-black/40 px-3 py-6 sm:px-4"
+      onMouseDown={(event) => {
+        if (event.target === event.currentTarget) {
+          onClose();
+        }
+      }}
+    >
+      <article
         aria-modal="true"
-        className="grid w-full max-w-lg gap-4 rounded-lg border border-black bg-white p-5"
-        onSubmit={handleSubmit}
+        className="grid max-h-[calc(100dvh-3rem)] w-full max-w-lg min-w-0 gap-4 overflow-x-hidden overflow-y-auto rounded-lg border border-black bg-white p-4 sm:p-5"
         role="dialog"
       >
-        <div className="grid gap-1">
-          <h2 className="text-lg font-semibold text-black">
-            Add {formatCalendarDateBadge(dateKey)}
-          </h2>
-          <p className="text-sm leading-6 text-black/60">
-            Add one keyword for this day.
-          </p>
+        <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+          <div className="grid min-w-0 gap-1">
+            <h2 className="text-lg font-semibold text-black">
+              Add {formatCalendarDateBadge(dateKey)}
+            </h2>
+            <p className="text-sm leading-6 text-black/60">
+              Use a saved topic or add a new keyword.
+            </p>
+          </div>
+          <div className="sm:flex-shrink-0">
+            <SecondaryButton onClick={onClose} type="button">
+              Close
+            </SecondaryButton>
+          </div>
         </div>
-        <TextField
-          label="Keyword"
-          onChange={(event) => setKeyword(event.target.value)}
-          placeholder="best project planning tools"
-          value={keyword}
+        <CalendarAddExistingTopicForm
+          dateKey={dateKey}
+          onAdded={onClose}
+          savedTopics={savedTopics}
+          scheduleTopicOnCalendar={scheduleTopicOnCalendar}
         />
-        <label className="grid gap-2 text-sm font-semibold text-black">
-          Notes
-          <textarea
-            className="min-h-28 rounded-md border border-black/15 bg-white px-3 py-2 text-sm font-normal leading-6 text-black outline-none transition focus:border-black"
-            onChange={(event) => setNotes(event.target.value)}
-            placeholder="Add a short angle, question, or reminder."
-            value={notes}
+        <div className="grid gap-3 border-t border-black/10 pt-4">
+          <p className="text-sm font-semibold text-black">Add a new topic</p>
+          <CalendarCreateTopicForm
+            addScheduledTopic={addScheduledTopic}
+            dateKey={dateKey}
+            onAdded={onClose}
           />
-        </label>
-        {message ? <p className="text-sm text-black">{message}</p> : null}
-        <div className="flex flex-col gap-2 sm:flex-row sm:justify-end">
-          <SecondaryButton disabled={isSaving} onClick={onClose}>
-            Close
-          </SecondaryButton>
-          <PrimaryButton
-            disabled={!keyword.trim() || isSaving}
-            type="submit"
-          >
-            {isSaving ? "Adding..." : "Add topic"}
-          </PrimaryButton>
         </div>
-      </form>
+      </article>
     </div>
   );
 };

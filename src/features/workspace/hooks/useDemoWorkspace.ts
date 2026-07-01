@@ -430,6 +430,31 @@ export const useDemoWorkspace = (initialMode: WorkspaceViewMode) => {
     setCalendarMessage("Topic removed from the calendar.");
   };
 
+  const scheduleTopicOnCalendar = (topicId: string, scheduledDate: string) => {
+    const hasTopicForDate = workspaceTopics.some(
+      (topic) =>
+        topic.scheduledDate === scheduledDate && topic.id !== topicId,
+    );
+
+    if (hasTopicForDate) {
+      throw new Error("That day already has a topic.");
+    }
+
+    setTopicsByWorkspace((current) => ({
+      ...current,
+      [activeWorkspaceId]: (current[activeWorkspaceId] || []).map((topic) =>
+        topic.id === topicId
+          ? {
+              ...topic,
+              scheduledDate,
+            }
+          : topic,
+      ),
+    }));
+    setCalendarMessage("Topic added to the calendar.");
+    resetTopicPagination();
+  };
+
   const fillCalendarBlankDays = () => {
     const occupiedDates = new Set(
       calendarTopics
@@ -759,6 +784,8 @@ export const useDemoWorkspace = (initialMode: WorkspaceViewMode) => {
     saveTopicBrief,
     saveBlogGenerationSettings,
     saveBlogPublishingIntegration,
+    schedulableTopics: workspaceTopics,
+    scheduleTopicOnCalendar,
     setProductLinkActive,
     workspaceSwitcher: {
       activeWorkspace,

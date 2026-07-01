@@ -1,15 +1,15 @@
 import { Eye } from "lucide-react";
 import { SecondaryButton } from "./SecondaryButton";
 
-type CalendarOpenArticleButtonProps = {
+type TopicOpenArticleButtonProps = {
   blogId: string;
   onOpen: (blogId: string) => void;
 };
 
-export const CalendarOpenArticleButton = ({
+export const TopicOpenArticleButton = ({
   blogId,
   onOpen,
-}: CalendarOpenArticleButtonProps) => {
+}: TopicOpenArticleButtonProps) => {
   return (
     <SecondaryButton onClick={() => onOpen(blogId)} type="button">
       <Eye size={16} aria-hidden="true" />

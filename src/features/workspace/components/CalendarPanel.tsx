@@ -9,6 +9,7 @@ import type { DeleteTopic } from "../types/DeleteTopic";
 import type { FillCalendarBlankDays } from "../types/FillCalendarBlankDays";
 import type { RemoveTopicFromCalendar } from "../types/RemoveTopicFromCalendar";
 import type { SaveTopicBrief } from "../types/SaveTopicBrief";
+import type { ScheduleTopicOnCalendar } from "../types/ScheduleTopicOnCalendar";
 import type { TopicItem } from "../types/TopicItem";
 import type { WriteBlogOptions } from "../types/WriteBlogOptions";
 
@@ -21,6 +22,8 @@ type CalendarPanelProps = {
   refreshTopicBrief: (topicId: string) => Promise<string>;
   removeTopicFromCalendar: RemoveTopicFromCalendar;
   saveTopicBrief: SaveTopicBrief;
+  savedTopics: TopicItem[];
+  scheduleTopicOnCalendar: ScheduleTopicOnCalendar;
   topics: TopicItem[];
   writeBlog: (
     topicId: string,
@@ -37,12 +40,17 @@ export const CalendarPanel = ({
   refreshTopicBrief,
   removeTopicFromCalendar,
   saveTopicBrief,
+  savedTopics,
+  scheduleTopicOnCalendar,
   topics,
   writeBlog,
 }: CalendarPanelProps) => {
   const filledCount = topics.length;
   const blankCount = calendarState.dateKeys.length - filledCount;
   const rangeLabel = formatCalendarRangeLabel(calendarState.dateKeys);
+  const occupiedCalendarDates = topics
+    .map((topic) => topic.scheduledDate)
+    .filter((date): date is string => Boolean(date));
 
   return (
     <section className="space-y-5">
@@ -95,10 +103,13 @@ export const CalendarPanel = ({
           addScheduledTopic={addScheduledTopic}
           dateKeys={calendarState.dateKeys}
           deleteTopic={deleteTopic}
+          occupiedCalendarDates={occupiedCalendarDates}
           openBlogPreview={openBlogPreview}
           refreshTopicBrief={refreshTopicBrief}
           removeTopicFromCalendar={removeTopicFromCalendar}
           saveTopicBrief={saveTopicBrief}
+          savedTopics={savedTopics}
+          scheduleTopicOnCalendar={scheduleTopicOnCalendar}
           topics={topics}
           writeBlog={writeBlog}
         />

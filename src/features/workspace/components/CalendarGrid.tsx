@@ -6,6 +6,7 @@ import type { AddScheduledTopic } from "../types/AddScheduledTopic";
 import type { DeleteTopic } from "../types/DeleteTopic";
 import type { RemoveTopicFromCalendar } from "../types/RemoveTopicFromCalendar";
 import type { SaveTopicBrief } from "../types/SaveTopicBrief";
+import type { ScheduleTopicOnCalendar } from "../types/ScheduleTopicOnCalendar";
 import type { TopicItem } from "../types/TopicItem";
 import type { WriteBlogOptions } from "../types/WriteBlogOptions";
 
@@ -13,10 +14,13 @@ type CalendarGridProps = {
   addScheduledTopic: AddScheduledTopic;
   dateKeys: string[];
   deleteTopic: DeleteTopic;
+  occupiedCalendarDates: string[];
   openBlogPreview: (blogId: string) => void;
   refreshTopicBrief: (topicId: string) => Promise<string>;
   removeTopicFromCalendar: RemoveTopicFromCalendar;
   saveTopicBrief: SaveTopicBrief;
+  savedTopics: TopicItem[];
+  scheduleTopicOnCalendar: ScheduleTopicOnCalendar;
   topics: TopicItem[];
   writeBlog: (
     topicId: string,
@@ -28,10 +32,13 @@ export const CalendarGrid = ({
   addScheduledTopic,
   dateKeys,
   deleteTopic,
+  occupiedCalendarDates,
   openBlogPreview,
   refreshTopicBrief,
   removeTopicFromCalendar,
   saveTopicBrief,
+  savedTopics,
+  scheduleTopicOnCalendar,
   topics,
   writeBlog,
 }: CalendarGridProps) => {
@@ -45,14 +52,18 @@ export const CalendarGrid = ({
           dateKey ? (
             <CalendarDayCell
               addScheduledTopic={addScheduledTopic}
+              calendarDateKeys={dateKeys}
               dateKey={dateKey}
               deleteTopic={deleteTopic}
               isToday={dateKey === dateKeys[0]}
+              occupiedCalendarDates={occupiedCalendarDates}
               key={dateKey}
               openBlogPreview={openBlogPreview}
               refreshTopicBrief={refreshTopicBrief}
               removeTopicFromCalendar={removeTopicFromCalendar}
               saveTopicBrief={saveTopicBrief}
+              savedTopics={savedTopics}
+              scheduleTopicOnCalendar={scheduleTopicOnCalendar}
               topic={topics.find((topic) => topic.scheduledDate === dateKey)}
               writeBlog={writeBlog}
             />

@@ -3,7 +3,9 @@ import { TopicDiscoveryLauncher } from "./TopicDiscoveryLauncher";
 import { TopicCreator } from "./TopicCreator";
 import { WorkspacePageHeader } from "./WorkspacePageHeader";
 import type { DeleteTopic } from "../types/DeleteTopic";
+import type { RemoveTopicFromCalendar } from "../types/RemoveTopicFromCalendar";
 import type { SaveTopicBrief } from "../types/SaveTopicBrief";
+import type { ScheduleTopicOnCalendar } from "../types/ScheduleTopicOnCalendar";
 import type { TopicItem } from "../types/TopicItem";
 import type { TopicListViewState } from "../types/TopicListViewState";
 import type { RefreshTopicBrief } from "../types/RefreshTopicBrief";
@@ -13,11 +15,16 @@ import type { DiscoverTopicIdeas } from "../types/topicDiscovery/DiscoverTopicId
 type TopicsPanelProps = {
   topics: TopicItem[];
   addTopic: (keyword: string, notes?: string) => void | Promise<void>;
+  calendarDateKeys: string[];
   deleteTopic: DeleteTopic;
   discoverTopicIdeas: DiscoverTopicIdeas;
   listState: TopicListViewState;
+  occupiedCalendarDates: string[];
+  openBlogPreview: (blogId: string) => void;
   refreshTopicBrief: RefreshTopicBrief;
+  removeTopicFromCalendar: RemoveTopicFromCalendar;
   saveTopicBrief: SaveTopicBrief;
+  scheduleTopicOnCalendar: ScheduleTopicOnCalendar;
   writeBlog: (
     topicId: string,
     options?: WriteBlogOptions,
@@ -27,11 +34,16 @@ type TopicsPanelProps = {
 export const TopicsPanel = ({
   topics,
   addTopic,
+  calendarDateKeys,
   deleteTopic,
   discoverTopicIdeas,
   listState,
+  occupiedCalendarDates,
+  openBlogPreview,
   refreshTopicBrief,
+  removeTopicFromCalendar,
   saveTopicBrief,
+  scheduleTopicOnCalendar,
   writeBlog,
 }: TopicsPanelProps) => {
   return (
@@ -50,10 +62,15 @@ export const TopicsPanel = ({
         <TopicCreator addTopic={addTopic} />
       </div>
       <FilteredTopicList
+        calendarDateKeys={calendarDateKeys}
         deleteTopic={deleteTopic}
         listState={listState}
+        occupiedCalendarDates={occupiedCalendarDates}
+        openBlogPreview={openBlogPreview}
         refreshTopicBrief={refreshTopicBrief}
+        removeTopicFromCalendar={removeTopicFromCalendar}
         saveTopicBrief={saveTopicBrief}
+        scheduleTopicOnCalendar={scheduleTopicOnCalendar}
         topics={topics}
         writeBlog={writeBlog}
       />

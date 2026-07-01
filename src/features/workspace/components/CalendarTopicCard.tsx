@@ -1,21 +1,25 @@
 "use client";
 
 import { useState } from "react";
-import { CalendarTopicDialog } from "./CalendarTopicDialog";
+import { TopicActionDialog } from "./TopicActionDialog";
 import { StatusBadge } from "./StatusBadge";
 import { TopicSourceBadge } from "./TopicSourceBadge";
 import type { DeleteTopic } from "../types/DeleteTopic";
 import type { RemoveTopicFromCalendar } from "../types/RemoveTopicFromCalendar";
 import type { SaveTopicBrief } from "../types/SaveTopicBrief";
+import type { ScheduleTopicOnCalendar } from "../types/ScheduleTopicOnCalendar";
 import type { TopicItem } from "../types/TopicItem";
 import type { WriteBlogOptions } from "../types/WriteBlogOptions";
 
 type CalendarTopicCardProps = {
+  calendarDateKeys: string[];
   deleteTopic: DeleteTopic;
+  occupiedCalendarDates: string[];
   openBlogPreview: (blogId: string) => void;
   refreshTopicBrief: (topicId: string) => Promise<string>;
   removeTopicFromCalendar: RemoveTopicFromCalendar;
   saveTopicBrief: SaveTopicBrief;
+  scheduleTopicOnCalendar: ScheduleTopicOnCalendar;
   topic: TopicItem;
   writeBlog: (
     topicId: string,
@@ -24,11 +28,14 @@ type CalendarTopicCardProps = {
 };
 
 export const CalendarTopicCard = ({
+  calendarDateKeys,
   deleteTopic,
+  occupiedCalendarDates,
   openBlogPreview,
   refreshTopicBrief,
   removeTopicFromCalendar,
   saveTopicBrief,
+  scheduleTopicOnCalendar,
   topic,
   writeBlog,
 }: CalendarTopicCardProps) => {
@@ -60,13 +67,16 @@ export const CalendarTopicCard = ({
         ) : null}
       </button>
       {isDialogOpen ? (
-        <CalendarTopicDialog
+        <TopicActionDialog
+          calendarDateKeys={calendarDateKeys}
           deleteTopic={deleteTopic}
+          occupiedCalendarDates={occupiedCalendarDates}
           onClose={() => setIsDialogOpen(false)}
           openBlogPreview={openBlogPreview}
           refreshTopicBrief={refreshTopicBrief}
           removeTopicFromCalendar={removeTopicFromCalendar}
           saveTopicBrief={saveTopicBrief}
+          scheduleTopicOnCalendar={scheduleTopicOnCalendar}
           topic={topic}
           writeBlog={writeBlog}
         />

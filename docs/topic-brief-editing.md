@@ -27,6 +27,7 @@ Topic briefs can now be edited by hand. A user can still ask the app to find or 
 src/features/workspace/components/
   TopicBriefButton.tsx
   TopicBriefDialog.tsx
+  TopicActionDialog.tsx
   TopicRow.tsx
   TopicList.tsx
   FilteredTopicList.tsx

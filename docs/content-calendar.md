@@ -4,7 +4,7 @@
 
 The content calendar plans one keyword per day for the next 30 days. The window always starts today. There is no date picker.
 
-Users can add a topic to an empty day, click a scheduled topic to open its action dialog, remove a topic from a day, delete a topic, edit or refresh a brief, repurpose source text, write an article, and open a written article preview from the calendar. Calendar topics are normal topic records with a scheduled date, so the existing Topics and Articles workflows still work.
+Users can add a new topic to an empty day, add an existing saved topic to an empty day, click a scheduled topic to open its action dialog, move a topic to another open day, remove a topic from a day, delete a topic, edit or refresh a brief, repurpose source text, write an article, and open a written article preview from the calendar. Calendar topics are normal topic records with a scheduled date, so the existing Topics and Articles workflows still work.
 
 The calendar renders as a seven-column weekday board. The 30-day window is aligned to the correct weekday with muted blank slots before and after the scheduled range.
 
@@ -20,6 +20,8 @@ Scheduled topics are stored in the existing `topics` table with optional calenda
 - `intentKey`
 
 `useLiveWorkspace` loads scheduled topics with `listScheduledTopics` when the workspace is in calendar mode. It also loads existing topic keywords and article keywords so batch planning can avoid topics that already exist in the workspace.
+
+The shared topic action dialog is used by both the Calendar and Topics views. It contains the writing controls and the calendar scheduling control, so a saved topic from the Topics page can be added to any open day in the current 30-day window.
 
 When the user clicks **Fill empty days**, the client sends the blank dates, product profile, existing topics, and existing article keywords to `POST /api/topics/batch-plan`. The route tries Google discovery through Apify with a short calendar-specific timeout, generates topic discovery data when search is available, converts normal ideas, gaps, questions, comparison ideas, AI answer notes, and difficulty notes into one shared candidate shape, and adds a deep product-niche expansion pool. Similar candidates are grouped before scheduling, then one unique candidate is returned for each blank date.
 
@@ -42,8 +44,10 @@ The route builds enough long-tail product-niche candidates to fill the requested
 - `src/features/workspace/components/CalendarGrid.tsx`
 - `src/features/workspace/components/CalendarDayCell.tsx`
 - `src/features/workspace/components/CalendarTopicCard.tsx`
-- `src/features/workspace/components/CalendarTopicDialog.tsx`
 - `src/features/workspace/components/CalendarAddTopicDialog.tsx`
+- `src/features/workspace/components/CalendarAddExistingTopicForm.tsx`
+- `src/features/workspace/components/TopicActionDialog.tsx`
+- `src/features/workspace/components/TopicCalendarScheduleControl.tsx`
 - `src/features/workspace/hooks/useLiveWorkspace.ts`
 - `src/features/workspace/hooks/useDemoWorkspace.ts`
 - `src/server/topics/buildExpandedTopicCandidates.ts`
@@ -64,6 +68,8 @@ The route builds enough long-tail product-niche candidates to fill the requested
 
 - Plan the next 30 days of content without manually saving each keyword.
 - Fill only the blank days after manually adding a few priority topics.
+- Place a saved topic on a blank calendar day without creating a duplicate topic.
+- Add or move a saved topic from the Topics page through the shared topic dialog.
 - Keep similar keyword ideas from turning into competing articles.
 - Click a scheduled topic to open editing, repurposing, writing, article preview, calendar removal, and delete actions.
 - Open a written article from its scheduled day and use the existing preview, publish, zip, edit, and delete controls.
@@ -76,6 +82,8 @@ The route builds enough long-tail product-niche candidates to fill the requested
 src/app/calendar/
 src/app/api/topics/batch-plan/
 src/features/workspace/components/Calendar*
+src/features/workspace/components/TopicActionDialog.tsx
+src/features/workspace/components/TopicCalendarScheduleControl.tsx
 src/features/workspace/types/calendar/
 src/features/workspace/utils/*Calendar*
 src/server/topics/*TopicCandidate*

@@ -16,9 +16,23 @@ export const listTopicKeywords = query({
       .order("desc");
     const topics: {
       canonicalKeyword?: string;
+      blogId?: string;
+      id: string;
       intentKey?: string;
       keyword: string;
+      notes?: string;
       scheduledDate?: string;
+      sourceType?:
+        | "manual"
+        | "discovery"
+        | "gap"
+        | "comparison"
+        | "question"
+        | "cluster"
+        | "refresh"
+        | "aeo"
+        | "difficulty";
+      status: "saved" | "writing" | "written" | "failed";
     }[] = [];
 
     if (productId) {
@@ -32,10 +46,15 @@ export const listTopicKeywords = query({
 
     for await (const topic of topicsQuery) {
       topics.push({
+        blogId: topic.blogId,
         canonicalKeyword: topic.canonicalKeyword,
+        id: topic._id,
         intentKey: topic.intentKey,
         keyword: topic.keyword,
+        notes: topic.notes,
         scheduledDate: topic.scheduledDate,
+        sourceType: topic.sourceType,
+        status: topic.status,
       });
 
       if (topics.length >= 250) {

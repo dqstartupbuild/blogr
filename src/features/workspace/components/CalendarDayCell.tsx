@@ -10,18 +10,23 @@ import type { AddScheduledTopic } from "../types/AddScheduledTopic";
 import type { DeleteTopic } from "../types/DeleteTopic";
 import type { RemoveTopicFromCalendar } from "../types/RemoveTopicFromCalendar";
 import type { SaveTopicBrief } from "../types/SaveTopicBrief";
+import type { ScheduleTopicOnCalendar } from "../types/ScheduleTopicOnCalendar";
 import type { TopicItem } from "../types/TopicItem";
 import type { WriteBlogOptions } from "../types/WriteBlogOptions";
 
 type CalendarDayCellProps = {
   addScheduledTopic: AddScheduledTopic;
+  calendarDateKeys: string[];
   dateKey: string;
   deleteTopic: DeleteTopic;
   isToday: boolean;
+  occupiedCalendarDates: string[];
   openBlogPreview: (blogId: string) => void;
   refreshTopicBrief: (topicId: string) => Promise<string>;
   removeTopicFromCalendar: RemoveTopicFromCalendar;
   saveTopicBrief: SaveTopicBrief;
+  savedTopics: TopicItem[];
+  scheduleTopicOnCalendar: ScheduleTopicOnCalendar;
   topic?: TopicItem;
   writeBlog: (
     topicId: string,
@@ -31,13 +36,17 @@ type CalendarDayCellProps = {
 
 export const CalendarDayCell = ({
   addScheduledTopic,
+  calendarDateKeys,
   dateKey,
   deleteTopic,
   isToday,
+  occupiedCalendarDates,
   openBlogPreview,
   refreshTopicBrief,
   removeTopicFromCalendar,
   saveTopicBrief,
+  savedTopics,
+  scheduleTopicOnCalendar,
   topic,
   writeBlog,
 }: CalendarDayCellProps) => {
@@ -66,11 +75,14 @@ export const CalendarDayCell = ({
       </div>
       {topic ? (
         <CalendarTopicCard
+          calendarDateKeys={calendarDateKeys}
           deleteTopic={deleteTopic}
+          occupiedCalendarDates={occupiedCalendarDates}
           openBlogPreview={openBlogPreview}
           refreshTopicBrief={refreshTopicBrief}
           removeTopicFromCalendar={removeTopicFromCalendar}
           saveTopicBrief={saveTopicBrief}
+          scheduleTopicOnCalendar={scheduleTopicOnCalendar}
           topic={topic}
           writeBlog={writeBlog}
         />
@@ -82,6 +94,8 @@ export const CalendarDayCell = ({
           addScheduledTopic={addScheduledTopic}
           dateKey={dateKey}
           onClose={() => setIsAddOpen(false)}
+          savedTopics={savedTopics}
+          scheduleTopicOnCalendar={scheduleTopicOnCalendar}
         />
       ) : null}
     </section>

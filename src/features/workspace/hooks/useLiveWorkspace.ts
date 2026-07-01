@@ -51,6 +51,7 @@ import type { ProductProfile } from "../types/ProductProfile";
 import type { ProductLinksRefreshResponse } from "../types/ProductLinksRefreshResponse";
 import type { ProductScanResponse } from "../types/ProductScanResponse";
 import type { WriteBlogOptions } from "../types/WriteBlogOptions";
+import type { TopicItem } from "../types/TopicItem";
 import type { TopicListViewState } from "../types/TopicListViewState";
 import type { TopicStatusFilter } from "../types/TopicStatusFilter";
 import type { WorkspaceSummary } from "../types/WorkspaceSummary";
@@ -184,7 +185,7 @@ export const useLiveWorkspace = (
   );
   const topicKeywordResults = useQuery(
     listTopicKeywordsQuery,
-    convexProductId && mode === "calendar"
+    convexProductId && (mode === "calendar" || mode === "topics")
       ? { productId: convexProductId }
       : "skip",
   );
@@ -262,6 +263,33 @@ export const useLiveWorkspace = (
 
     return Array.from(topicMap.values());
   }, [calendarTopics, topics]);
+  const schedulableTopics = useMemo(() => {
+    const topicMap = new Map<string, TopicItem>();
+
+    (topicKeywordResults || []).forEach((topic) => {
+      if (!topic.id) {
+        return;
+      }
+
+      topicMap.set(topic.id, {
+        blogId: topic.blogId,
+        canonicalKeyword: topic.canonicalKeyword,
+        id: topic.id,
+        intentKey: topic.intentKey,
+        keyword: topic.keyword,
+        notes: topic.notes,
+        scheduledDate: topic.scheduledDate,
+        sourceType: topic.sourceType,
+        status: topic.status,
+      });
+    });
+
+    [...visibleTopics, ...calendarTopics].forEach((topic) => {
+      topicMap.set(topic.id, topic);
+    });
+
+    return Array.from(topicMap.values());
+  }, [calendarTopics, topicKeywordResults, visibleTopics]);
   const calendarState = useMemo(
     () => ({
       dateKeys: calendarDateKeys,
@@ -605,6 +633,23 @@ export const useLiveWorkspace = (
       topicId: castTopicId(topicId),
     });
     setCalendarMessage("Topic removed from the calendar.");
+    resetTopicPagination();
+  };
+
+  const scheduleTopicOnCalendar = async (
+    topicId: string,
+    scheduledDate: string,
+  ) => {
+    if (!convexProductId) {
+      return;
+    }
+
+    await updateTopicScheduledDate({
+      productId: convexProductId,
+      scheduledDate,
+      topicId: castTopicId(topicId),
+    });
+    setCalendarMessage("Topic added to the calendar.");
     resetTopicPagination();
   };
 
@@ -1096,6 +1141,8 @@ export const useLiveWorkspace = (
     saveTopicBrief,
     saveBlogGenerationSettings,
     saveBlogPublishingIntegration,
+    schedulableTopics,
+    scheduleTopicOnCalendar,
     scanProduct,
     selectedBlog,
     selectedBlogId,
