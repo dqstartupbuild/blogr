@@ -49,22 +49,22 @@ export const CalendarTopicCard = ({
   const hasBrief = Boolean(topic.notes?.trim());
 
   return (
-    <div className="grid gap-2 rounded-md border border-black/10 bg-black/[0.03] p-2">
-      <div className="grid gap-2">
-        <div className="flex flex-wrap items-center gap-2">
+    <div className="grid min-w-0 gap-1 rounded-md border border-black/10 bg-black/[0.03] p-1 sm:gap-2 sm:p-2">
+      <div className="grid min-w-0 gap-1 sm:gap-2">
+        <div className="hidden flex-wrap items-center gap-2 sm:flex">
           <StatusBadge status={topic.status} />
           <TopicSourceBadge sourceType={topic.sourceType} />
         </div>
-        <p className="line-clamp-3 text-sm font-semibold leading-5 text-black">
+        <p className="line-clamp-3 min-w-0 break-words text-[11px] font-semibold leading-4 text-black sm:text-sm sm:leading-5">
           {topic.keyword}
         </p>
         {topic.notes ? (
-          <p className="line-clamp-2 text-xs leading-5 text-black/60">
+          <p className="hidden text-xs leading-5 text-black/60 md:line-clamp-2">
             {topic.notes}
           </p>
         ) : null}
       </div>
-      <div className="flex flex-wrap gap-1.5">
+      <div className="flex min-w-0 flex-wrap gap-1 sm:gap-1.5">
         {topic.blogId ? (
           <CalendarTopicActionButton
             label="Open article"

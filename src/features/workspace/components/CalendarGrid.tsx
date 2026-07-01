@@ -38,30 +38,28 @@ export const CalendarGrid = ({
   const dateSlots = buildCalendarDateSlots(dateKeys);
 
   return (
-    <div className="overflow-x-auto rounded-lg border border-black/10 bg-white shadow-sm">
-      <div className="min-w-[980px]">
-        <CalendarWeekdayHeader />
-        <div className="grid grid-cols-7">
-          {dateSlots.map((dateKey, index) =>
-            dateKey ? (
-              <CalendarDayCell
-                addScheduledTopic={addScheduledTopic}
-                dateKey={dateKey}
-                deleteTopic={deleteTopic}
-                isToday={dateKey === dateKeys[0]}
-                key={dateKey}
-                openBlogPreview={openBlogPreview}
-                refreshTopicBrief={refreshTopicBrief}
-                removeTopicFromCalendar={removeTopicFromCalendar}
-                saveTopicBrief={saveTopicBrief}
-                topic={topics.find((topic) => topic.scheduledDate === dateKey)}
-                writeBlog={writeBlog}
-              />
-            ) : (
-              <CalendarSpacerCell key={`spacer-${index}`} />
-            ),
-          )}
-        </div>
+    <div className="w-full overflow-hidden rounded-lg border border-black/10 bg-white shadow-sm">
+      <CalendarWeekdayHeader />
+      <div className="grid grid-cols-7">
+        {dateSlots.map((dateKey, index) =>
+          dateKey ? (
+            <CalendarDayCell
+              addScheduledTopic={addScheduledTopic}
+              dateKey={dateKey}
+              deleteTopic={deleteTopic}
+              isToday={dateKey === dateKeys[0]}
+              key={dateKey}
+              openBlogPreview={openBlogPreview}
+              refreshTopicBrief={refreshTopicBrief}
+              removeTopicFromCalendar={removeTopicFromCalendar}
+              saveTopicBrief={saveTopicBrief}
+              topic={topics.find((topic) => topic.scheduledDate === dateKey)}
+              writeBlog={writeBlog}
+            />
+          ) : (
+            <CalendarSpacerCell key={`spacer-${index}`} />
+          ),
+        )}
       </div>
     </div>
   );

@@ -44,22 +44,22 @@ export const CalendarDayCell = ({
   const [isAddOpen, setIsAddOpen] = useState(false);
 
   return (
-    <section className="min-h-44 border-b border-r border-black/10 bg-white p-2">
-      <div className="mb-2 flex items-start justify-between gap-2">
-        <div className="flex items-baseline gap-1.5">
+    <section className="min-w-0 border-b border-r border-black/10 bg-white p-1 sm:min-h-44 sm:p-2">
+      <div className="mb-1 flex min-w-0 items-start justify-between gap-1 sm:mb-2 sm:gap-2">
+        <div className="flex min-w-0 items-baseline gap-1 sm:gap-1.5">
           <span
-            className={`inline-flex h-8 min-w-8 items-center justify-center rounded-md px-2 text-sm font-semibold ${
+            className={`inline-flex h-6 min-w-6 items-center justify-center rounded-md px-1 text-xs font-semibold sm:h-8 sm:min-w-8 sm:px-2 sm:text-sm ${
               isToday ? "bg-black text-white" : "text-black"
             }`}
           >
             {formatCalendarDayNumber(dateKey)}
           </span>
-          <span className="text-xs font-semibold uppercase text-black/40">
+          <span className="hidden text-xs font-semibold uppercase text-black/40 sm:inline">
             {formatCalendarMonthName(dateKey)}
           </span>
         </div>
         {isToday ? (
-          <span className="rounded-md border border-black/10 bg-white px-2 py-1 text-xs font-semibold text-black/60">
+          <span className="hidden rounded-md border border-black/10 bg-white px-2 py-1 text-xs font-semibold text-black/60 md:inline-flex">
             Today
           </span>
         ) : null}
