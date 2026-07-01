@@ -44,19 +44,19 @@ export const WorkspaceSidebar = ({
           setMode={setMode}
         />
         <WorkspaceSidebarLink
-          href="/topics"
-          icon={ListChecks}
-          isActive={mode === "topics"}
-          label="Topics"
-          mode="topics"
-          setMode={setMode}
-        />
-        <WorkspaceSidebarLink
           href="/calendar"
           icon={CalendarDays}
           isActive={mode === "calendar"}
           label="Calendar"
           mode="calendar"
+          setMode={setMode}
+        />
+        <WorkspaceSidebarLink
+          href="/topics"
+          icon={ListChecks}
+          isActive={mode === "topics"}
+          label="Topics"
+          mode="topics"
           setMode={setMode}
         />
         <WorkspaceSidebarLink
