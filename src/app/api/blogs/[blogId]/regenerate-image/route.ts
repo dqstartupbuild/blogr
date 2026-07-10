@@ -85,6 +85,7 @@ export async function POST(request: Request, context: RegenerateImageRouteContex
             previousUrl,
             productId: input.productId,
             prompt: target.prompt,
+            sectionHeading: previousImage?.sectionHeading,
           },
           type: "blog.regenerateImage",
           userId,
@@ -111,6 +112,7 @@ export async function POST(request: Request, context: RegenerateImageRouteContex
     const nextImage = await regenerateBlogImage({
       alt: target.alt,
       prompt: target.prompt,
+      sectionHeading: previousImage?.sectionHeading,
       token,
       userId,
     });

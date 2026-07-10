@@ -15,6 +15,7 @@ const blogImageRegenerateInputSchema = z.object({
   previousUrl: z.string().optional(),
   productId: z.string().optional(),
   prompt: z.string().min(1),
+  sectionHeading: z.string().optional(),
 });
 
 export const blogAiWorkerJobSchema = z.discriminatedUnion("type", [

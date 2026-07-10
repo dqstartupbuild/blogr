@@ -7,6 +7,7 @@ const imageValidator = v.object({
   alt: v.string(),
   prompt: v.string(),
   r2Key: v.optional(v.string()),
+  sectionHeading: v.optional(v.string()),
   url: v.string(),
 });
 

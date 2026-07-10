@@ -1,4 +1,6 @@
 import { buildMarkdownImage } from "./buildMarkdownImage";
+import { findMdxHeadingLineIndex } from "./findMdxHeadingLineIndex";
+import { getDistributedHeadingLineIndex } from "./getDistributedHeadingLineIndex";
 import { getMarkdownImageUrls } from "./getMarkdownImageUrls";
 import type { BlogImage } from "./types/BlogImage";
 
@@ -30,18 +32,35 @@ export const insertMissingSupportingImages = ({
   }
 
   const insertions = supportingImages.map((image, index) => {
+    const matchedHeadingIndex = findMdxHeadingLineIndex({
+      headingLineIndexes: headingIndexes,
+      lines,
+      sectionHeading: image.sectionHeading,
+    });
+    const fallbackHeadingIndex = getDistributedHeadingLineIndex({
+      headingLineIndexes: headingIndexes,
+      imageCount: supportingImages.length,
+      imageIndex: index,
+    });
     const headingIndex =
-      headingIndexes[Math.min(index, headingIndexes.length - 1)] ?? lines.length - 1;
+      matchedHeadingIndex ?? fallbackHeadingIndex ?? lines.length - 1;
 
     return {
       image,
       lineIndex: headingIndex + 1,
+      order: index,
     };
   });
 
-  insertions.reverse().forEach(({ image, lineIndex }) => {
-    lines.splice(lineIndex, 0, "", buildMarkdownImage(image), "");
-  });
+  insertions
+    .sort((left, right) =>
+      left.lineIndex === right.lineIndex
+        ? right.order - left.order
+        : right.lineIndex - left.lineIndex,
+    )
+    .forEach(({ image, lineIndex }) => {
+      lines.splice(lineIndex, 0, "", buildMarkdownImage(image), "");
+    });
 
   return lines.join("\n");
 };

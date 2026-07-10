@@ -1,5 +1,6 @@
 import { extractMdxHeadings } from "./extractMdxHeadings";
 import { buildSectionSpecificImagePrompt } from "./buildSectionSpecificImagePrompt";
+import { selectDistributedMdxHeadings } from "./selectDistributedMdxHeadings";
 import type { BlogGenerationSettings } from "@/features/workspace/types/BlogGenerationSettings";
 import type { BlogImagePromptPlan } from "./types/BlogImagePromptPlan";
 import type { StoredProduct } from "./types/StoredProduct";
@@ -22,7 +23,10 @@ export const buildFallbackBlogImagePromptPlans = ({
   title,
 }: BuildFallbackBlogImagePromptPlansOptions): BlogImagePromptPlan[] => {
   const headings = extractMdxHeadings(mdx);
-  const sectionHeadings = [title, ...headings].slice(0, imageCount);
+  const sectionHeadings = [
+    title,
+    ...selectDistributedMdxHeadings(headings, imageCount - 1),
+  ];
 
   return sectionHeadings.map((sectionHeading, index) => {
     const imageJob =

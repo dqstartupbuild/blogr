@@ -26,6 +26,11 @@ editorial images with no readable text, fake UI text, captions, watermarks,
 random symbols, or unrelated objects unless the chosen image style explicitly
 allows text.
 
+Each generated image keeps the section heading selected by the planner. Body
+images are inserted directly under those headings. If a heading cannot be
+matched, the fallback placement spreads images across the full article instead
+of filling the first few sections.
+
 ## Relevant Code
 
 - `src/app/globals.css`
@@ -35,3 +40,4 @@ allows text.
 - `src/server/blog/buildImagePlannerPrompt.ts`
 - `src/server/blog/buildProductVisualContext.ts`
 - `src/server/blog/normalizeBlogMdxImages.ts`
+- `src/server/blog/insertMissingSupportingImages.ts`

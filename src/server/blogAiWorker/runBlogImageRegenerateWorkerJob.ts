@@ -14,6 +14,7 @@ export const runBlogImageRegenerateWorkerJob = async ({
   const image = await regenerateBlogImage({
     alt: input.alt,
     prompt: input.prompt,
+    sectionHeading: input.sectionHeading,
     token: convexAuthToken,
     userId,
   });

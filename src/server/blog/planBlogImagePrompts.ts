@@ -54,14 +54,20 @@ export const planBlogImagePrompts = async ({
     const usablePlans =
       plans.length > 0 ? [...plans, ...fallbackPlans] : fallbackPlans;
 
-    return usablePlans.slice(0, imageCount).map(({ alt, prompt }) => ({
-      alt,
-      prompt,
-    }));
+    return usablePlans
+      .slice(0, imageCount)
+      .map(({ alt, prompt, sectionHeading }) => ({
+        alt,
+        prompt,
+        sectionHeading,
+      }));
   } catch {
-    return fallbackPlans.slice(0, imageCount).map(({ alt, prompt }) => ({
-      alt,
-      prompt,
-    }));
+    return fallbackPlans
+      .slice(0, imageCount)
+      .map(({ alt, prompt, sectionHeading }) => ({
+        alt,
+        prompt,
+        sectionHeading,
+      }));
   }
 };
