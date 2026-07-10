@@ -15,6 +15,7 @@ import { logRouteError } from "@/server/http/logRouteError";
 import { PublicError } from "@/server/http/PublicError";
 import { buildTopicBriefNotesForKeyword } from "@/server/topics/buildTopicBriefNotesForKeyword";
 import { discoverTopicIdeasForProduct } from "@/server/topics/discoverTopicIdeasForProduct";
+import { normalizeTopicBriefRouteError } from "@/server/topics/normalizeTopicBriefRouteError";
 import { topicDiscoverRequestSchema } from "../../discover/schema";
 
 type TopicBriefRouteContext = {
@@ -51,35 +52,39 @@ export async function POST(request: Request, context: TopicBriefRouteContext) {
     }
 
     if (hasBlogAiWorkerJob()) {
-      const jobId = await createBlogAiJob({
-        input: {
+      try {
+        const jobId = await createBlogAiJob({
           input: {
-            ...input,
-            productId: undefined,
-            seedKeyword: input.seedKeyword || topic.keyword,
-            topicId: rawTopicId,
-            topicKeyword: topic.keyword,
+            input: {
+              ...input,
+              productId: undefined,
+              seedKeyword: input.seedKeyword || topic.keyword,
+              topicId: rawTopicId,
+              topicKeyword: topic.keyword,
+            },
+            type: "topic.brief",
           },
-          type: "topic.brief",
-        },
-        productId,
-        token,
-        topicId,
-      });
-      const job = await waitForBlogAiJob({ jobId, token });
+          productId,
+          token,
+          topicId,
+        });
+        const job = await waitForBlogAiJob({ jobId, token });
 
-      if (job?.status === "failed") {
-        throw new Error(job.error || "Could not find a brief yet.");
+        if (job?.status !== "failed") {
+          return NextResponse.json(
+            {
+              jobId,
+              notes: (job?.result as { notes?: string } | undefined)?.notes,
+              status: job?.status || "queued",
+            },
+            { status: job?.status === "succeeded" ? 200 : 202 },
+          );
+        }
+
+        logRouteError(new Error(job.error || "Topic brief worker failed."));
+      } catch (workerError) {
+        logRouteError(workerError);
       }
-
-      return NextResponse.json(
-        {
-          jobId,
-          notes: (job?.result as { notes?: string } | undefined)?.notes,
-          status: job?.status || "queued",
-        },
-        { status: job?.status === "succeeded" ? 200 : 202 },
-      );
     }
 
     const discovery = await discoverTopicIdeasForProduct({
@@ -111,10 +116,11 @@ export async function POST(request: Request, context: TopicBriefRouteContext) {
     return NextResponse.json({ notes });
   } catch (error) {
     logRouteError(error);
+    const routeError = normalizeTopicBriefRouteError(error);
 
     return NextResponse.json(
-      { error: getPublicErrorMessage(error) },
-      { status: getErrorStatus(error) },
+      { error: getPublicErrorMessage(routeError) },
+      { status: getErrorStatus(routeError) },
     );
   }
 }

@@ -1,5 +1,6 @@
 import { fetchQuery } from "convex/nextjs";
 import { getAiJobQuery } from "../convex/references/getAiJobQuery";
+import { getBlogAiJobPollDelayMs } from "./getBlogAiJobPollDelayMs";
 import { getBlogAiJobRouteWaitMs } from "./getBlogAiJobRouteWaitMs";
 import type { Id } from "../../../convex/_generated/dataModel";
 
@@ -17,6 +18,7 @@ export const waitForBlogAiJob = async ({
   token,
 }: WaitForBlogAiJobOptions) => {
   const startedAt = Date.now();
+  let pollCount = 0;
 
   while (Date.now() - startedAt < getBlogAiJobRouteWaitMs()) {
     const job = await fetchQuery(getAiJobQuery, { jobId }, { token });
@@ -25,7 +27,8 @@ export const waitForBlogAiJob = async ({
       return job;
     }
 
-    await wait(2000);
+    await wait(getBlogAiJobPollDelayMs(pollCount));
+    pollCount += 1;
   }
 
   return await fetchQuery(getAiJobQuery, { jobId }, { token });
