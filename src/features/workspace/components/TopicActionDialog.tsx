@@ -101,15 +101,6 @@ export const TopicActionDialog = ({
           <StatusBadge status={topic.status} />
           <TopicSourceBadge sourceType={topic.sourceType} />
         </div>
-        {topic.notes ? (
-          <p className="min-w-0 break-words whitespace-pre-line rounded-md border border-black/10 bg-black/[0.03] p-3 text-sm leading-6 text-black/70">
-            {topic.notes}
-          </p>
-        ) : (
-          <p className="min-w-0 break-words rounded-md border border-black/10 bg-black/[0.03] p-3 text-sm leading-6 text-black/60">
-            No brief yet.
-          </p>
-        )}
         {canShowCalendarScheduleControl ? (
           <TopicCalendarScheduleControl
             calendarDateKeys={calendarDateKeys}
@@ -158,6 +149,15 @@ export const TopicActionDialog = ({
             }}
           />
         </div>
+        {topic.notes ? (
+          <p className="min-w-0 break-words whitespace-pre-line rounded-md border border-black/10 bg-black/[0.03] p-3 text-sm leading-6 text-black/70">
+            {topic.notes}
+          </p>
+        ) : (
+          <p className="min-w-0 break-words rounded-md border border-black/10 bg-black/[0.03] p-3 text-sm leading-6 text-black/60">
+            No brief yet.
+          </p>
+        )}
         {isBriefOpen ? (
           <TopicBriefDialog
             key={topic.id}
