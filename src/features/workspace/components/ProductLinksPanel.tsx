@@ -1,6 +1,8 @@
 "use client";
 
+import { useState } from "react";
 import { RefreshCw } from "lucide-react";
+import { ProductLinkFilterButton } from "./ProductLinkFilterButton";
 import { ProductLinkRow } from "./ProductLinkRow";
 import { SecondaryButton } from "./SecondaryButton";
 import { SectionTitle } from "./SectionTitle";
@@ -8,6 +10,8 @@ import type { LinkItem } from "../types/LinkItem";
 import type { ProductLinksState } from "../types/ProductLinksState";
 import type { RefreshProductLinks } from "../types/RefreshProductLinks";
 import type { SetProductLinkActive } from "../types/SetProductLinkActive";
+import type { ProductLinkFilter } from "../types/ProductLinkFilter";
+import { filterProductLinksByStatus } from "../utils/filterProductLinksByStatus";
 import { isLinkActive } from "../utils/isLinkActive";
 
 type ProductLinksPanelProps = {
@@ -23,8 +27,10 @@ export const ProductLinksPanel = ({
   refreshProductLinks,
   setProductLinkActive,
 }: ProductLinksPanelProps) => {
+  const [filter, setFilter] = useState<ProductLinkFilter>("active");
   const activeCount = links.filter(isLinkActive).length;
   const pausedCount = links.length - activeCount;
+  const visibleLinks = filterProductLinksByStatus(links, filter);
 
   return (
     <section className="rounded-lg border border-black/10 bg-white p-4 shadow-sm">
@@ -45,21 +51,29 @@ export const ProductLinksPanel = ({
         </SecondaryButton>
       </div>
       <div className="mt-4 flex flex-wrap gap-2 text-xs font-semibold text-black/65">
-        <span className="rounded-md border border-black/10 px-2 py-1">
-          {activeCount} can use
-        </span>
-        <span className="rounded-md border border-black/10 px-2 py-1">
-          {pausedCount} do not use
-        </span>
+        <ProductLinkFilterButton
+          count={activeCount}
+          filter="active"
+          label="can use"
+          onSelect={setFilter}
+          selected={filter === "active"}
+        />
+        <ProductLinkFilterButton
+          count={pausedCount}
+          filter="inactive"
+          label="do not use"
+          onSelect={setFilter}
+          selected={filter === "inactive"}
+        />
       </div>
       {productLinksState.message ? (
         <p className="mt-3 text-sm font-medium text-black" aria-live="polite">
           {productLinksState.message}
         </p>
       ) : null}
-      {links.length > 0 ? (
+      {visibleLinks.length > 0 ? (
         <ul className="mt-3 max-h-96 overflow-y-auto">
-          {links.map((link) => (
+          {visibleLinks.map((link) => (
             <ProductLinkRow
               key={link.url}
               link={link}
@@ -69,7 +83,11 @@ export const ProductLinksPanel = ({
         </ul>
       ) : (
         <p className="mt-4 text-sm leading-6 text-black/60">
-          Scan your site to find links.
+          {links.length === 0
+            ? "Scan your site to find links."
+            : filter === "active"
+              ? "No links are currently available to use."
+              : "No links are marked do not use."}
         </p>
       )}
     </section>

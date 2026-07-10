@@ -8,7 +8,7 @@ Only active links are used for topic discovery, blog generation, product writer 
 
 ## How It Works
 
-The Settings page shows `ProductLinksPanel` under the product scan controls. The panel lists every scanned link, shows how many are active or paused, and gives each link a "Do not use" or "Use again" action.
+The Settings page shows `ProductLinksPanel` under the product scan controls. The panel shows Can use links by default. Its count buttons switch between Can use and Do not use without loading the product again. Each row keeps its "Do not use" or "Use again" action.
 
 `refreshProductLinks` calls `POST /api/product/links/refresh`, which uses the same sitemap, homepage, and Firecrawl crawl logic as the full product scan. The client merges the refreshed URLs with the current link states, so a paused URL stays paused when it is found again.
 
@@ -22,10 +22,12 @@ The Settings page shows `ProductLinksPanel` under the product scan controls. The
 - `src/server/product/collectProductSiteLinkUrls.ts`
 - `src/features/workspace/components/ProductLinksPanel.tsx`
 - `src/features/workspace/components/ProductLinkRow.tsx`
+- `src/features/workspace/components/ProductLinkFilterButton.tsx`
 - `src/features/workspace/hooks/useLiveWorkspace.ts`
 - `src/features/workspace/hooks/useDemoWorkspace.ts`
 - `src/features/workspace/utils/isLinkActive.ts`
 - `src/features/workspace/utils/filterActiveLinks.ts`
+- `src/features/workspace/utils/filterProductLinksByStatus.ts`
 - `src/features/workspace/utils/mergeProductLinkStates.ts`
 - `src/features/workspace/utils/setProductLinkActiveState.ts`
 - `convex/products/updateProductSiteLinks.ts`
@@ -34,6 +36,7 @@ The Settings page shows `ProductLinksPanel` under the product scan controls. The
 
 - Refresh scanned links after adding new pages to a site.
 - Pause thin, private, outdated, or off-topic pages.
+- Focus on usable links first, then open the Do not use filter when needed.
 - Turn a paused link back on when it becomes useful again.
 - Keep generated blogs from linking to pages the user does not want promoted.
 
