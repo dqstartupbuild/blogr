@@ -39,13 +39,10 @@ export const BlogEditorView = ({
       <main className="min-w-0 flex-1">
         <div className="mx-auto grid w-full max-w-7xl gap-6 px-4 py-6 sm:px-6 lg:px-8">
           <BlogEditorHeader
-            applyRefreshPlan={editor.applyRefreshPlan}
-            discoverBlogRefreshIdeas={editor.discoverBlogRefreshIdeas}
             downloadBlog={downloadBlog}
             isSaving={editor.isSaving}
             message={editor.message}
             saveBlog={editor.saveBlog}
-            saveRefreshPlan={editor.saveRefreshPlan}
           />
           <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_420px]">
             <BlogEditorFields

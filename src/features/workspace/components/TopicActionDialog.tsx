@@ -57,6 +57,7 @@ export const TopicActionDialog = ({
   const [isRepurposeOpen, setIsRepurposeOpen] = useState(false);
   const isWriting = topic.status === "writing";
   const hasBrief = Boolean(topic.notes?.trim());
+  const isBriefLocked = Boolean(topic.blogId) || topic.status === "written";
   const canShowCalendarScheduleControl = canAddTopicToCalendar(topic);
   const canShowCalendarRemoveControl = canRemoveTopicFromCalendar(topic);
 
@@ -128,6 +129,7 @@ export const TopicActionDialog = ({
           <TopicBriefButton
             disabled={isWriting}
             hasBrief={hasBrief}
+            isLocked={isBriefLocked}
             onOpen={() => setIsBriefOpen(true)}
           />
           <TopicRepurposeButton

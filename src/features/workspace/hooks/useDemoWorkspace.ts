@@ -595,6 +595,12 @@ export const useDemoWorkspace = (initialMode: WorkspaceViewMode) => {
       throw new Error("Topic not found.");
     }
 
+    if (topic.blogId || topic.status === "written") {
+      throw new Error(
+        "This brief is locked because its article is already written.",
+      );
+    }
+
     const notes = buildExistingTopicBriefNotes(topic, demoTopicDiscoveryResult);
 
     setTopicsByWorkspace((current) => ({
@@ -609,9 +615,16 @@ export const useDemoWorkspace = (initialMode: WorkspaceViewMode) => {
 
   const saveTopicBrief = async (topicId: string, notes: string) => {
     const trimmedNotes = notes.trim();
+    const topic = workspaceTopics.find((item) => item.id === topicId);
 
-    if (!workspaceTopics.some((topic) => topic.id === topicId)) {
+    if (!topic) {
       throw new Error("Topic not found.");
+    }
+
+    if (topic.blogId || topic.status === "written") {
+      throw new Error(
+        "This brief is locked because its article is already written.",
+      );
     }
 
     setTopicsByWorkspace((current) => ({

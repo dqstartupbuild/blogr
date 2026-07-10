@@ -996,6 +996,12 @@ export const useLiveWorkspace = (
       throw new Error("Topic not found.");
     }
 
+    if (topic.blogId || topic.status === "written") {
+      throw new Error(
+        "This brief is locked because its article is already written.",
+      );
+    }
+
     if (!convexProductId) {
       throw new Error("Choose a workspace first.");
     }
@@ -1063,6 +1069,12 @@ export const useLiveWorkspace = (
 
     if (!topic) {
       throw new Error("Topic not found.");
+    }
+
+    if (topic.blogId || topic.status === "written") {
+      throw new Error(
+        "This brief is locked because its article is already written.",
+      );
     }
 
     if (!convexProductId) {

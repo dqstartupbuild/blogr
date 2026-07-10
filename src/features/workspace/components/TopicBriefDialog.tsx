@@ -28,6 +28,7 @@ export const TopicBriefDialog = ({
   const hasBrief = draftBriefText.trim().length > 0;
   const hasChanges = draftBriefText.trim() !== savedBriefText.trim();
   const isBusy = isRefreshing || isSaving;
+  const isLocked = Boolean(topic.blogId) || topic.status === "written";
 
   const handleRefresh = () => {
     setIsRefreshing(true);
@@ -82,9 +83,15 @@ export const TopicBriefDialog = ({
             className="min-h-72 resize-y rounded-md border border-black bg-white p-3 text-sm font-normal leading-6 text-black outline-none transition focus:ring-2 focus:ring-black"
             onChange={(event) => setDraftBriefText(event.target.value)}
             placeholder="Add the points you want this article to cover."
+            readOnly={isLocked}
             value={draftBriefText}
           />
         </label>
+        {isLocked ? (
+          <p className="text-sm text-black/60">
+            This brief is locked because the article has already been written.
+          </p>
+        ) : null}
         {!hasBrief ? (
           <p className="text-sm text-black/60">
             No brief has been saved for this topic yet.
@@ -95,26 +102,30 @@ export const TopicBriefDialog = ({
           <SecondaryButton disabled={isBusy} onClick={onClose}>
             Close
           </SecondaryButton>
-          <SecondaryButton
-            disabled={isBusy || !hasChanges}
-            onClick={handleSave}
-            type="button"
-          >
-            <Save size={16} aria-hidden="true" />
-            {isSaving ? "Saving..." : "Save brief"}
-          </SecondaryButton>
-          <PrimaryButton
-            disabled={isBusy}
-            onClick={handleRefresh}
-            type="button"
-          >
-            <FileSearch size={16} aria-hidden="true" />
-            {isRefreshing
-              ? "Searching..."
-              : hasBrief
-                ? "Refresh brief"
-                : "Find brief"}
-          </PrimaryButton>
+          {isLocked ? null : (
+            <>
+              <SecondaryButton
+                disabled={isBusy || !hasChanges}
+                onClick={handleSave}
+                type="button"
+              >
+                <Save size={16} aria-hidden="true" />
+                {isSaving ? "Saving..." : "Save brief"}
+              </SecondaryButton>
+              <PrimaryButton
+                disabled={isBusy}
+                onClick={handleRefresh}
+                type="button"
+              >
+                <FileSearch size={16} aria-hidden="true" />
+                {isRefreshing
+                  ? "Searching..."
+                  : hasBrief
+                    ? "Refresh brief"
+                    : "Find brief"}
+              </PrimaryButton>
+            </>
+          )}
         </div>
       </div>
     </div>

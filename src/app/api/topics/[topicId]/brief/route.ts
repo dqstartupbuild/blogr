@@ -43,6 +43,13 @@ export async function POST(request: Request, context: TopicBriefRouteContext) {
       throw new PublicError("Topic not found.", 404);
     }
 
+    if (topic.blogId || topic.status === "written") {
+      throw new PublicError(
+        "This brief is locked because its article is already written.",
+        409,
+      );
+    }
+
     if (hasBlogAiWorkerJob()) {
       const jobId = await createBlogAiJob({
         input: {

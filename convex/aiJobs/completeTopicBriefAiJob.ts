@@ -32,6 +32,12 @@ export const completeTopicBriefAiJob = mutation({
       throw new Error("Topic not found in this workspace.");
     }
 
+    if (topic.blogId || topic.status === "written") {
+      throw new Error(
+        "This brief is locked because its article is already written.",
+      );
+    }
+
     const updatedTopic = {
       ...topic,
       notes: notes || undefined,

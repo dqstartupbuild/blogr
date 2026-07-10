@@ -2,15 +2,17 @@
 
 ## What changed
 
-Topic briefs can now be edited by hand. A user can still ask the app to find or refresh a brief, then adjust the notes before writing an article.
+Topic briefs can be edited by hand before an article is written. A user can still ask the app to find or refresh a brief, then adjust the notes before writing. Once the article exists, the brief becomes read-only so the source plan stays tied to the article that was created from it.
 
 ## How it works
 
 - `TopicBriefButton` opens the brief dialog and says `Edit brief` when notes already exist.
 - `TopicBriefDialog` shows the brief in a textarea, lets the user save changes, and keeps the existing refresh action.
+- Written topics show `View brief` instead of `Edit brief`. The dialog removes its save and refresh actions and displays the saved notes as read-only.
 - `saveTopicBrief` is passed through the workspace topic list components so live and preview workspaces share the same UI.
 - Live workspaces save the text with the existing Convex `updateTopicNotes` mutation.
 - Preview workspaces update their local topic state.
+- The API route and Convex mutations enforce the lock as well, including when an article finishes while a brief search is still running.
 
 ## Source references
 
