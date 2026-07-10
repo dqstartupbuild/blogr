@@ -7,9 +7,11 @@ import { castBlogId } from "@/server/convex/castBlogId";
 import { castProductId } from "@/server/convex/castProductId";
 import { getBlogQuery } from "@/server/convex/references/getBlogQuery";
 import { updateBlogContentMutation } from "@/server/convex/references/updateBlogContentMutation";
+import { updateBlogImagesMutation } from "@/server/convex/references/updateBlogImagesMutation";
 import { demoBlogs } from "../constants/demoBlogs";
 import { mapConvexBlog } from "../mappers/mapConvexBlog";
 import type { BlogEditorState } from "../types/BlogEditorState";
+import type { UpdateBlogImages } from "../types/UpdateBlogImages";
 
 type UseBlogEditorOptions = {
   activeWorkspaceId?: string;
@@ -41,6 +43,7 @@ export const useBlogEditor = ({
       : "skip",
   );
   const updateBlogContent = useMutation(updateBlogContentMutation);
+  const updateBlogImagesRecord = useMutation(updateBlogImagesMutation);
   const liveState = useMemo(
     () => ({
       excerpt: liveBlog?.excerpt || fallbackBlog?.excerpt || "",
@@ -159,6 +162,52 @@ export const useBlogEditor = ({
     setMessage("Image refreshed.");
   };
 
+  const updateBlogImages: UpdateBlogImages = async (
+    requestedBlogId,
+    changes,
+  ) => {
+    if (!blog || blog.id !== requestedBlogId) {
+      throw new Error("Blog not found.");
+    }
+
+    setMessage("Saving image changes...");
+
+    if (!isLive) {
+      setState((current) => ({
+        ...(isDirty ? current : editorState),
+        mdx: changes.mdx,
+      }));
+      setIsDirty(true);
+      setMessage("Image changes saved in preview.");
+      return;
+    }
+
+    if (!convexProductId) {
+      throw new Error("Choose a workspace first.");
+    }
+
+    try {
+      await updateBlogImagesRecord({
+        blogId: convexBlogId,
+        featureImageUrl: changes.featureImageUrl,
+        images: changes.images,
+        mdx: changes.mdx,
+        productId: convexProductId,
+      });
+    } catch (error) {
+      setMessage(
+        error instanceof Error ? error.message : "Could not update that image.",
+      );
+      throw error;
+    }
+
+    if (isDirty) {
+      setState((current) => ({ ...current, mdx: changes.mdx }));
+    }
+
+    setMessage("Image changes saved.");
+  };
+
   return {
     isSaving,
     blog,
@@ -166,6 +215,7 @@ export const useBlogEditor = ({
     regenerateImage,
     saveBlog,
     state: editorState,
+    updateBlogImages,
     updateField,
   };
 };

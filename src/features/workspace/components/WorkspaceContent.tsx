@@ -34,6 +34,7 @@ import type { SetProductLinkActive } from "../types/SetProductLinkActive";
 import type { TopicItem } from "../types/TopicItem";
 import type { TopicListViewState } from "../types/TopicListViewState";
 import type { WriteBlogOptions } from "../types/WriteBlogOptions";
+import type { UpdateBlogImages } from "../types/UpdateBlogImages";
 import type { WorkspaceSwitcherState } from "../types/WorkspaceSwitcherState";
 import type { WorkspaceSummary } from "../types/WorkspaceSummary";
 import type { WorkspaceViewMode } from "../types/WorkspaceViewMode";
@@ -82,6 +83,7 @@ type WorkspaceContentProps = {
   setSelectedBlogId: (blogId: string) => void;
   topics: TopicItem[];
   topicListState: TopicListViewState;
+  updateBlogImages: UpdateBlogImages;
   workspaceSummary?: WorkspaceSummary;
   workspaceSwitcher: WorkspaceSwitcherState;
   writeBlog: (
@@ -128,6 +130,7 @@ export const WorkspaceContent = ({
   setSelectedBlogId,
   topics,
   topicListState,
+  updateBlogImages,
   workspaceSummary,
   workspaceSwitcher,
   writeBlog,
@@ -258,6 +261,7 @@ export const WorkspaceContent = ({
             onOpenChange={setIsBlogPreviewOpen}
             regenerateImage={regenerateImage}
             showTrigger={false}
+            updateBlogImages={updateBlogImages}
           />
         ) : null}
       </div>

@@ -5,12 +5,15 @@ import { getImageUrlPathKey } from "../utils/getImageUrlPathKey";
 import { resolveBlogImageMatches } from "../utils/resolveBlogImageMatches";
 import type { BlogImageItem } from "../types/BlogImageItem";
 import type { RegenerateBlogImage } from "../types/RegenerateBlogImage";
+import type { UpdateBlogImages } from "../types/UpdateBlogImages";
 
 type BuildMarkdownPreviewComponentsOptions = {
   blogId?: string;
   images?: BlogImageItem[];
   mdx?: string;
   regenerateImage?: RegenerateBlogImage;
+  title?: string;
+  updateBlogImages?: UpdateBlogImages;
 };
 
 export const buildMarkdownPreviewComponents = ({
@@ -18,6 +21,8 @@ export const buildMarkdownPreviewComponents = ({
   images,
   mdx,
   regenerateImage,
+  title,
+  updateBlogImages,
 }: BuildMarkdownPreviewComponentsOptions = {}) => {
   const imageList = images || [];
   const matches = resolveBlogImageMatches({ images: imageList, mdx: mdx || "" });
@@ -47,10 +52,14 @@ export const buildMarkdownPreviewComponents = ({
           alt={alt || match?.alt || ""}
           blogId={blogId}
           imageIndex={match?.imageIndex}
+          images={imageList}
           isFeatureImage={match?.imageIndex === 0}
+          mdx={mdx}
           prompt={match?.prompt}
           regenerateImage={regenerateImage}
           src={srcString}
+          title={title}
+          updateBlogImages={updateBlogImages}
         />
       );
     },

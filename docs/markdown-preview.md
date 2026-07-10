@@ -16,6 +16,8 @@ The workspace preview opens in a fixed right-side sidebar so users can inspect t
 
 The CSS modules beside `MarkdownPreview` make headings, links, lists, quotes, tables, code, images, and YouTube embeds easy to scan inside the existing preview surfaces.
 
+Editable image previews use one kebab menu for Regenerate, Edit alt text, Move in article, Make feature image, and Remove image. Moving an image targets a complete level-two article section, so saved image markdown is placed under a heading rather than inside a paragraph, list, table, or table of contents.
+
 ## Relevant Code
 
 - `src/features/workspace/components/MarkdownPreview.tsx`
@@ -26,6 +28,9 @@ The CSS modules beside `MarkdownPreview` make headings, links, lists, quotes, ta
 - `src/features/workspace/components/BlogPreviewSidebar.tsx`
 - `src/features/workspace/components/BlogPreviewPanel.tsx`
 - `src/features/workspace/components/BlogEditorPreview.tsx`
+- `src/features/workspace/components/ImageActionsMenu.tsx`
+- `src/features/workspace/components/ImageAltTextDialog.tsx`
+- `src/features/workspace/components/ImageRepositionDialog.tsx`
 - `src/features/workspace/utils/mergePreviewBlogs.ts`
 - `src/features/workspace/utils/stripMdxFrontmatter.ts`
 - `src/features/workspace/utils/replaceYoutubeIframesWithMarkdownLinks.ts`
@@ -36,6 +41,7 @@ The CSS modules beside `MarkdownPreview` make headings, links, lists, quotes, ta
 - Open or close the workspace preview without losing list position.
 - Edit a post while seeing a human-readable preview.
 - Check generated image placement before downloading the MDX bundle.
+- Update an image without editing its markdown URL by hand.
 - Watch generated YouTube videos directly in the preview.
 
 ## File Tree

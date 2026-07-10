@@ -46,17 +46,20 @@ export const BlogEditorView = ({
           />
           <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_420px]">
             <BlogEditorFields
+              images={downloadBlog.images}
               state={editor.state}
               updateField={editor.updateField}
             />
             <BlogEditorPreview
               blog={downloadBlog}
               regenerateImage={editor.regenerateImage}
+              updateBlogImages={editor.updateBlogImages}
             />
           </div>
           <BlogPreviewSidebar
             blog={downloadBlog}
             regenerateImage={editor.regenerateImage}
+            updateBlogImages={editor.updateBlogImages}
           />
         </div>
       </main>

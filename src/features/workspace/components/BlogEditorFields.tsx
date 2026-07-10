@@ -4,14 +4,17 @@ import { BlogMdxTextarea } from "./BlogMdxTextarea";
 import { TextField } from "./TextField";
 import { metaDescriptionLengthLimits } from "@/config/metaDescriptionLengthLimits";
 import { seoTitleLengthLimits } from "@/config/seoTitleLengthLimits";
+import type { BlogImageItem } from "../types/BlogImageItem";
 import type { BlogEditorState } from "../types/BlogEditorState";
 
 type BlogEditorFieldsProps = {
+  images: BlogImageItem[];
   state: BlogEditorState;
   updateField: (field: keyof BlogEditorState, value: string) => void;
 };
 
 export const BlogEditorFields = ({
+  images,
   state,
   updateField,
 }: BlogEditorFieldsProps) => {
@@ -50,7 +53,9 @@ export const BlogEditorFields = ({
         characters. Current: {state.excerpt.length}.
       </p>
       <BlogMdxTextarea
+        images={images}
         mdx={state.mdx}
+        title={state.title}
         updateMdx={(value) => updateField("mdx", value)}
       />
     </section>

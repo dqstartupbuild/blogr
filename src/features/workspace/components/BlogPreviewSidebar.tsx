@@ -6,6 +6,7 @@ import { BlogPreviewPanel } from "./BlogPreviewPanel";
 import type { BlogItem } from "../types/BlogItem";
 import type { DeleteBlog } from "../types/DeleteBlog";
 import type { RegenerateBlogImage } from "../types/RegenerateBlogImage";
+import type { UpdateBlogImages } from "../types/UpdateBlogImages";
 
 type BlogPreviewSidebarProps = {
   blog?: BlogItem;
@@ -13,6 +14,7 @@ type BlogPreviewSidebarProps = {
   isOpen?: boolean;
   onOpenChange?: (isOpen: boolean) => void;
   regenerateImage?: RegenerateBlogImage;
+  updateBlogImages?: UpdateBlogImages;
   showTrigger?: boolean;
   triggerVisibility?: "all" | "desktop";
 };
@@ -23,6 +25,7 @@ export const BlogPreviewSidebar = ({
   isOpen,
   onOpenChange,
   regenerateImage,
+  updateBlogImages,
   showTrigger = true,
   triggerVisibility = "all",
 }: BlogPreviewSidebarProps) => {
@@ -85,6 +88,7 @@ export const BlogPreviewSidebar = ({
                 deleteBlog={deleteBlog}
                 onBlogDeleted={() => setDrawerOpen(false)}
                 regenerateImage={regenerateImage}
+                updateBlogImages={updateBlogImages}
                 variant="drawer"
               />
             </div>

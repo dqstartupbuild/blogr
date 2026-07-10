@@ -45,6 +45,7 @@ import type { WriteBlogOptions } from "../types/WriteBlogOptions";
 import type { WorkspaceSummary } from "../types/WorkspaceSummary";
 import type { WorkspaceViewMode } from "../types/WorkspaceViewMode";
 import type { BlogPublishingIntegrationDraft } from "../types/integrations/BlogPublishingIntegrationDraft";
+import type { UpdateBlogImages } from "../types/UpdateBlogImages";
 
 export const useDemoWorkspace = (initialMode: WorkspaceViewMode) => {
   const [mode, setMode] = useState<WorkspaceViewMode>(initialMode);
@@ -834,6 +835,23 @@ export const useDemoWorkspace = (initialMode: WorkspaceViewMode) => {
     return workspaceId;
   };
 
+  const updateBlogImages: UpdateBlogImages = async (blogId, changes) => {
+    setBlogsByWorkspace((current) => ({
+      ...current,
+      [activeWorkspaceId]: (current[activeWorkspaceId] || []).map((blog) =>
+        blog.id === blogId
+          ? {
+              ...blog,
+              featureImageUrl: changes.featureImageUrl,
+              images: changes.images,
+              mdx: changes.mdx,
+              updatedAt: Date.now(),
+            }
+          : blog,
+      ),
+    }));
+  };
+
   return {
     addScheduledTopic,
     mode,
@@ -878,6 +896,7 @@ export const useDemoWorkspace = (initialMode: WorkspaceViewMode) => {
     schedulableTopics: workspaceTopics,
     scheduleTopicOnCalendar,
     setProductLinkActive,
+    updateBlogImages,
     workspaceSwitcher: {
       activeWorkspace,
       activeWorkspaceId,

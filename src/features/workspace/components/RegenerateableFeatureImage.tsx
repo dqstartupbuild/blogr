@@ -1,76 +1,47 @@
-"use client";
-
-import Image from "next/image";
-import { ImagePromptDialog } from "./ImagePromptDialog";
-import { RegenerateImageButton } from "./RegenerateImageButton";
-import { useImageRegenerationPrompt } from "../hooks/useImageRegenerationPrompt";
+import { RegenerateableImage } from "./RegenerateableImage";
+import type { BlogImageItem } from "../types/BlogImageItem";
 import type { RegenerateBlogImage } from "../types/RegenerateBlogImage";
+import type { UpdateBlogImages } from "../types/UpdateBlogImages";
 
 type RegenerateableFeatureImageProps = {
   alt: string;
   blogId?: string;
   imageIndex?: number;
+  images?: BlogImageItem[];
+  mdx?: string;
   prompt?: string;
   regenerateImage?: RegenerateBlogImage;
   src?: string;
+  title?: string;
+  updateBlogImages?: UpdateBlogImages;
 };
 
 export const RegenerateableFeatureImage = ({
   alt,
   blogId,
   imageIndex,
+  images,
+  mdx,
   prompt,
   regenerateImage,
   src,
+  title,
+  updateBlogImages,
 }: RegenerateableFeatureImageProps) => {
-  const imageRegeneration = useImageRegenerationPrompt({
-    alt,
-    blogId,
-    imageIndex,
-    isFeatureImage: true,
-    prompt,
-    regenerateImage,
-    src,
-  });
-
-  if (!src) {
-    return null;
-  }
-
   return (
-    <figure className="mt-6 grid gap-2">
-      <div className="relative aspect-video w-full overflow-hidden rounded-md border border-black/10 bg-black/5">
-        <Image
-          alt={alt}
-          className="object-cover"
-          fill
-          src={src}
-          unoptimized
-        />
-        {imageRegeneration.canRegenerate ? (
-          <div className="absolute right-3 top-3">
-            <RegenerateImageButton
-              aria-haspopup="dialog"
-              isRegenerating={imageRegeneration.isRegenerating}
-              onClick={imageRegeneration.openPromptDialog}
-            />
-          </div>
-        ) : null}
-      </div>
-      <ImagePromptDialog
-        error={imageRegeneration.error}
-        isOpen={imageRegeneration.isPromptDialogOpen}
-        isRegenerating={imageRegeneration.isRegenerating}
-        onClose={imageRegeneration.closePromptDialog}
-        onPromptChange={imageRegeneration.updatePromptDraft}
-        onRegenerate={imageRegeneration.regenerateFromPrompt}
-        prompt={imageRegeneration.promptDraft}
-      />
-      {imageRegeneration.error ? (
-        <p className="text-xs font-medium text-red-600">
-          {imageRegeneration.error}
-        </p>
-      ) : null}
-    </figure>
+    <RegenerateableImage
+      alt={alt}
+      blogId={blogId}
+      imageIndex={imageIndex}
+      images={images}
+      isFeatureImage
+      mdx={mdx}
+      prompt={prompt}
+      regenerateImage={regenerateImage}
+      src={src}
+      title={title}
+      updateBlogImages={updateBlogImages}
+      variant="feature"
+    />
   );
 };

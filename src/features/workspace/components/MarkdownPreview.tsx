@@ -6,12 +6,15 @@ import { replaceYoutubeIframesWithMarkdownLinks } from "../utils/replaceYoutubeI
 import { stripMdxFrontmatter } from "../utils/stripMdxFrontmatter";
 import type { BlogImageItem } from "../types/BlogImageItem";
 import type { RegenerateBlogImage } from "../types/RegenerateBlogImage";
+import type { UpdateBlogImages } from "../types/UpdateBlogImages";
 
 type MarkdownPreviewProps = {
   blogId?: string;
   images?: BlogImageItem[];
   mdx: string;
   regenerateImage?: RegenerateBlogImage;
+  title?: string;
+  updateBlogImages?: UpdateBlogImages;
 };
 
 export const MarkdownPreview = ({
@@ -19,6 +22,8 @@ export const MarkdownPreview = ({
   images,
   mdx,
   regenerateImage,
+  title,
+  updateBlogImages,
 }: MarkdownPreviewProps) => {
   const markdown = replaceYoutubeIframesWithMarkdownLinks(
     stripMdxFrontmatter(mdx),
@@ -34,8 +39,10 @@ export const MarkdownPreview = ({
         components={buildMarkdownPreviewComponents({
           blogId,
           images,
-          mdx: markdown,
+          mdx,
           regenerateImage,
+          title,
+          updateBlogImages,
         })}
         remarkPlugins={[remarkGfm]}
       >

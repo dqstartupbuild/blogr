@@ -27,6 +27,7 @@ import { updateTopicNotesMutation } from "@/server/convex/references/updateTopic
 import { updateTopicScheduledDateMutation } from "@/server/convex/references/updateTopicScheduledDateMutation";
 import { updateTopicStatusMutation } from "@/server/convex/references/updateTopicStatusMutation";
 import { updateBlogGenerationSettingsMutation } from "@/server/convex/references/updateBlogGenerationSettingsMutation";
+import { updateBlogImagesMutation } from "@/server/convex/references/updateBlogImagesMutation";
 import { upsertGeneratedBlogMutation } from "@/server/convex/references/upsertGeneratedBlogMutation";
 import { castTopicId } from "@/server/convex/castTopicId";
 import { workspaceListPageSize } from "../constants/workspaceListPageSize";
@@ -70,6 +71,7 @@ import type { WorkspaceViewMode } from "../types/WorkspaceViewMode";
 import type { BlogPublishingIntegrationDraft } from "../types/integrations/BlogPublishingIntegrationDraft";
 import type { TopicDiscoveryRequest } from "../types/topicDiscovery/TopicDiscoveryRequest";
 import type { TopicDiscoveryResponse } from "../types/topicDiscovery/TopicDiscoveryResponse";
+import type { UpdateBlogImages } from "../types/UpdateBlogImages";
 
 export const useLiveWorkspace = (
   initialMode: WorkspaceViewMode,
@@ -274,6 +276,7 @@ export const useLiveWorkspace = (
   const updateBlogGenerationSettings = useMutation(
     updateBlogGenerationSettingsMutation,
   );
+  const updateBlogImagesRecord = useMutation(updateBlogImagesMutation);
   const updateBlogPublishingIntegration = useMutation(
     updateBlogPublishingIntegrationMutation,
   );
@@ -1365,6 +1368,21 @@ export const useLiveWorkspace = (
     refreshReadQueries();
   };
 
+  const updateBlogImages: UpdateBlogImages = async (blogId, changes) => {
+    if (!convexProductId) {
+      throw new Error("Choose a workspace first.");
+    }
+
+    await updateBlogImagesRecord({
+      blogId: castBlogId(blogId),
+      featureImageUrl: changes.featureImageUrl,
+      images: changes.images,
+      mdx: changes.mdx,
+      productId: convexProductId,
+    });
+    refreshReadQueries();
+  };
+
   return {
     addScheduledTopic,
     addTopic,
@@ -1409,6 +1427,7 @@ export const useLiveWorkspace = (
     setSelectedBlogId,
     topics,
     topicListState,
+    updateBlogImages,
     workspaceSummary,
     workspaceSwitcher,
     writeBlog,

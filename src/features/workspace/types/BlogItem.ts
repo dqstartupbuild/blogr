@@ -1,12 +1,6 @@
 import type { LinkItem } from "./LinkItem";
 import type { BlogStatus } from "./BlogStatus";
-
-type BlogImageItem = {
-  alt: string;
-  prompt: string;
-  r2Key?: string;
-  url: string;
-};
+import type { BlogImageItem } from "./BlogImageItem";
 
 export type BlogItem = {
   createdAt?: number;

@@ -2,15 +2,18 @@ import { ArticleStatsPanel } from "./ArticleStatsPanel";
 import { MarkdownPreview } from "./MarkdownPreview";
 import type { BlogItem } from "../types/BlogItem";
 import type { RegenerateBlogImage } from "../types/RegenerateBlogImage";
+import type { UpdateBlogImages } from "../types/UpdateBlogImages";
 
 type BlogEditorPreviewProps = {
   blog: BlogItem;
   regenerateImage?: RegenerateBlogImage;
+  updateBlogImages?: UpdateBlogImages;
 };
 
 export const BlogEditorPreview = ({
   blog,
   regenerateImage,
+  updateBlogImages,
 }: BlogEditorPreviewProps) => {
   return (
     <aside className="grid gap-4 xl:sticky xl:top-6 xl:self-start">
@@ -26,6 +29,8 @@ export const BlogEditorPreview = ({
             images={blog.images}
             mdx={blog.mdx}
             regenerateImage={regenerateImage}
+            title={blog.title}
+            updateBlogImages={updateBlogImages}
           />
         </div>
       </section>

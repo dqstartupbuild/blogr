@@ -15,12 +15,14 @@ import { formatCountLabel } from "../utils/formatCountLabel";
 import type { BlogItem } from "../types/BlogItem";
 import type { DeleteBlog } from "../types/DeleteBlog";
 import type { RegenerateBlogImage } from "../types/RegenerateBlogImage";
+import type { UpdateBlogImages } from "../types/UpdateBlogImages";
 
 type BlogPreviewPanelProps = {
   blog?: BlogItem;
   deleteBlog?: DeleteBlog;
   onBlogDeleted?: () => void;
   regenerateImage?: RegenerateBlogImage;
+  updateBlogImages?: UpdateBlogImages;
   variant?: "card" | "drawer";
 };
 
@@ -29,6 +31,7 @@ export const BlogPreviewPanel = ({
   deleteBlog,
   onBlogDeleted,
   regenerateImage,
+  updateBlogImages,
   variant = "card",
 }: BlogPreviewPanelProps) => {
   const sectionClassName =
@@ -105,12 +108,16 @@ export const BlogPreviewPanel = ({
           </p>
           {blog.featureImageUrl && !isSummary ? (
             <RegenerateableFeatureImage
-              alt={blog.title}
+              alt={blog.images[0]?.alt || blog.title}
               blogId={blog.id}
               imageIndex={0}
+              images={blog.images}
+              mdx={blog.mdx}
               prompt={blog.images[0]?.prompt}
               regenerateImage={regenerateImage}
               src={blog.featureImageUrl}
+              title={blog.title}
+              updateBlogImages={updateBlogImages}
             />
           ) : null}
           <div className={markdownClassName}>
@@ -124,6 +131,8 @@ export const BlogPreviewPanel = ({
                 images={blog.images}
                 mdx={blog.mdx}
                 regenerateImage={regenerateImage}
+                title={blog.title}
+                updateBlogImages={updateBlogImages}
               />
             )}
           </div>
