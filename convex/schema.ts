@@ -2,6 +2,8 @@ import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
 import { blogGenerationSettingsValidator } from "./products/blogGenerationSettingsValidator";
 import { blogPublishingIntegrationValidator } from "./products/blogPublishingIntegrationValidator";
+import { productExternalLinkValidator } from "./products/productExternalLinkValidator";
+import { productPriceValidator } from "./products/productPriceValidator";
 import { topicSourceTypeValidator } from "./topics/topicSourceTypeValidator";
 import { topicStatusValidator } from "./topics/topicStatusValidator";
 
@@ -61,6 +63,10 @@ export default defineSchema({
     audience: v.string(),
     competitors: v.string(),
     colors: v.array(v.string()),
+    externalLinks: v.optional(v.array(productExternalLinkValidator)),
+    features: v.optional(v.array(v.string())),
+    offers: v.optional(v.array(v.string())),
+    pricing: v.optional(v.array(productPriceValidator)),
     assets: v.array(v.string()),
     assetKeys: v.optional(v.array(v.string())),
     productImages: v.array(v.string()),
@@ -102,6 +108,11 @@ export default defineSchema({
     niche: v.string(),
     audience: v.string(),
     colors: v.array(v.string()),
+    competitors: v.optional(v.string()),
+    externalLinks: v.optional(v.array(productExternalLinkValidator)),
+    features: v.optional(v.array(v.string())),
+    offers: v.optional(v.array(v.string())),
+    pricing: v.optional(v.array(productPriceValidator)),
     siteLinks: v.array(linkValidator),
     blogGenerationSettings: v.optional(blogGenerationSettingsValidator),
     blogPublishingIntegration: v.optional(publicBlogPublishingIntegrationValidator),

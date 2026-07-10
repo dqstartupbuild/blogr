@@ -4,6 +4,8 @@ import { upsertProductProfile } from "../readModels/upsertProductProfile";
 import { upsertProductWorkspaceSummary } from "../readModels/upsertProductWorkspaceSummary";
 import { assertAiWorkerSecret } from "./assertAiWorkerSecret";
 import { linkValidator } from "./linkValidator";
+import { productExternalLinkValidator } from "../products/productExternalLinkValidator";
+import { productPriceValidator } from "../products/productPriceValidator";
 
 export const completeProductScanAiJob = mutation({
   args: {
@@ -13,9 +15,13 @@ export const completeProductScanAiJob = mutation({
     colors: v.array(v.string()),
     competitors: v.string(),
     description: v.string(),
+    externalLinks: v.array(productExternalLinkValidator),
+    features: v.array(v.string()),
     jobId: v.id("aiJobs"),
     name: v.string(),
     niche: v.string(),
+    offers: v.array(v.string()),
+    pricing: v.array(productPriceValidator),
     productId: v.id("products"),
     productImageKeys: v.optional(v.array(v.string())),
     productImages: v.array(v.string()),
@@ -60,8 +66,12 @@ export const completeProductScanAiJob = mutation({
       colors: args.colors,
       competitors: args.competitors,
       description: args.description,
+      externalLinks: args.externalLinks,
+      features: args.features,
       name: args.name,
       niche: args.niche,
+      offers: args.offers,
+      pricing: args.pricing,
       productImageKeys: args.productImageKeys,
       productImages: args.productImages,
       rawContext: args.rawContext,

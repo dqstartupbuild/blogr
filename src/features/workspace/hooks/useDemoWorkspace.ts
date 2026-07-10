@@ -37,6 +37,7 @@ import type { BlogListViewState } from "../types/BlogListViewState";
 import type { BlogStatusFilter } from "../types/BlogStatusFilter";
 import type { CreateProductWorkspaceInput } from "../types/CreateProductWorkspaceInput";
 import type { ProductProfile } from "../types/ProductProfile";
+import type { ProductDetailsDraft } from "../types/ProductDetailsDraft";
 import type { ProductWorkspace } from "../types/ProductWorkspace";
 import type { TopicItem } from "../types/TopicItem";
 import type { TopicListViewState } from "../types/TopicListViewState";
@@ -63,6 +64,7 @@ export const useDemoWorkspace = (initialMode: WorkspaceViewMode) => {
   const [productScanMessage, setProductScanMessage] = useState("");
   const [isScanningProduct, setIsScanningProduct] = useState(false);
   const [productLinksMessage, setProductLinksMessage] = useState("");
+  const [productDetailsMessage, setProductDetailsMessage] = useState("");
   const [topicsByWorkspace, setTopicsByWorkspace] = useState<
     Record<string, TopicItem[]>
   >({
@@ -353,6 +355,7 @@ export const useDemoWorkspace = (initialMode: WorkspaceViewMode) => {
         ...(current[activeWorkspaceId] || emptyProduct),
         websiteUrl,
         niche,
+        updatedAt: Date.now(),
       };
 
       setWorkspaces((workspaceItems) =>
@@ -397,6 +400,33 @@ export const useDemoWorkspace = (initialMode: WorkspaceViewMode) => {
       };
     });
     setProductLinksMessage("Links refreshed in preview.");
+  };
+
+  const saveProductDetails = async (details: ProductDetailsDraft) => {
+    const updatedAt = Date.now();
+
+    setProductsByWorkspace((current) => ({
+      ...current,
+      [activeWorkspaceId]: {
+        ...(current[activeWorkspaceId] || emptyProduct),
+        ...details,
+        updatedAt,
+      },
+    }));
+    setWorkspaces((current) =>
+      current.map((workspace) =>
+        workspace.id === activeWorkspaceId
+          ? {
+              ...workspace,
+              name: details.name.trim() || workspace.name,
+              niche: details.niche,
+              updatedAt,
+              websiteUrl: details.websiteUrl,
+            }
+          : workspace,
+      ),
+    );
+    setProductDetailsMessage("Product details saved in preview.");
   };
 
   const setProductLinkActive = (url: string, isActive: boolean) => {
@@ -865,6 +895,10 @@ export const useDemoWorkspace = (initialMode: WorkspaceViewMode) => {
       isRefreshing: false,
       message: productLinksMessage,
     },
+    productDetailsState: {
+      isSaving: false,
+      message: productDetailsMessage,
+    },
     publishingIntegrationStatusMessage,
     productScanState: {
       isScanning: isScanningProduct,
@@ -891,6 +925,7 @@ export const useDemoWorkspace = (initialMode: WorkspaceViewMode) => {
     refreshProductLinks,
     removeTopicFromCalendar,
     saveTopicBrief,
+    saveProductDetails,
     saveBlogGenerationSettings,
     saveBlogPublishingIntegration,
     schedulableTopics: workspaceTopics,

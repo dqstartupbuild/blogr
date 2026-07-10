@@ -28,7 +28,11 @@ export const createFallbackProductProfile = ({
     colors,
     competitors: "",
     description,
+    externalLinks: [],
+    features: [],
     name: metadata?.ogTitle || metadata?.title || host,
     niche: nicheHint,
+    offers: [],
+    pricing: [],
   };
 };

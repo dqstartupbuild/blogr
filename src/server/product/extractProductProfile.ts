@@ -3,6 +3,9 @@ import { runReplicateText } from "../replicate/runReplicateText";
 import { buildProductProfilePrompt } from "./buildProductProfilePrompt";
 import { createFallbackProductProfile } from "./createFallbackProductProfile";
 import { parseProductProfileJson } from "./parseProductProfileJson";
+import { normalizeProductExternalLinks } from "./normalizeProductExternalLinks";
+import { normalizeProductPrices } from "./normalizeProductPrices";
+import { normalizeProductStringList } from "./normalizeProductStringList";
 import type { FirecrawlScrapeData } from "../firecrawl/types/FirecrawlScrapeData";
 import type { DetailPage } from "../firecrawl/types/DetailPage";
 import type { ProductProfileDraft } from "./types/ProductProfileDraft";
@@ -25,7 +28,7 @@ export const extractProductProfile = async (
 
   const prompt = buildProductProfilePrompt(options);
   const text = await runReplicateText({
-    maxTokens: 1800,
+    maxTokens: 2600,
     prompt,
     systemPrompt:
       "You turn website data into a simple product profile for blog writing. Return JSON only.",
@@ -35,5 +38,9 @@ export const extractProductProfile = async (
   return {
     ...profile,
     colors: mergeUniqueColors(profile.colors || [], options.colors),
+    externalLinks: normalizeProductExternalLinks(profile.externalLinks),
+    features: normalizeProductStringList(profile.features),
+    offers: normalizeProductStringList(profile.offers),
+    pricing: normalizeProductPrices(profile.pricing),
   };
 };

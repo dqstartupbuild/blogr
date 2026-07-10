@@ -23,6 +23,7 @@ import { listTopicsQuery } from "@/server/convex/references/listTopicsQuery";
 import { saveProductScanMutation } from "@/server/convex/references/saveProductScanMutation";
 import { updateBlogPublishingIntegrationMutation } from "@/server/convex/references/updateBlogPublishingIntegrationMutation";
 import { updateProductSiteLinksMutation } from "@/server/convex/references/updateProductSiteLinksMutation";
+import { updateProductDetailsMutation } from "@/server/convex/references/updateProductDetailsMutation";
 import { updateTopicNotesMutation } from "@/server/convex/references/updateTopicNotesMutation";
 import { updateTopicScheduledDateMutation } from "@/server/convex/references/updateTopicScheduledDateMutation";
 import { updateTopicStatusMutation } from "@/server/convex/references/updateTopicStatusMutation";
@@ -60,6 +61,7 @@ import type { BlogItem } from "../types/BlogItem";
 import type { BlogStatusFilter } from "../types/BlogStatusFilter";
 import type { ProductProfile } from "../types/ProductProfile";
 import type { ProductLinksRefreshResponse } from "../types/ProductLinksRefreshResponse";
+import type { ProductDetailsDraft } from "../types/ProductDetailsDraft";
 import type { ProductScanResponse } from "../types/ProductScanResponse";
 import type { WriteBlogOptions } from "../types/WriteBlogOptions";
 import type { TopicItem } from "../types/TopicItem";
@@ -91,6 +93,8 @@ export const useLiveWorkspace = (
   const [productScanMessage, setProductScanMessage] = useState("");
   const [isScanningProduct, setIsScanningProduct] = useState(false);
   const [productLinksMessage, setProductLinksMessage] = useState("");
+  const [productDetailsMessage, setProductDetailsMessage] = useState("");
+  const [isSavingProductDetails, setIsSavingProductDetails] = useState(false);
   const [isRefreshingProductLinks, setIsRefreshingProductLinks] =
     useState(false);
   const [settingsStatusMessage, setSettingsStatusMessage] = useState("");
@@ -273,6 +277,7 @@ export const useLiveWorkspace = (
   );
   const saveProductScan = useMutation(saveProductScanMutation);
   const updateProductSiteLinks = useMutation(updateProductSiteLinksMutation);
+  const updateProductDetails = useMutation(updateProductDetailsMutation);
   const updateBlogGenerationSettings = useMutation(
     updateBlogGenerationSettingsMutation,
   );
@@ -622,17 +627,24 @@ export const useLiveWorkspace = (
       }
 
       if (data.product) {
+        const scannedProduct = {
+          ...data.product,
+          externalLinks: data.product.externalLinks || [],
+          features: data.product.features || [],
+          offers: data.product.offers || [],
+          pricing: data.product.pricing || [],
+        };
         const siteLinks = mergeProductLinkStates({
           currentLinks: product.siteLinks,
-          refreshedLinks: data.product.siteLinks,
+          refreshedLinks: scannedProduct.siteLinks,
         });
         const savedProductId = await saveProductScan({
-          ...data.product,
+          ...scannedProduct,
           siteLinks,
           productId: convexProductId || undefined,
         });
         setScannedProduct({
-          product: mapProductScanResult({ ...data.product, siteLinks }),
+          product: mapProductScanResult({ ...scannedProduct, siteLinks }),
           productId: savedProductId,
         });
       }
@@ -741,6 +753,40 @@ export const useLiveWorkspace = (
       const message =
         error instanceof Error ? error.message : "Could not save that link.";
       setProductLinksMessage(message);
+    }
+  };
+
+  const saveProductDetails = async (details: ProductDetailsDraft) => {
+    if (!convexProductId || !activeProductId) {
+      setProductDetailsMessage("Choose a workspace first.");
+      return;
+    }
+
+    setIsSavingProductDetails(true);
+    setProductDetailsMessage("");
+
+    try {
+      await updateProductDetails({
+        ...details,
+        productId: convexProductId,
+      });
+      setScannedProduct({
+        product: {
+          ...product,
+          ...details,
+          updatedAt: Date.now(),
+        },
+        productId: activeProductId,
+      });
+      setProductDetailsMessage("Product details saved.");
+    } catch (error) {
+      setProductDetailsMessage(
+        error instanceof Error
+          ? error.message
+          : "Could not save your product details.",
+      );
+    } finally {
+      setIsSavingProductDetails(false);
     }
   };
 
@@ -1404,6 +1450,10 @@ export const useLiveWorkspace = (
       isRefreshing: isRefreshingProductLinks,
       message: productLinksMessage,
     },
+    productDetailsState: {
+      isSaving: isSavingProductDetails,
+      message: productDetailsMessage,
+    },
     publishingIntegrationStatusMessage,
     productScanState: {
       isScanning: isScanningProduct,
@@ -1414,6 +1464,7 @@ export const useLiveWorkspace = (
     refreshTopicBrief,
     removeTopicFromCalendar,
     saveTopicBrief,
+    saveProductDetails,
     saveBlogGenerationSettings,
     saveBlogPublishingIntegration,
     schedulableTopics,

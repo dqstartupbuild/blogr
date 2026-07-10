@@ -5,6 +5,8 @@ import { upsertProductProfile } from "../readModels/upsertProductProfile";
 import { upsertProductWorkspaceSummary } from "../readModels/upsertProductWorkspaceSummary";
 import { saveWorkspaceSelection } from "../workspaceSelections/saveWorkspaceSelection";
 import { defaultBlogGenerationSettings } from "./defaultBlogGenerationSettings";
+import { productExternalLinkValidator } from "./productExternalLinkValidator";
+import { productPriceValidator } from "./productPriceValidator";
 
 const linkValidator = v.object({
   isActive: v.optional(v.boolean()),
@@ -23,10 +25,14 @@ export const saveProductScan = mutation({
     audience: v.string(),
     competitors: v.string(),
     colors: v.array(v.string()),
+    externalLinks: v.array(productExternalLinkValidator),
+    features: v.array(v.string()),
     assets: v.array(v.string()),
     assetKeys: v.optional(v.array(v.string())),
     productImages: v.array(v.string()),
     productImageKeys: v.optional(v.array(v.string())),
+    offers: v.array(v.string()),
+    pricing: v.array(productPriceValidator),
     siteLinks: v.array(linkValidator),
     rawContext: v.string(),
   },

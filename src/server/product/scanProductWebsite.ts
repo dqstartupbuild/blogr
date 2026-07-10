@@ -1,7 +1,9 @@
 import { buildRawProductContext } from "./buildRawProductContext";
 import { buildSiteLinkItems } from "./buildSiteLinkItems";
 import { collectProductSiteLinkUrls } from "./collectProductSiteLinkUrls";
+import { collectProductExternalLinks } from "./collectProductExternalLinks";
 import { extractProductProfile } from "./extractProductProfile";
+import { isProductMarketplaceUrl } from "./isProductMarketplaceUrl";
 import { extractBrandingAssets } from "../firecrawl/extractBrandingAssets";
 import { extractBrandingColors } from "../firecrawl/extractBrandingColors";
 import { extractHtmlColorCandidates } from "../firecrawl/extractHtmlColorCandidates";
@@ -48,6 +50,21 @@ export const scanProductWebsite = async ({
     scrapeData,
     websiteUrl: normalizedUrl,
   });
+  const detectedExternalLinks = collectProductExternalLinks({
+    detailPages,
+    homepageMarkdown,
+    scrapeData,
+  });
+  const externalLinks = Array.from(
+    new Map(
+      [
+        ...detectedExternalLinks,
+        ...(profile.externalLinks || []).filter((link) =>
+          isProductMarketplaceUrl(link.url),
+        ),
+      ].map((link) => [link.url, link]),
+    ).values(),
+  );
   const rawContext = buildRawProductContext({
     detailPages,
     homepageMarkdown,
@@ -61,8 +78,12 @@ export const scanProductWebsite = async ({
     colors: mergeUniqueColors(profile.colors || [], colors),
     competitors: profile.competitors || "",
     description: profile.description || "",
+    externalLinks,
+    features: profile.features || [],
     name: profile.name || new URL(normalizedUrl).hostname.replace(/^www\./i, ""),
     niche: profile.niche || nicheHint,
+    offers: profile.offers || [],
+    pricing: profile.pricing || [],
     productImages: scrapeData?.screenshot ? [scrapeData.screenshot] : [],
     rawContext,
     siteLinks: buildSiteLinkItems(siteLinks),

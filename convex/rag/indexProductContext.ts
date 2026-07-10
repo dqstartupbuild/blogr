@@ -5,6 +5,8 @@ import { buildProductRagNamespace } from "./buildProductRagNamespace";
 import { buildProductRagText } from "./buildProductRagText";
 import { productRag } from "./client";
 import { productRagKey } from "./productRagKey";
+import { productExternalLinkValidator } from "../products/productExternalLinkValidator";
+import { productPriceValidator } from "../products/productPriceValidator";
 
 const linkValidator = v.object({
   isActive: v.optional(v.boolean()),
@@ -19,7 +21,11 @@ export const indexProductContext = action({
     websiteUrl: v.string(),
     name: v.string(),
     description: v.string(),
+    externalLinks: v.array(productExternalLinkValidator),
+    features: v.array(v.string()),
     niche: v.string(),
+    offers: v.array(v.string()),
+    pricing: v.array(productPriceValidator),
     audience: v.string(),
     competitors: v.string(),
     siteLinks: v.array(linkValidator),

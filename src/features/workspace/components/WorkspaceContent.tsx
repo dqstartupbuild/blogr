@@ -7,6 +7,7 @@ import { BlogsPanel } from "./BlogsPanel";
 import { CalendarPanel } from "./CalendarPanel";
 import { DashboardPanel } from "./DashboardPanel";
 import { ProductLinksPanel } from "./ProductLinksPanel";
+import { ProductDetailsPanel } from "./ProductDetailsPanel";
 import { ProductSetupPanel } from "./ProductSetupPanel";
 import { TopicsPanel } from "./TopicsPanel";
 import { WorkspaceSettingsPanel } from "./WorkspaceSettingsPanel";
@@ -23,11 +24,13 @@ import type { DiscoverBlogRefreshIdeas } from "../types/DiscoverBlogRefreshIdeas
 import type { FillCalendarBlankDays } from "../types/FillCalendarBlankDays";
 import type { ProductProfile } from "../types/ProductProfile";
 import type { ProductLinksState } from "../types/ProductLinksState";
+import type { ProductDetailsState } from "../types/ProductDetailsState";
 import type { ProductScanState } from "../types/ProductScanState";
 import type { RefreshProductLinks } from "../types/RefreshProductLinks";
 import type { RefreshTopicBrief } from "../types/RefreshTopicBrief";
 import type { RemoveTopicFromCalendar } from "../types/RemoveTopicFromCalendar";
 import type { SaveTopicBrief } from "../types/SaveTopicBrief";
+import type { SaveProductDetails } from "../types/SaveProductDetails";
 import type { RegenerateBlogImage } from "../types/RegenerateBlogImage";
 import type { ScheduleTopicOnCalendar } from "../types/ScheduleTopicOnCalendar";
 import type { SetProductLinkActive } from "../types/SetProductLinkActive";
@@ -58,6 +61,7 @@ type WorkspaceContentProps = {
   isSavingBlogGenerationSettings: boolean;
   mode: WorkspaceViewMode;
   product: ProductProfile;
+  productDetailsState: ProductDetailsState;
   productLinksState: ProductLinksState;
   publishingIntegrationStatusMessage: string;
   productScanState: ProductScanState;
@@ -66,6 +70,7 @@ type WorkspaceContentProps = {
   removeTopicFromCalendar: RemoveTopicFromCalendar;
   regenerateImage?: RegenerateBlogImage;
   saveTopicBrief: SaveTopicBrief;
+  saveProductDetails: SaveProductDetails;
   saveBlogGenerationSettings: (
     settings: BlogGenerationSettings,
   ) => void | Promise<void>;
@@ -109,6 +114,7 @@ export const WorkspaceContent = ({
   isSavingBlogGenerationSettings,
   mode,
   product,
+  productDetailsState,
   productLinksState,
   publishingIntegrationStatusMessage,
   productScanState,
@@ -117,6 +123,7 @@ export const WorkspaceContent = ({
   removeTopicFromCalendar,
   regenerateImage,
   saveTopicBrief,
+  saveProductDetails,
   saveBlogGenerationSettings,
   saveBlogPublishingIntegration,
   schedulableTopics,
@@ -221,6 +228,12 @@ export const WorkspaceContent = ({
                 product={product}
                 productScanState={productScanState}
                 scanProduct={scanProduct}
+              />
+              <ProductDetailsPanel
+                key={`${workspaceSwitcher.activeWorkspaceId}:${product.updatedAt || 0}`}
+                product={product}
+                productDetailsState={productDetailsState}
+                saveProductDetails={saveProductDetails}
               />
               <ProductLinksPanel
                 links={product.siteLinks}

@@ -30,8 +30,26 @@ JSON shape:
   "niche": "short niche phrase",
   "audience": "who this is for",
   "competitors": "comma-separated competitors if clearly mentioned",
-  "colors": ["#000000"]
+  "colors": ["#000000"],
+  "features": ["one clearly supported product feature"],
+  "pricing": [
+    {
+      "name": "plan name",
+      "price": "exact displayed price",
+      "billingPeriod": "per month, per year, one time, or empty",
+      "details": "short limit or audience note"
+    }
+  ],
+  "offers": ["free trial, discount, free plan, or special offer"],
+  "externalLinks": [
+    {
+      "label": "App Store or extension marketplace name",
+      "url": "exact app or extension URL found in the website data"
+    }
+  ]
 }
+
+Keep features short and specific. Copy prices exactly as shown, including currency. Keep discounts, trials, free plans, and limited offers separate from normal prices. Only include an external link when its exact URL appears in the website data. Do not guess an app-store or extension URL.
 
 Website:
 ${websiteUrl}

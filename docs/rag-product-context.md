@@ -44,7 +44,7 @@ Each product workspace gets its own RAG namespace. The Convex actions check owne
 
 The indexed text includes:
 
-- Product name, website, niche, audience, description, and competitors.
+- Product name, website, niche, audience, description, competitors, features, pricing, offers, and external product links.
 - Internal site links found during the scan.
 - Raw scanned website context.
 

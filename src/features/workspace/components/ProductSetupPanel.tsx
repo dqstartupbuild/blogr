@@ -58,21 +58,6 @@ export const ProductSetupPanel = ({
           {productScanState.message}
         </p>
       ) : null}
-      <div className="mt-4 grid gap-3 text-sm text-black/65 lg:grid-cols-[minmax(0,1fr)_220px]">
-        <p className="leading-6">{product.description}</p>
-        <div className="flex flex-wrap gap-2">
-          {product.colors.map((color) => (
-            <span
-              aria-label={`Brand color ${color}`}
-              className="inline-flex h-8 min-w-20 items-center justify-center rounded-md border border-black/15 bg-white px-2 text-xs font-semibold text-black"
-              key={color}
-              title={color}
-            >
-              {color}
-            </span>
-          ))}
-        </div>
-      </div>
     </section>
   );
 };

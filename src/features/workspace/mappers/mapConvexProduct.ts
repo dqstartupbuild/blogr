@@ -15,6 +15,10 @@ export const mapConvexProduct = (
     ...emptyProduct,
     ...product,
     colors: product?.colors || demoProduct.colors,
+    externalLinks: product?.externalLinks || emptyProduct.externalLinks,
+    features: product?.features || emptyProduct.features,
+    offers: product?.offers || emptyProduct.offers,
+    pricing: product?.pricing || emptyProduct.pricing,
     siteLinks: product?.siteLinks || emptyProduct.siteLinks,
   };
 };

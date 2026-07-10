@@ -8,7 +8,12 @@ export type ProductProfileSource = {
   description: string;
   niche: string;
   audience: string;
+  competitors: string;
   colors: string[];
+  externalLinks?: Doc<"products">["externalLinks"];
+  features?: string[];
+  offers?: string[];
+  pricing?: Doc<"products">["pricing"];
   siteLinks: Doc<"products">["siteLinks"];
   blogGenerationSettings?: Doc<"products">["blogGenerationSettings"];
   blogPublishingIntegration?: Doc<"products">["blogPublishingIntegration"];

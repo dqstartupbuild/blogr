@@ -2,7 +2,7 @@
 
 ## What It Does
 
-The user enters a website and niche from the active workspace's Settings tab. The app scans the site, collects product context, finds internal links, extracts brand assets and colors, copies scanned images into R2, indexes the scanned context for retrieval, and saves the product profile to that workspace in Convex.
+The user enters a website and niche from the active workspace's Settings tab. The app scans the site, collects product context, finds internal links, extracts brand assets, colors, features, pricing, offers, and product marketplace links, copies scanned images into R2, indexes the scanned context for retrieval, and saves the product profile to that workspace in Convex.
 
 This gives the writer enough context to understand the product and place internal links naturally in future blog posts.
 
@@ -14,7 +14,7 @@ This gives the writer enough context to understand the product and place interna
 4. `scanProductWebsite` normalizes the URL and calls Firecrawl.
 5. The scanner reads homepage markdown, branding, links, screenshots, sitemap links, and crawl links.
 6. It picks detail pages like pricing, features, product, docs, about, and use-case pages.
-7. It asks the configured Replicate writer model to turn the scraped context into a simple product profile.
+7. It asks the configured Replicate writer model to turn the scraped context into a simple product profile, including clearly supported features, exact displayed prices, trials or offers, and exact app or extension marketplace URLs.
 8. The worker or route downloads logo/Open Graph assets and product screenshots into R2. It uses the Convex R2 action when Convex auth is available and otherwise writes directly to the same R2 bucket with the signed-in user's ID.
 9. The scan route indexes the product profile, internal links, and raw scanned context in the Convex RAG component under the active product workspace.
 10. The Settings page saves the finished product profile and R2 image keys through the signed-in Convex client.
@@ -53,6 +53,7 @@ Scanned links can be marked as "do not use" and turned back on later. The link s
 - `src/server/product/scanAndStoreProductWebsite.ts`
 - `src/server/product/refreshProductSiteLinks.ts`
 - `src/server/product/collectProductSiteLinkUrls.ts`
+- `src/server/product/collectProductExternalLinks.ts`
 - `src/server/product/storeProductScanImages.ts`
 - `src/server/product/extractProductProfile.ts`
 - `src/server/r2/storeImageUrlWithConvexR2.ts`
@@ -74,6 +75,10 @@ Scanned links can be marked as "do not use" and turned back on later. The link s
 - Audience
 - Competitors when clear
 - Brand colors
+- Product features
+- Pricing plans, displayed prices, and billing periods
+- Trials, discounts, free plans, and special offers
+- Apple App Store, Google Play, browser extension, and other supported marketplace links
 - Logo and Open Graph assets
 - Product screenshots when Firecrawl returns them
 - R2 keys for copied scan images
