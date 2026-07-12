@@ -9,5 +9,6 @@ export const topicStatusFilterOptions: {
   { label: "Scheduled", value: "scheduled" },
   { label: "Writing", value: "writing" },
   { label: "Written", value: "written" },
+  { label: "Published", value: "published" },
   { label: "Failed", value: "failed" },
 ];

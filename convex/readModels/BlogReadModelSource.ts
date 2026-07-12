@@ -18,6 +18,7 @@ export type BlogReadModelSource = {
     url: string;
   }[];
   tags?: string[];
+  publishedAt?: number;
   createdAt: number;
   updatedAt: number;
 };

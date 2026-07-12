@@ -20,7 +20,13 @@ export type TopicReadModelSource = {
     | "refresh"
     | "aeo"
     | "difficulty";
-  status: "saved" | "scheduled" | "writing" | "written" | "failed";
+  status:
+    | "saved"
+    | "scheduled"
+    | "writing"
+    | "written"
+    | "published"
+    | "failed";
   blogId?: Id<"blogs">;
   createdAt: number;
   updatedAt: number;

@@ -247,6 +247,7 @@ export default defineSchema({
     internalLinks: v.array(linkValidator),
     youtubeVideos: v.array(linkValidator),
     sources: v.array(linkValidator),
+    publishedAt: v.optional(v.number()),
     createdAt: v.number(),
     updatedAt: v.number(),
   })
@@ -296,6 +297,7 @@ export default defineSchema({
     imageCount: v.number(),
     wordCount: v.number(),
     tags: v.optional(v.array(v.string())),
+    publishedAt: v.optional(v.number()),
     createdAt: v.number(),
     updatedAt: v.number(),
   })

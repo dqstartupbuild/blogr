@@ -45,7 +45,11 @@ export async function POST(request: Request, context: TopicBriefRouteContext) {
       throw new PublicError("Topic not found.", 404);
     }
 
-    if (topic.blogId || topic.status === "written") {
+    if (
+      topic.blogId ||
+      topic.status === "written" ||
+      topic.status === "published"
+    ) {
       throw new PublicError(
         "This brief is locked because its article is already written.",
         409,

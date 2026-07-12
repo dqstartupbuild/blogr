@@ -89,6 +89,7 @@ If a priority does not change what someone does today, it is probably too vague.
       "Use a short weekly check-in format that helps everyone share wins, blockers, and next steps without dragging the team off track.",
     tags: ["weekly check ins", "team updates", "meeting planning"],
     status: "published",
+    publishedAt: demoNow - 1000 * 60 * 60 * 24,
     updatedAt: demoNow - 1000 * 60 * 60 * 6,
     featureImageUrl: undefined,
     images: [],

@@ -28,7 +28,13 @@ export const listTopicKeywords = query({
         | "refresh"
         | "aeo"
         | "difficulty";
-      status: "saved" | "scheduled" | "writing" | "written" | "failed";
+      status:
+        | "saved"
+        | "scheduled"
+        | "writing"
+        | "written"
+        | "published"
+        | "failed";
     }[] = [];
 
     if (!productId) {

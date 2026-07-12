@@ -28,7 +28,10 @@ export const TopicBriefDialog = ({
   const hasBrief = draftBriefText.trim().length > 0;
   const hasChanges = draftBriefText.trim() !== savedBriefText.trim();
   const isBusy = isRefreshing || isSaving;
-  const isLocked = Boolean(topic.blogId) || topic.status === "written";
+  const isLocked =
+    Boolean(topic.blogId) ||
+    topic.status === "written" ||
+    topic.status === "published";
 
   const handleRefresh = () => {
     setIsRefreshing(true);

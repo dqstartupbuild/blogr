@@ -6,7 +6,7 @@ The content calendar shows a real month view for the active workspace. It opens 
 
 Users can add a new topic to an empty day, add an existing saved topic to an empty day, click a scheduled topic to open its action dialog, move a topic to another open day, remove a topic from a day, delete a topic, edit or refresh a brief, repurpose source text, write an article, and open a written article preview from the calendar. Calendar topics are normal topic records with a scheduled date, so the existing Topics and Articles workflows still work.
 
-Written article topics stay visible on the calendar as history. Existing articles are backfilled onto the calendar through their linked topic. The topic creation day is used first, and the article creation day is used as a fallback.
+Written and published article topics stay visible on the calendar as history. Existing articles are backfilled onto the calendar through their linked topic. The topic creation day is used first, and the article creation day is used as a fallback.
 
 The calendar renders as a seven-column weekday board. Each month is aligned to the correct weekday with muted blank slots before and after the month.
 
@@ -25,7 +25,7 @@ Scheduled topics are stored in the existing `topics` table with optional calenda
 
 The shared topic action dialog is used by both the Calendar and Topics views. It puts article, brief, repurposing, writing, calendar, and delete controls near the top, with the saved brief below them for easy reading after the user chooses an action. Only Saved and Failed topics can be added to an open day in the visible month; Writing, Written, and already Scheduled topics are not offered for calendar scheduling.
 
-Scheduled planning topics can be removed from the calendar without deleting the topic. Written topics with articles stay on the calendar as article history instead of offering calendar removal.
+Scheduled planning topics can be removed from the calendar without deleting the topic. Written and published topics with articles stay on the calendar as article history instead of offering calendar removal.
 
 Topics on the calendar use the `scheduled` status. New calendar topics are saved with `status: "scheduled"`, and older records that still have `status: "saved"` plus a `scheduledDate` are treated as Scheduled in the UI and topic filters.
 
@@ -33,7 +33,7 @@ When the user clicks **Fill empty days**, the client sends up to 30 blank dates 
 
 The client saves returned candidates through `createScheduledTopicBatch`. The mutation re-checks ownership, occupied dates, existing keywords, article keywords, and intent keys before inserting rows. If the calendar changed while planning was running, filled dates are skipped instead of overwritten.
 
-When a live workspace opens the calendar, `backfillWrittenTopicCalendarDates` patches written topics that have linked articles but no `scheduledDate`. It keeps those topics as Written, sets `scheduledDate` from `topic.createdAt`, falls back to `blog.createdAt`, and updates topic search text so calendar history can be queried normally. This does not create article drafts or duplicate topics.
+When a live workspace opens the calendar, `backfillWrittenTopicCalendarDates` repairs linked article topics. It sets a missing `scheduledDate` from `topic.createdAt`, falls back to `blog.createdAt`, and updates topic search text so calendar history can be queried normally. It also synchronizes the topic to Published when the linked article is published, including older records created before publication status syncing existed. This does not create article drafts or duplicate topics.
 
 ## Dedupe Behavior
 
@@ -82,7 +82,8 @@ The route builds enough long-tail product-niche candidates to fill the requested
 
 - Plan up to 30 blank days without manually saving each keyword.
 - Fill only the blank days after manually adding a few priority topics.
-- Move between months to see future plans and past written article history.
+- Move between months to see future plans and past written or published article history.
+- See Published on a calendar topic as soon as its linked article is published.
 - Filter the Topics page to show scheduled topics.
 - Place a saved or failed topic on a blank calendar day without creating a duplicate topic.
 - Add or move a saved topic from the Topics page through the shared topic dialog.

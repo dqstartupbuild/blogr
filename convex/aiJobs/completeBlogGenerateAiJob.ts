@@ -116,6 +116,7 @@ export const completeBlogGenerateAiJob = mutation({
         ? {
             _id: existingSummary.blogId,
             createdAt: existingSummary.createdAt,
+            publishedAt: existingSummary.publishedAt,
             userId: existingSummary.userId,
           }
         : existing || {

@@ -9,7 +9,13 @@ export type TopicItem = {
   notes?: string;
   scheduledDate?: string;
   sourceType?: TopicSourceType;
-  status: "saved" | "scheduled" | "writing" | "written" | "failed";
+  status:
+    | "saved"
+    | "scheduled"
+    | "writing"
+    | "written"
+    | "published"
+    | "failed";
   blogId?: string;
   updatedAt?: number;
 };

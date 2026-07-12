@@ -1,4 +1,5 @@
 import { formatWorkspaceDate } from "../utils/formatWorkspaceDate";
+import { getBlogPublishedAt } from "../utils/getBlogPublishedAt";
 import type { BlogItem } from "../types/BlogItem";
 
 type ArticleDateSummaryProps = {
@@ -11,6 +12,7 @@ export const ArticleDateSummary = ({
   className = "grid gap-1 text-sm leading-6 text-black/60",
 }: ArticleDateSummaryProps) => {
   const createdAt = blog.createdAt || blog.updatedAt;
+  const publishedAt = getBlogPublishedAt(blog);
 
   return (
     <span className={className}>
@@ -21,6 +23,10 @@ export const ArticleDateSummary = ({
       <span>
         <span className="font-semibold text-black/50">Updated</span>{" "}
         {formatWorkspaceDate(blog.updatedAt)}
+      </span>
+      <span>
+        <span className="font-semibold text-black/50">Published</span>{" "}
+        {publishedAt ? formatWorkspaceDate(publishedAt) : "Not yet"}
       </span>
     </span>
   );

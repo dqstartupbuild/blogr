@@ -7,6 +7,7 @@ type ConvexBlogSummaryLike = {
   featureImageUrl?: string;
   keyword: string;
   productId?: string;
+  publishedAt?: number;
   seoTitle?: string;
   slug: string;
   status: BlogItem["status"];
@@ -30,6 +31,7 @@ export const mapConvexBlogSummary = (
     keyword: blog.keyword,
     mdx: "",
     productId: blog.productId,
+    publishedAt: blog.publishedAt,
     seoTitle: blog.seoTitle || blog.title,
     slug: blog.slug,
     sources: [],

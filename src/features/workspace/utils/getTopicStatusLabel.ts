@@ -15,5 +15,9 @@ export const getTopicStatusLabel = (status: string) => {
     return "Article ready";
   }
 
+  if (status === "published") {
+    return "Published";
+  }
+
   return "Needs attention";
 };

@@ -5,5 +5,6 @@ export const topicStatusValidator = v.union(
   v.literal("scheduled"),
   v.literal("writing"),
   v.literal("written"),
+  v.literal("published"),
   v.literal("failed"),
 );

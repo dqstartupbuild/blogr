@@ -44,7 +44,9 @@ Written topics can also receive a `scheduledDate` after an article already exist
 
 Generated blogs store a visible article title and can store a separate `seoTitle`. Existing blogs without `seoTitle` fall back to the visible title in the UI. New generated posts normalize SEO titles to 70 to 110 characters and meta descriptions to 110 to 160 characters.
 
-Generated blogs store both `createdAt` and `updatedAt`. Publishing or editing changes `updatedAt`, while `createdAt` stays available for the article's original creation date.
+Generated blogs store `createdAt`, `updatedAt`, and an optional `publishedAt`. Created marks the original article record, Updated changes with article edits and publishing, and Published records the first successful publication. Published article summaries carry the same timestamp so lists and dashboard rows do not need to read full article content.
+
+Publishing a linked article also changes its topic status to `published`. The topic read model carries that status into the Topics and Calendar views. The existing calendar history backfill repairs older linked topics by comparing them with their article summaries.
 
 Generated blogs can store `tags`. Older blogs can omit this field, and publishing rebuilds clean fallback tags from the current blog fields.
 

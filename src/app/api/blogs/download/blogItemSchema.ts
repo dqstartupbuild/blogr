@@ -12,6 +12,7 @@ export const blogItemSchema = z.object({
   keyword: z.string(),
   mdx: z.string(),
   productId: z.string().optional(),
+  publishedAt: z.number().optional(),
   slug: z.string(),
   sources: z.array(linkItemSchema).default([]),
   seoTitle: z.string().default(""),

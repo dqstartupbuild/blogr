@@ -14,6 +14,7 @@ export type BlogItem = {
   status: BlogStatus;
   isSummary?: boolean;
   mdx: string;
+  publishedAt?: number;
   wordCount?: number;
   featureImageUrl?: string;
   images: BlogImageItem[];

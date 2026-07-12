@@ -5,6 +5,7 @@ import { resolveActiveProductId } from "../products/resolveActiveProductId";
 import { upsertTopicReadModel } from "../readModels/upsertTopicReadModel";
 import { buildTopicSearchText } from "./buildTopicSearchText";
 import { getCalendarDateKeyFromTimestamp } from "./getCalendarDateKeyFromTimestamp";
+import { resolveTopicStatusFromBlog } from "./resolveTopicStatusFromBlog";
 
 export const backfillWrittenTopicCalendarDates = mutation({
   args: {
@@ -40,23 +41,33 @@ export const backfillWrittenTopicCalendarDates = mutation({
       if (
         !topic ||
         topic.userId !== userId ||
-        (topic.productId && topic.productId !== productId) ||
-        topic.scheduledDate
+        (topic.productId && topic.productId !== productId)
       ) {
         skippedCount += 1;
         continue;
       }
 
-      const scheduledDate = getCalendarDateKeyFromTimestamp(
-        topic.createdAt || blog.createdAt,
-        args.timeZone,
-      );
-      const status =
-        topic.status === "writing" ? ("writing" as const) : ("written" as const);
+      const scheduledDate =
+        topic.scheduledDate ||
+        getCalendarDateKeyFromTimestamp(
+          topic.createdAt || blog.createdAt,
+          args.timeZone,
+        );
+      const status = resolveTopicStatusFromBlog(blog.status, topic.status);
+
+      if (
+        topic.blogId === blog.blogId &&
+        topic.productId === productId &&
+        topic.scheduledDate === scheduledDate &&
+        topic.status === status
+      ) {
+        skippedCount += 1;
+        continue;
+      }
 
       const updatedTopic = {
         ...topic,
-        blogId: topic.blogId || blog.blogId,
+        blogId: blog.blogId,
         productId: topic.productId || blog.productId || productId,
         scheduledDate,
         searchText: buildTopicSearchText({

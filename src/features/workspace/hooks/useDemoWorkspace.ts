@@ -626,7 +626,11 @@ export const useDemoWorkspace = (initialMode: WorkspaceViewMode) => {
       throw new Error("Topic not found.");
     }
 
-    if (topic.blogId || topic.status === "written") {
+    if (
+      topic.blogId ||
+      topic.status === "written" ||
+      topic.status === "published"
+    ) {
       throw new Error(
         "This brief is locked because its article is already written.",
       );
@@ -652,7 +656,11 @@ export const useDemoWorkspace = (initialMode: WorkspaceViewMode) => {
       throw new Error("Topic not found.");
     }
 
-    if (topic.blogId || topic.status === "written") {
+    if (
+      topic.blogId ||
+      topic.status === "written" ||
+      topic.status === "published"
+    ) {
       throw new Error(
         "This brief is locked because its article is already written.",
       );

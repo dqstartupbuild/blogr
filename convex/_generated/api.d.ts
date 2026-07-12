@@ -31,6 +31,7 @@ import type * as blogs_listBlogTopicKeywords from "../blogs/listBlogTopicKeyword
 import type * as blogs_listBlogs from "../blogs/listBlogs.js";
 import type * as blogs_markBlogPublished from "../blogs/markBlogPublished.js";
 import type * as blogs_refreshBlogImageUrls from "../blogs/refreshBlogImageUrls.js";
+import type * as blogs_resolveBlogPublishedAt from "../blogs/resolveBlogPublishedAt.js";
 import type * as blogs_seoContentLengthLimits from "../blogs/seoContentLengthLimits.js";
 import type * as blogs_updateBlogContent from "../blogs/updateBlogContent.js";
 import type * as blogs_updateBlogImage from "../blogs/updateBlogImage.js";
@@ -131,6 +132,7 @@ import type * as topics_listTopics from "../topics/listTopics.js";
 import type * as topics_normalizeTopicIntentToken from "../topics/normalizeTopicIntentToken.js";
 import type * as topics_normalizeTopicKeyword from "../topics/normalizeTopicKeyword.js";
 import type * as topics_removeTopicPlannerPrefix from "../topics/removeTopicPlannerPrefix.js";
+import type * as topics_resolveTopicStatusFromBlog from "../topics/resolveTopicStatusFromBlog.js";
 import type * as topics_tokenizeTopicIntent from "../topics/tokenizeTopicIntent.js";
 import type * as topics_topicIntentStopWords from "../topics/topicIntentStopWords.js";
 import type * as topics_topicSourceTypeValidator from "../topics/topicSourceTypeValidator.js";
@@ -171,6 +173,7 @@ declare const fullApi: ApiFromModules<{
   "blogs/listBlogs": typeof blogs_listBlogs;
   "blogs/markBlogPublished": typeof blogs_markBlogPublished;
   "blogs/refreshBlogImageUrls": typeof blogs_refreshBlogImageUrls;
+  "blogs/resolveBlogPublishedAt": typeof blogs_resolveBlogPublishedAt;
   "blogs/seoContentLengthLimits": typeof blogs_seoContentLengthLimits;
   "blogs/updateBlogContent": typeof blogs_updateBlogContent;
   "blogs/updateBlogImage": typeof blogs_updateBlogImage;
@@ -271,6 +274,7 @@ declare const fullApi: ApiFromModules<{
   "topics/normalizeTopicIntentToken": typeof topics_normalizeTopicIntentToken;
   "topics/normalizeTopicKeyword": typeof topics_normalizeTopicKeyword;
   "topics/removeTopicPlannerPrefix": typeof topics_removeTopicPlannerPrefix;
+  "topics/resolveTopicStatusFromBlog": typeof topics_resolveTopicStatusFromBlog;
   "topics/tokenizeTopicIntent": typeof topics_tokenizeTopicIntent;
   "topics/topicIntentStopWords": typeof topics_topicIntentStopWords;
   "topics/topicSourceTypeValidator": typeof topics_topicSourceTypeValidator;

@@ -2,6 +2,8 @@ import { v } from "convex/values";
 import { mutation } from "../_generated/server";
 import { requireUserId } from "../identity/requireUserId";
 import { upsertBlogReadModels } from "../readModels/upsertBlogReadModels";
+import { upsertTopicReadModel } from "../readModels/upsertTopicReadModel";
+import { resolveBlogPublishedAt } from "./resolveBlogPublishedAt";
 
 export const markBlogPublished = mutation({
   args: {
@@ -20,18 +22,53 @@ export const markBlogPublished = mutation({
       throw new Error("Blog not found in this workspace.");
     }
 
+    const now = Date.now();
     const updatedBlog = {
       ...blog,
       productId: blog.productId || args.productId,
+      publishedAt: resolveBlogPublishedAt("published", blog.publishedAt, now),
       status: "published",
-      updatedAt: Date.now(),
+      updatedAt: now,
     } as const;
 
     await ctx.db.patch(args.blogId, {
       productId: updatedBlog.productId,
+      publishedAt: updatedBlog.publishedAt,
       status: updatedBlog.status,
       updatedAt: updatedBlog.updatedAt,
     });
     await upsertBlogReadModels(ctx, updatedBlog);
+
+    if (!blog.topicId) {
+      return;
+    }
+
+    const topic = await ctx.db.get(blog.topicId);
+
+    if (
+      !topic ||
+      topic.userId !== userId ||
+      (updatedBlog.productId &&
+        topic.productId &&
+        topic.productId !== updatedBlog.productId)
+    ) {
+      return;
+    }
+
+    const updatedTopic = {
+      ...topic,
+      blogId: blog._id,
+      productId: topic.productId || updatedBlog.productId,
+      status: "published",
+      updatedAt: now,
+    } as const;
+
+    await ctx.db.patch(topic._id, {
+      blogId: updatedTopic.blogId,
+      productId: updatedTopic.productId,
+      status: updatedTopic.status,
+      updatedAt: updatedTopic.updatedAt,
+    });
+    await upsertTopicReadModel(ctx, updatedTopic);
   },
 });

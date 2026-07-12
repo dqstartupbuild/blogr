@@ -6,6 +6,7 @@ import { findBlogSummaryByTopicId } from "../readModels/findBlogSummaryByTopicId
 import { upsertBlogReadModels } from "../readModels/upsertBlogReadModels";
 import { upsertTopicReadModel } from "../readModels/upsertTopicReadModel";
 import { buildBlogSearchText } from "./buildBlogSearchText";
+import { resolveBlogPublishedAt } from "./resolveBlogPublishedAt";
 import { validateSeoContentLengths } from "./validateSeoContentLengths";
 
 const linkValidator = v.object({
@@ -91,6 +92,11 @@ export const upsertGeneratedBlog = mutation({
         _id: existingSummary.blogId,
         ...args,
         excerpt,
+        publishedAt: resolveBlogPublishedAt(
+          args.status,
+          existingSummary.publishedAt,
+          now,
+        ),
         searchText,
         seoTitle,
         userId,
@@ -101,6 +107,7 @@ export const upsertGeneratedBlog = mutation({
       await ctx.db.patch(existingSummary.blogId, {
         ...args,
         excerpt,
+        publishedAt: updatedBlog.publishedAt,
         searchText,
         seoTitle,
         updatedAt: now,
@@ -109,7 +116,11 @@ export const upsertGeneratedBlog = mutation({
 
       if (args.topicId && linkedTopic) {
         const topicStatus =
-          args.status === "failed" ? ("failed" as const) : ("written" as const);
+          args.status === "failed"
+            ? ("failed" as const)
+            : args.status === "published"
+              ? ("published" as const)
+              : ("written" as const);
         const updatedTopic = {
           ...linkedTopic,
           productId: args.productId,
@@ -139,6 +150,11 @@ export const upsertGeneratedBlog = mutation({
         ...existing,
         ...args,
         excerpt,
+        publishedAt: resolveBlogPublishedAt(
+          args.status,
+          existing.publishedAt,
+          now,
+        ),
         searchText: buildBlogSearchText({
           excerpt,
           keyword: args.keyword,
@@ -152,6 +168,7 @@ export const upsertGeneratedBlog = mutation({
       await ctx.db.patch(existing._id, {
         ...args,
         excerpt,
+        publishedAt: updatedBlog.publishedAt,
         searchText: updatedBlog.searchText,
         seoTitle,
         updatedAt: now,
@@ -160,7 +177,11 @@ export const upsertGeneratedBlog = mutation({
 
       if (args.topicId && linkedTopic) {
         const topicStatus =
-          args.status === "failed" ? ("failed" as const) : ("written" as const);
+          args.status === "failed"
+            ? ("failed" as const)
+            : args.status === "published"
+              ? ("published" as const)
+              : ("written" as const);
         const updatedTopic = {
           ...linkedTopic,
           productId: args.productId,
@@ -184,6 +205,7 @@ export const upsertGeneratedBlog = mutation({
     const blog = {
       ...args,
       excerpt,
+      publishedAt: resolveBlogPublishedAt(args.status, undefined, now),
       searchText: buildBlogSearchText({
         excerpt,
         keyword: args.keyword,
@@ -204,7 +226,11 @@ export const upsertGeneratedBlog = mutation({
 
     if (args.topicId && linkedTopic) {
       const topicStatus =
-        args.status === "failed" ? ("failed" as const) : ("written" as const);
+        args.status === "failed"
+          ? ("failed" as const)
+          : args.status === "published"
+            ? ("published" as const)
+            : ("written" as const);
       const updatedTopic = {
         ...linkedTopic,
         productId: args.productId,

@@ -16,6 +16,7 @@ export const buildBlogSummary = (blog: BlogReadModelSource) => {
     isPublished: blog.status === "published",
     keyword: blog.keyword,
     productId: blog.productId,
+    publishedAt: blog.publishedAt,
     searchText: blog.searchText,
     seoTitle: blog.seoTitle,
     slug: blog.slug,

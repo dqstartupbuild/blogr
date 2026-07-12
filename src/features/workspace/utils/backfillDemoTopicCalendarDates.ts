@@ -12,7 +12,11 @@ export const backfillDemoTopicCalendarDates = ({
   const blogsById = new Map(blogs.map((blog) => [blog.id, blog]));
 
   return topics.map((topic) => {
-    if (topic.scheduledDate || topic.status !== "written" || !topic.blogId) {
+    if (
+      topic.scheduledDate ||
+      (topic.status !== "written" && topic.status !== "published") ||
+      !topic.blogId
+    ) {
       return topic;
     }
 
@@ -26,6 +30,7 @@ export const backfillDemoTopicCalendarDates = ({
     return {
       ...topic,
       scheduledDate: getLocalDateKey(new Date(timestamp)),
+      status: blog?.status === "published" ? "published" : topic.status,
     };
   });
 };
