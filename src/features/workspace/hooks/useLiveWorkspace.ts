@@ -53,6 +53,7 @@ import { mergePreviewBlogs } from "../utils/mergePreviewBlogs";
 import { normalizeBlogGenerationSettings } from "../utils/normalizeBlogGenerationSettings";
 import { setProductLinkActiveState } from "../utils/setProductLinkActiveState";
 import { shiftCalendarMonthDate } from "../utils/shiftCalendarMonthDate";
+import { waitForTopicDiscoveryJob } from "../utils/waitForTopicDiscoveryJob";
 import type { CalendarBatchPlanResponse } from "../types/calendar/CalendarBatchPlanResponse";
 import type { BlogGenerateResponse } from "../types/BlogGenerateResponse";
 import type { BlogGenerationSettings } from "../types/BlogGenerationSettings";
@@ -1031,11 +1032,11 @@ export const useLiveWorkspace = (
       throw new Error(data.error || "Could not find topic ideas yet.");
     }
 
-    if (!data.discovery) {
-      throw new Error("Topic search started in the background.");
+    if (!data.discovery && data.jobId) {
+      return await waitForTopicDiscoveryJob(data.jobId);
     }
 
-    return data.discovery;
+    return data.discovery!;
   };
 
   const refreshTopicBrief = async (topicId: string) => {
@@ -1213,11 +1214,11 @@ export const useLiveWorkspace = (
       throw new Error(data.error || "Could not find refresh ideas yet.");
     }
 
-    if (!data.discovery) {
-      throw new Error("Refresh search started in the background.");
+    if (!data.discovery && data.jobId) {
+      return await waitForTopicDiscoveryJob(data.jobId);
     }
 
-    return data.discovery;
+    return data.discovery!;
   };
 
   const saveBlogGenerationSettings = async (

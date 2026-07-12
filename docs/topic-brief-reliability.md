@@ -10,7 +10,7 @@ Finding a topic brief uses the durable background worker without accidentally st
 2. When the background worker is configured, the route creates the brief job and waits for a result.
 3. Job checks use an increasing delay, from two seconds up to fifteen seconds, instead of reading the job every two seconds for the full request.
 4. Polling is capped at four minutes and never sleeps past that deadline. This leaves one minute for authentication, dispatch, the final database read, and the response before the route's five-minute limit.
-5. If a polling request has a temporary failure after dispatch, the route returns the durable job ID with a background status. The already-running worker remains the only process doing the search.
+5. The shared worker poller handles temporary Convex read failures for briefs, blog writing, calendar planning, product scans, topic discovery, and image regeneration. The route returns the durable job ID with a background status while the already-running worker remains the only process doing the work.
 6. If the worker reports a real failure, the route returns a brief-specific retry message. It does not repeat the same Apify and Replicate work inside the web request.
 7. The in-route search remains available only when Cloud Run cannot be dispatched, so local development and dispatch outages still have a fallback.
 

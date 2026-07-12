@@ -14,6 +14,8 @@ The content calendar also uses discovery data for batch planning. In that flow, 
 
 The client calls `POST /api/topics/discover` with the current product profile, existing topics, existing blogs, a seed keyword, and whether to check AI answers. When the Cloud Run Job worker env vars are set, the route creates a durable Convex AI job and dispatches the Google Cloud AI worker. Otherwise it runs the same workflow locally.
 
+If the initial request returns while the worker is still running, the client keeps checking the authenticated job-status route and opens the finished discovery result as soon as it is ready. This keeps slow topic and refresh searches useful instead of showing a background-started error and losing the generated ideas.
+
 The route builds a small set of Google searches from the product name, niche, audience, and seed keyword. It runs Apify Google Search Scraper through `src/server/apify/runGoogleSearchScraper.ts`, then normalizes:
 
 - People Also Ask questions
@@ -69,6 +71,7 @@ the Google Cloud AI worker.
 
 - `src/app/api/topics/discover/route.ts`
 - `src/app/api/topics/discover/schema.ts`
+- `src/app/api/ai-jobs/[jobId]/route.ts`
 - `src/app/api/worker/blog-ai/route.ts`
 - `src/server/blogAiWorker/`
 - `src/server/apify/runGoogleSearchScraper.ts`
@@ -91,6 +94,7 @@ the Google Cloud AI worker.
 - `src/features/workspace/utils/buildTopicDiscoveryIdeaNotes.ts`
 - `src/features/workspace/utils/buildExistingTopicBriefNotes.ts`
 - `src/features/workspace/utils/appendRefreshPlanToMdx.ts`
+- `src/features/workspace/utils/waitForTopicDiscoveryJob.ts`
 - `src/server/blog/buildTopicBriefPrompt.ts`
 
 ## Use Cases

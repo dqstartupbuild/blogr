@@ -34,16 +34,28 @@ embedding/index/search behavior.
 Web routes wait up to four minutes for a worker result. The shared wait helper
 caps larger `BLOG_AI_JOB_ROUTE_WAIT_MS` values and keeps poll delays inside that
 deadline, leaving time for the route to respond before its five-minute function
-limit. Once a worker is dispatched, a temporary polling problem returns the
-queued job status instead of repeating the provider work inside the web route.
+limit. Once a worker is dispatched, the shared poller logs temporary Convex read
+problems and returns the queued job status instead of turning a successful
+background job into a false request error.
 Routes with shorter function limits can provide a smaller wait cap. Image
 regeneration waits up to 90 seconds so its 120-second route has time to return.
+
+Signed-in clients can call `GET /api/ai-jobs/[jobId]` to read the status and
+result of their own durable jobs. Topic discovery uses this endpoint when its
+initial request returns while the worker is still running, because discovery
+results are not otherwise saved into a workspace record.
 
 ## How It Works
 
 `src/server/blogAiWorker/createBlogAiJob.ts` creates the Convex job and calls
 `dispatchBlogAiWorkerJob`, which uses the Google Run API to execute the Cloud
 Run Job.
+
+`src/server/blogAiWorker/waitForBlogAiJob.ts` owns server-side polling behavior
+for every worker-backed route. It returns the latest job when available and a
+queued response after a temporary read failure. The authenticated
+`src/app/api/ai-jobs/[jobId]/route.ts` endpoint supports follow-up reads without
+exposing job inputs or another user's work.
 
 The Job container starts Next locally, calls
 `POST /api/worker/blog-ai/jobs/run`, claims queued work from Convex, parses each

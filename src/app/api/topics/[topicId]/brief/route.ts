@@ -76,38 +76,25 @@ export async function POST(request: Request, context: TopicBriefRouteContext) {
       }
 
       if (jobId) {
-        try {
-          const job = await waitForBlogAiJob({ jobId, token });
+        const job = await waitForBlogAiJob({ jobId, token });
 
-          if (job?.status === "failed") {
-            throw new PublicError(
-              getTopicBriefFailureMessage(
-                new Error(job.error || "Topic brief worker failed."),
-              ),
-              502,
-            );
-          }
-
-          return NextResponse.json(
-            {
-              jobId,
-              notes: (job?.result as { notes?: string } | undefined)?.notes,
-              status: job?.status || "queued",
-            },
-            { status: job?.status === "succeeded" ? 200 : 202 },
-          );
-        } catch (workerWaitError) {
-          if (workerWaitError instanceof PublicError) {
-            throw workerWaitError;
-          }
-
-          logRouteError(workerWaitError);
-
-          return NextResponse.json(
-            { jobId, status: "queued" },
-            { status: 202 },
+        if (job?.status === "failed") {
+          throw new PublicError(
+            getTopicBriefFailureMessage(
+              new Error(job.error || "Topic brief worker failed."),
+            ),
+            502,
           );
         }
+
+        return NextResponse.json(
+          {
+            jobId,
+            notes: (job?.result as { notes?: string } | undefined)?.notes,
+            status: job?.status || "queued",
+          },
+          { status: job?.status === "succeeded" ? 200 : 202 },
+        );
       }
     }
 

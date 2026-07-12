@@ -1,5 +1,6 @@
 import { fetchQuery } from "convex/nextjs";
 import { getAiJobQuery } from "../convex/references/getAiJobQuery";
+import { logRouteError } from "../http/logRouteError";
 import { getBlogAiJobPollDelayMs } from "./getBlogAiJobPollDelayMs";
 import { getBlogAiJobRouteWaitMs } from "./getBlogAiJobRouteWaitMs";
 import type { Id } from "../../../convex/_generated/dataModel";
@@ -15,30 +16,35 @@ export const waitForBlogAiJob = async ({
   maximumWaitMs,
   token,
 }: WaitForBlogAiJobOptions) => {
-  const deadline = Date.now() + getBlogAiJobRouteWaitMs(maximumWaitMs);
-  let pollCount = 0;
+  try {
+    const deadline = Date.now() + getBlogAiJobRouteWaitMs(maximumWaitMs);
+    let pollCount = 0;
 
-  while (Date.now() < deadline) {
-    const job = await fetchQuery(getAiJobQuery, { jobId }, { token });
+    while (Date.now() < deadline) {
+      const job = await fetchQuery(getAiJobQuery, { jobId }, { token });
 
-    if (!job || job.status === "succeeded" || job.status === "failed") {
-      return job;
+      if (!job || job.status === "succeeded" || job.status === "failed") {
+        return job;
+      }
+
+      const remainingWaitMs = deadline - Date.now();
+
+      if (remainingWaitMs <= 0) {
+        break;
+      }
+
+      await new Promise((resolve) =>
+        setTimeout(
+          resolve,
+          Math.min(getBlogAiJobPollDelayMs(pollCount), remainingWaitMs),
+        ),
+      );
+      pollCount += 1;
     }
 
-    const remainingWaitMs = deadline - Date.now();
-
-    if (remainingWaitMs <= 0) {
-      break;
-    }
-
-    await new Promise((resolve) =>
-      setTimeout(
-        resolve,
-        Math.min(getBlogAiJobPollDelayMs(pollCount), remainingWaitMs),
-      ),
-    );
-    pollCount += 1;
+    return await fetchQuery(getAiJobQuery, { jobId }, { token });
+  } catch (error) {
+    logRouteError(error);
+    return undefined;
   }
-
-  return await fetchQuery(getAiJobQuery, { jobId }, { token });
 };
