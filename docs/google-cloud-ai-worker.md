@@ -31,6 +31,14 @@ checks, and final Convex writes. Product-context RAG indexing and RAG search
 still run inside Convex actions because the Convex RAG component owns that
 embedding/index/search behavior.
 
+Web routes wait up to four minutes for a worker result. The shared wait helper
+caps larger `BLOG_AI_JOB_ROUTE_WAIT_MS` values and keeps poll delays inside that
+deadline, leaving time for the route to respond before its five-minute function
+limit. Once a worker is dispatched, a temporary polling problem returns the
+queued job status instead of repeating the provider work inside the web route.
+Routes with shorter function limits can provide a smaller wait cap. Image
+regeneration waits up to 90 seconds so its 120-second route has time to return.
+
 ## How It Works
 
 `src/server/blogAiWorker/createBlogAiJob.ts` creates the Convex job and calls
@@ -63,7 +71,7 @@ BLOG_AI_WORKER_JOB_NAME=blogr-ai-worker
 BLOG_AI_WORKER_DISPATCH_CLIENT_EMAIL=blogr-ai-dispatcher@your-project-id.iam.gserviceaccount.com
 BLOG_AI_WORKER_DISPATCH_PRIVATE_KEY=service-account-private-key
 BLOG_AI_WORKER_SECRET=long-random-shared-secret
-BLOG_AI_JOB_ROUTE_WAIT_MS=280000
+BLOG_AI_JOB_ROUTE_WAIT_MS=240000
 ```
 
 Set these on the Cloud Run worker job:

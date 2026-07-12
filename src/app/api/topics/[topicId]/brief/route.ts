@@ -15,6 +15,7 @@ import { logRouteError } from "@/server/http/logRouteError";
 import { PublicError } from "@/server/http/PublicError";
 import { buildTopicBriefNotesForKeyword } from "@/server/topics/buildTopicBriefNotesForKeyword";
 import { discoverTopicIdeasForProduct } from "@/server/topics/discoverTopicIdeasForProduct";
+import { getTopicBriefFailureMessage } from "@/server/topics/getTopicBriefFailureMessage";
 import { normalizeTopicBriefRouteError } from "@/server/topics/normalizeTopicBriefRouteError";
 import { topicDiscoverRequestSchema } from "../../discover/schema";
 
@@ -52,8 +53,10 @@ export async function POST(request: Request, context: TopicBriefRouteContext) {
     }
 
     if (hasBlogAiWorkerJob()) {
+      let jobId;
+
       try {
-        const jobId = await createBlogAiJob({
+        jobId = await createBlogAiJob({
           input: {
             input: {
               ...input,
@@ -68,9 +71,23 @@ export async function POST(request: Request, context: TopicBriefRouteContext) {
           token,
           topicId,
         });
-        const job = await waitForBlogAiJob({ jobId, token });
+      } catch (workerError) {
+        logRouteError(workerError);
+      }
 
-        if (job?.status !== "failed") {
+      if (jobId) {
+        try {
+          const job = await waitForBlogAiJob({ jobId, token });
+
+          if (job?.status === "failed") {
+            throw new PublicError(
+              getTopicBriefFailureMessage(
+                new Error(job.error || "Topic brief worker failed."),
+              ),
+              502,
+            );
+          }
+
           return NextResponse.json(
             {
               jobId,
@@ -79,11 +96,18 @@ export async function POST(request: Request, context: TopicBriefRouteContext) {
             },
             { status: job?.status === "succeeded" ? 200 : 202 },
           );
-        }
+        } catch (workerWaitError) {
+          if (workerWaitError instanceof PublicError) {
+            throw workerWaitError;
+          }
 
-        logRouteError(new Error(job.error || "Topic brief worker failed."));
-      } catch (workerError) {
-        logRouteError(workerError);
+          logRouteError(workerWaitError);
+
+          return NextResponse.json(
+            { jobId, status: "queued" },
+            { status: 202 },
+          );
+        }
       }
     }
 

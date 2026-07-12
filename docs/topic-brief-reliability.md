@@ -2,19 +2,21 @@
 
 ## Overview
 
-Finding a topic brief now recovers from a failed background worker and returns a clear, brief-specific message if both search paths fail. The route no longer turns every worker error into the generic `Something went wrong` response.
+Finding a topic brief uses the durable background worker without accidentally starting the same long search twice. The route returns the completed brief when it is ready, or a background status while the worker finishes, instead of running into the web request limit and showing a generic error.
 
 ## How It Works
 
 1. The route verifies the signed-in user and loads the topic once.
 2. When the background worker is configured, the route creates the brief job and waits for a result.
 3. Job checks use an increasing delay, from two seconds up to fifteen seconds, instead of reading the job every two seconds for the full request.
-4. If worker dispatch, job waiting, or the worker itself fails, the same request falls back to the in-route topic search.
-5. If the fallback also fails, internal details are logged while the user receives a safe message that explains the brief search failed and can be retried.
+4. Polling is capped at four minutes and never sleeps past that deadline. This leaves one minute for authentication, dispatch, the final database read, and the response before the route's five-minute limit.
+5. If a polling request has a temporary failure after dispatch, the route returns the durable job ID with a background status. The already-running worker remains the only process doing the search.
+6. If the worker reports a real failure, the route returns a brief-specific retry message. It does not repeat the same Apify and Replicate work inside the web request.
+7. The in-route search remains available only when Cloud Run cannot be dispatched, so local development and dispatch outages still have a fallback.
 
 ## Database Read Behavior
 
-The topic ownership read is unchanged. Successful worker requests now use progressively spaced job reads, cutting the worst-case job checks from roughly 140 to about 25 during the default wait window. The inline fallback runs only after a worker-path failure and reuses the topic, product input, and Convex token already loaded by the request.
+The topic ownership read is unchanged. Worker requests use progressively spaced job reads and a four-minute maximum wait. A temporary read failure no longer triggers a second full search. This reduces duplicate provider calls, avoids duplicate writes, and keeps the request below its runtime limit.
 
 ## Relevant Code
 
@@ -24,12 +26,17 @@ The topic ownership read is unchanged. Successful worker requests now use progre
 - `src/server/topics/getTopicBriefFailureMessage.ts`
 - `src/server/topics/normalizeTopicBriefRouteError.ts`
 
+## Source References
+
+- [Vercel function duration configuration](https://vercel.com/docs/functions/configuring-functions/duration)
+
 ## Use Cases
 
-- Recover when Cloud Run cannot start the brief worker.
-- Recover when the worker reports a transient search failure.
+- Recover inline when Cloud Run cannot start the brief worker.
+- Let a dispatched worker finish after a temporary polling failure.
 - Show a useful retry message without exposing internal service details.
 - Keep long-running job checks from creating avoidable Convex reads.
+- Prevent a slow or failed worker from launching a duplicate in-route search.
 
 ## File Tree
 
@@ -38,6 +45,8 @@ src/app/api/topics/[topicId]/brief/
   route.ts
 src/server/blogAiWorker/
 ├── getBlogAiJobPollDelayMs.ts
+├── getBlogAiJobRouteWaitMs.test.ts
+├── getBlogAiJobRouteWaitMs.ts
 └── waitForBlogAiJob.ts
 src/server/topics/
 ├── getTopicBriefFailureMessage.ts

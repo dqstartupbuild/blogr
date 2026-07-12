@@ -23,6 +23,8 @@ type RegenerateImageRouteContext = {
   params: Promise<{ blogId: string }>;
 };
 
+const imageRegenerationJobWaitMs = 90000;
+
 export const maxDuration = 120;
 
 export async function POST(request: Request, context: RegenerateImageRouteContext) {
@@ -93,7 +95,11 @@ export async function POST(request: Request, context: RegenerateImageRouteContex
         productId,
         token,
       });
-      const job = await waitForBlogAiJob({ jobId, token });
+      const job = await waitForBlogAiJob({
+        jobId,
+        maximumWaitMs: imageRegenerationJobWaitMs,
+        token,
+      });
 
       if (job?.status === "failed") {
         throw new Error(job.error || "Could not refresh that image.");

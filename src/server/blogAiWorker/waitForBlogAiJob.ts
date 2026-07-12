@@ -6,28 +6,37 @@ import type { Id } from "../../../convex/_generated/dataModel";
 
 type WaitForBlogAiJobOptions = {
   jobId: Id<"aiJobs">;
+  maximumWaitMs?: number;
   token?: string;
-};
-
-const wait = async (delayMs: number) => {
-  await new Promise((resolve) => setTimeout(resolve, delayMs));
 };
 
 export const waitForBlogAiJob = async ({
   jobId,
+  maximumWaitMs,
   token,
 }: WaitForBlogAiJobOptions) => {
-  const startedAt = Date.now();
+  const deadline = Date.now() + getBlogAiJobRouteWaitMs(maximumWaitMs);
   let pollCount = 0;
 
-  while (Date.now() - startedAt < getBlogAiJobRouteWaitMs()) {
+  while (Date.now() < deadline) {
     const job = await fetchQuery(getAiJobQuery, { jobId }, { token });
 
     if (!job || job.status === "succeeded" || job.status === "failed") {
       return job;
     }
 
-    await wait(getBlogAiJobPollDelayMs(pollCount));
+    const remainingWaitMs = deadline - Date.now();
+
+    if (remainingWaitMs <= 0) {
+      break;
+    }
+
+    await new Promise((resolve) =>
+      setTimeout(
+        resolve,
+        Math.min(getBlogAiJobPollDelayMs(pollCount), remainingWaitMs),
+      ),
+    );
     pollCount += 1;
   }
 

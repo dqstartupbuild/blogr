@@ -26,6 +26,8 @@ The API route resolves the target image with `resolveRegenerateImageTarget`:
 
 When the Cloud Run Job worker env vars are set, the route creates a durable Convex AI job and dispatches the Google Cloud AI worker for Replicate generation and R2 storage. Otherwise it runs `regenerateBlogImage` locally. After the new image returns, the worker or route updates the blog's `images`, the `featureImageUrl` (when needed), and the MDX body. The MDX swap (`replaceImageUrlInMdx`) replaces the old URL everywhere it appears, falling back to a path match if the exact old URL isn't present.
 
+The image route waits up to 90 seconds for the durable worker. If generation is still running, it returns the queued job status before the route's 120-second limit. The worker continues in the background and saves the finished image through Convex, avoiding a gateway error while Replicate succeeds.
+
 ## Relevant Code
 
 - `src/app/api/blogs/[blogId]/regenerate-image/route.ts`
