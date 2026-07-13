@@ -15,6 +15,7 @@ export const runBlogImageRegenerateWorkerJob = async ({
     alt: input.alt,
     prompt: input.prompt,
     sectionHeading: input.sectionHeading,
+    sectionIndex: input.sectionIndex,
     token: convexAuthToken,
     userId,
   });

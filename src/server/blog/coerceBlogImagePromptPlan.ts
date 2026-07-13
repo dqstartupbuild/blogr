@@ -12,6 +12,12 @@ export const coerceBlogImagePromptPlan = (
   const prompt = typeof plan.prompt === "string" ? plan.prompt.trim() : "";
   const sectionHeading =
     typeof plan.sectionHeading === "string" ? plan.sectionHeading.trim() : "";
+  const sectionIndex =
+    typeof plan.sectionIndex === "number" &&
+    Number.isInteger(plan.sectionIndex) &&
+    plan.sectionIndex >= 0
+      ? plan.sectionIndex
+      : undefined;
 
   if (!alt || !prompt) {
     return null;
@@ -21,5 +27,6 @@ export const coerceBlogImagePromptPlan = (
     alt,
     prompt,
     sectionHeading,
+    sectionIndex,
   };
 };

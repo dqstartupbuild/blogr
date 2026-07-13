@@ -1,0 +1,4 @@
+interface:
+  display_name: "Blogr Publishing Receiver"
+  short_description: "Build Blogr webhooks for Next, Convex, and R2"
+  default_prompt: "Use $blogr-publishing-receiver to add a Blogr publishing receiver to this Next.js app."

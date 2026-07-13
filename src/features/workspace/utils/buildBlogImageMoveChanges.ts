@@ -1,4 +1,5 @@
 import { rebuildManagedBlogImagesInMdx } from "./rebuildManagedBlogImagesInMdx";
+import { findBlogSectionIndex } from "./findBlogSectionIndex";
 import { withBlogImageSectionHeadings } from "./withBlogImageSectionHeadings";
 import type { BlogImageChanges } from "../types/BlogImageChanges";
 import type { BlogImageItem } from "../types/BlogImageItem";
@@ -20,7 +21,13 @@ export const buildBlogImageMoveChanges = ({
 }: BuildBlogImageMoveChangesOptions): BlogImageChanges => {
   const positionedImages = withBlogImageSectionHeadings({ images, mdx, title });
   const nextImages = positionedImages.map((image, index) =>
-    index === imageIndex ? { ...image, sectionHeading } : image,
+    index === imageIndex
+      ? {
+          ...image,
+          sectionHeading,
+          sectionIndex: findBlogSectionIndex(mdx, sectionHeading),
+        }
+      : image,
   );
 
   return {

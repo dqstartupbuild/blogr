@@ -2,6 +2,7 @@ import { runReplicateImagePlannerText } from "../replicate/runReplicateImagePlan
 import { buildFallbackBlogImagePromptPlans } from "./buildFallbackBlogImagePromptPlans";
 import { buildImagePlannerPrompt } from "./buildImagePlannerPrompt";
 import { getImagesPerArticleCount } from "./getImagesPerArticleCount";
+import { mergeBlogImagePromptPlans } from "./mergeBlogImagePromptPlans";
 import { parseBlogImagePromptPlans } from "./parseBlogImagePromptPlans";
 import type { BlogGenerationSettings } from "@/features/workspace/types/BlogGenerationSettings";
 import type { BlogImagePrompt } from "./types/BlogImagePrompt";
@@ -40,7 +41,7 @@ export const planBlogImagePrompts = async ({
   try {
     const text = await runReplicateImagePlannerText({
       prompt: buildImagePlannerPrompt({
-        imageCount,
+        assignments: fallbackPlans,
         keyword,
         mdx,
         product,
@@ -48,26 +49,26 @@ export const planBlogImagePrompts = async ({
         title,
       }),
       systemPrompt:
-        "You are an article image planning editor. Pick useful visual moments from finished articles and return strict JSON only.",
+        "You are an article image planning editor. Create useful visuals for the assigned article sections and return strict JSON only.",
     });
     const plans = parseBlogImagePromptPlans(text);
-    const usablePlans =
-      plans.length > 0 ? [...plans, ...fallbackPlans] : fallbackPlans;
-
-    return usablePlans
-      .slice(0, imageCount)
-      .map(({ alt, prompt, sectionHeading }) => ({
-        alt,
-        prompt,
-        sectionHeading,
-      }));
+    return mergeBlogImagePromptPlans({
+      assignments: fallbackPlans,
+      plans,
+    }).map(({ alt, prompt, sectionHeading, sectionIndex }) => ({
+      alt,
+      prompt,
+      sectionHeading,
+      sectionIndex,
+    }));
   } catch {
     return fallbackPlans
       .slice(0, imageCount)
-      .map(({ alt, prompt, sectionHeading }) => ({
+      .map(({ alt, prompt, sectionHeading, sectionIndex }) => ({
         alt,
         prompt,
         sectionHeading,
+        sectionIndex,
       }));
   }
 };

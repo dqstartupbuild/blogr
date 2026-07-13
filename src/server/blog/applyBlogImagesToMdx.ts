@@ -1,4 +1,5 @@
 import { insertMissingFeatureImage } from "./insertMissingFeatureImage";
+import { getBlogFeatureImage } from "./getBlogFeatureImage";
 import { normalizeBlogMdxImages } from "./normalizeBlogMdxImages";
 import { setMdxFeatureImage } from "./setMdxFeatureImage";
 import type { BlogImage } from "./types/BlogImage";
@@ -12,9 +13,10 @@ export const applyBlogImagesToMdx = ({
   images,
   mdx,
 }: ApplyBlogImagesToMdxOptions) => {
-  const withFeatureImage = setMdxFeatureImage(mdx, images[0]?.url);
+  const featureImage = getBlogFeatureImage(images);
+  const withFeatureImage = setMdxFeatureImage(mdx, featureImage?.url);
   const withFeatureImageMarkdown = insertMissingFeatureImage({
-    image: images[0],
+    image: featureImage,
     mdx: withFeatureImage,
   });
 

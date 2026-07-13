@@ -3,6 +3,7 @@ import { chooseInternalLinks } from "./chooseInternalLinks";
 import { applyBlogImagesToMdx } from "./applyBlogImagesToMdx";
 import { findYoutubeVideos } from "./findYoutubeVideos";
 import { generateBlogImages } from "./generateBlogImages";
+import { getBlogFeatureImage } from "./getBlogFeatureImage";
 import { normalizeBlogKeyword } from "./normalizeBlogKeyword";
 import { planBlogImagePrompts } from "./planBlogImagePrompts";
 import { runBlogResearch } from "./runBlogResearch";
@@ -91,10 +92,11 @@ export const generateBlogForKeyword = async ({
     images: storedImages,
     mdx: textBlog.mdx,
   });
+  const featureImage = getBlogFeatureImage(storedImages);
 
   return {
     ...textBlog,
-    featureImageUrl: storedImages[0]?.url,
+    featureImageUrl: featureImage?.url,
     images: storedImages,
     mdx,
   };

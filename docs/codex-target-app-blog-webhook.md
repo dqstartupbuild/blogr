@@ -1,341 +1,68 @@
 # Codex Target App Blog Webhook Brief
 
-Copy this brief into Codex inside any target app that should receive blogs from Blogr.
+Copy the in-app prompt into Codex inside the target Next.js app that should receive blogs from Blogr.
 
-## Prompt
+The prompt first asks Codex to use `$blogr-publishing-receiver` when that skill is installed. If the skill is not installed, the prompt includes a shorter fallback brief that covers the supported stack for this version:
 
-Build a blog publishing receiver for this app.
+- Next.js App Router
+- Convex article records
+- Cloudflare R2 article image storage
 
-The source app is Blogr. It sends generated blog posts to a webhook when a user clicks **Publish**.
+## What Codex Should Build
 
-Create a public, token-protected webhook endpoint and a simple blog system that can store and render those posts.
+The receiving app should add:
 
-The target app must own the public blog content after a publish. Do not store Blogr image URLs as permanent public image URLs. Blogr can send signed image URLs that are only temporary.
+- `POST /api/webhooks/blog-publisher`
+- bearer-token auth with `BLOG_PUBLISH_WEBHOOK_TOKEN`
+- Convex article and summary records
+- Cloudflare R2 image copying for `image_url`, markdown images, and frontmatter `featureImage`
+- `/blog` and `/blog/[slug]` pages when the app does not already have them
+- MDX rendering for Blogr articles, including tables, code, rewritten images, headings, table of contents links, and whitelisted YouTube embeds
+- sitemap/feed/cache refresh behavior when those outputs exist
+- tests for auth, payload validation, slug upserts, article updates, image rewrite behavior, MDX rendering, and discovery outputs
 
-## Architecture
+## Skill Source
 
-The receiving webhook should own the Blogr publishing flow directly.
-
-For Next.js App Router apps, implement the orchestration in:
-
-```text
-src/app/api/webhooks/blog-publisher/route.ts
-```
-
-The route should validate the bearer token, parse the payload, copy images, upsert article records, and refresh cached pages. Do not forward the Blogr webhook request to a Convex HTTP action, a Convex `http.ts` route, or any `.convex.site` URL.
-
-If the app uses Convex for article records, call Convex record mutations or queries from the server route with `ConvexHttpClient` and the normal Convex URL from `CONVEX_URL` or `NEXT_PUBLIC_CONVEX_URL`. That should be the `.convex.cloud` URL.
-
-Do not add `CONVEX_SITE_URL`, `NEXT_PUBLIC_CONVEX_SITE_URL`, or any `.convex.site` dependency for Blogr publishing. `.convex.site` is only for unrelated existing Convex HTTP routes.
-
-## Incoming Webhook
-
-Create this endpoint:
+The repo-owned skill lives at:
 
 ```text
-POST /api/webhooks/blog-publisher
+codex-skills/blogr-publishing-receiver/
 ```
 
-Authentication:
-
-- Read the `Authorization` header.
-- Require `Bearer <token>`.
-- Compare the token to `BLOG_PUBLISH_WEBHOOK_TOKEN`.
-- Return `401` with `{ "error": "Invalid access token." }` when it is missing or wrong.
-
-Expected payload:
-
-```json
-{
-  "event_type": "publish_articles",
-  "timestamp": "2026-06-23T16:00:00.000Z",
-  "data": {
-    "articles": [
-      {
-        "id": "blog-id",
-        "title": "A Helpful Blog Title",
-        "seo_title": "A Helpful Blog Title for Search Results With Clear Next Steps and Examples",
-        "slug": "a-helpful-blog-title",
-        "meta_description": "A helpful plain-English summary that tells readers what they will learn, why it matters, and what next step they can take.",
-        "content_format": "mdx",
-        "content_markdown": "# Article body",
-        "content_mdx": "# Article body",
-        "content_html": "",
-        "image_url": "https://example.com/image.jpg",
-        "tags": ["content planning", "team priorities", "weekly planning"],
-        "source": "Blogr",
-        "created_at": "2026-06-23T16:00:00.000Z",
-        "updated_at": "2026-06-23T16:00:00.000Z"
-      }
-    ]
-  }
-}
-```
-
-Also support this single-article update shape for forward compatibility:
-
-```json
-{
-  "event_type": "update_article",
-  "timestamp": "2026-06-23T16:05:00.000Z",
-  "data": {
-      "article": {
-        "id": "blog-id",
-        "title": "Updated Title",
-        "seo_title": "Updated Title for Search Results With Clear Reader-Focused Next Steps and Examples",
-        "slug": "a-helpful-blog-title",
-        "meta_description": "An updated plain-English summary that tells readers what changed, why it matters, and what next step they can take.",
-      "content_format": "mdx",
-      "content_markdown": "# Updated body",
-      "content_mdx": "# Updated body",
-      "content_html": "",
-      "image_url": "https://example.com/image.jpg",
-      "tags": ["content planning", "team priorities", "weekly planning"],
-      "source": "Blogr",
-      "created_at": "2026-06-23T16:05:00.000Z",
-      "updated_at": "2026-06-23T16:05:00.000Z"
-    }
-  }
-}
-```
-
-## Storage
-
-Before implementing storage, inspect the target repo for:
-
-- an existing durable database or content model
-- an existing durable media/object storage system
-
-If both already exist, reuse them and follow the repo's local patterns.
-
-If either one is missing, ask the user which database and object storage they prefer before building that part. Present this as the recommended default:
-
-- Database: Convex article records.
-- Object storage: Cloudflare R2 copied directly from the receiving server route with AWS S3-compatible R2 helpers.
-
-If the user says to choose, does not care, or asks for the default, use Convex for blog article records and Cloudflare R2 for downloaded article images. The webhook route should upload images to R2 directly, then save the target-owned image URL or object key on the Convex article record through `ConvexHttpClient`.
-
-Do not implement production article or media storage with local writable files, checked-in JSON, in-memory state, or any serverless/ephemeral filesystem path.
-
-Create or reuse a blog post model with these fields:
-
-- `sourceId`: source article ID from Blogr.
-- `title`: visible article title.
-- `seoTitle`: from `seo_title`, used for SEO metadata and search previews.
-- `slug`
-- `description`: from `meta_description`.
-- `contentMdx`: prefer `content_mdx`, then `content_markdown`.
-- `featureImageUrl`: the target app's stored copy of `image_url`.
-- `tags`
-- `publishedAt`
-- `updatedAt`
-
-Upsert by `slug`. If a post with that slug already exists, update it. If not, create it. On every create or update, save the current `title`, `seo_title`, `meta_description`, content, images, tags, `source`, `created_at`, and `updated_at` values from the payload.
-
-Treat `created_at` and `updated_at` as the time Blogr sent the publish request, not the time the draft was first created.
-
-Keep `seoTitle` between 70 and 110 characters. Keep `description` between 110 and 160 characters.
-
-When using the default Convex and R2 path:
-
-- Install `convex` when the app does not already use it.
-- Create or reuse a Convex mutation that upserts article records.
-- Call that Convex function from the webhook route with `ConvexHttpClient` and `CONVEX_URL` or `NEXT_PUBLIC_CONVEX_URL` on `.convex.cloud`.
-- Create focused server-side helpers for safe image download, R2 client creation, object key building, object upload, and serving URL resolution.
-- Upload downloaded images to R2 from the webhook route, not from a forwarded Convex HTTP action.
-- Save the target-owned image URL or object key on article records.
-- Serve images with signed URLs, an existing private image-serving route, or another existing target-owned media URL pattern.
-- Document these hosting/server env vars: `CONVEX_URL` or `NEXT_PUBLIC_CONVEX_URL`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_ENDPOINT`, and `R2_BUCKET`.
-- Do not require `R2_TOKEN`, `R2_PUBLIC_URL`, an R2 custom domain, a public bucket, or whole-bucket public access. Only add public access when the user explicitly asks for that tradeoff.
-
-## Read Cost And Caching
-
-Design the public blog to keep database reads small.
-
-Do not load full article bodies, MDX, image arrays, or large metadata for:
-
-- blog index pages
-- sitemap output
-- RSS/feed output
-- search
-- related posts
-- static params
-- tag/category/filter choices
-- any other discovery view
-
-Store full article content in the canonical article record, but use lightweight summary records, projections, selected fields, or small index documents for list and discovery views.
-
-Use indexed lookups by slug for article pages and cursor pagination for lists. Avoid fetching every article to render one page or generate filter choices.
-
-On webhook create or update, update any summary/read-model data in the same write flow so public reads stay cheap.
-
-Revalidate or refresh cached blog pages, sitemap, feed, and list pages after publish instead of relying on repeated dynamic database reads.
-
-Backend-specific guidance:
-
-- If using Convex, prefer dedicated summary/read-model tables for blog lists, sitemap/feed metadata, and search/filter options. Avoid live subscriptions for public blog pages unless live updates are truly required.
-- If using SQL, Supabase, or Prisma, use field selection, indexes, and optionally materialized summary rows or views.
-- If using Firestore or another document database, avoid reading full article documents for list pages. Maintain small index documents when needed.
-
-## Image Ingestion
-
-Blogr image URLs are source URLs for ingestion, not durable public URLs for the target blog.
-
-During the webhook request:
-
-- Collect every image URL the article uses:
-  - `image_url`
-  - markdown image URLs in `content_mdx` and `content_markdown`
-  - `featureImage` in YAML frontmatter when present
-- Download those images server-side before saving the article.
-- Store the images in durable object storage, preferring the existing media/object storage system when one exists and otherwise the selected/default object storage from the storage decision above.
-- Rewrite `image_url`, frontmatter `featureImage`, and every markdown image URL in the saved body to the target app's stored image URLs.
-- Preserve markdown image alt text where possible.
-- Use safe fetching: allow only `http` and `https`, verify image content types, set a timeout, enforce a reasonable file-size limit, and return a clear `400` if required images cannot be copied.
-- Avoid hotlinking Blogr URLs in public pages because those URLs can expire or return `400`.
-
-If the target app cannot store images yet, ask for the user's storage preference and default to Convex plus Cloudflare R2 copied from the receiving server route when the user wants the default. Do not leave Blogr URLs in the saved post.
-
-## MDX And Embeds
-
-Blogr sends `content_format: "mdx"` and keeps the full article body in `content_mdx`. The target app should render the formats Blogr writes, not only plain paragraphs.
-
-Support at least:
-
-- YAML frontmatter, including stripping it from visible article content.
-- H1 through H6 headings, paragraphs, bold, italic, links, ordered lists, unordered lists, blockquotes, tables, horizontal rules, inline code, and fenced code blocks.
-- Markdown image syntax after image URLs have been rewritten to target-owned URLs.
-- Raw HTML or MDX iframe embeds for YouTube videos that use `youtube.com/embed` or `youtube-nocookie.com/embed`.
-- Standalone YouTube watch URLs or markdown links from `youtube.com`, `m.youtube.com`, `music.youtube.com`, `youtube-nocookie.com`, and `youtu.be`, rendered as embedded players when possible.
-
-Blogr articles commonly start with a `#` H1. Render that line as an H1, not as literal text. If the article page generates heading IDs, apply stable IDs to H1 through H6.
-
-Keep article table-of-contents links focused on H2 through H6 sections. The article H1 should render normally but should not become a table-of-contents item.
-
-Blogr's YouTube iframe output can be a multi-line block with an opening `<iframe` line, attributes such as `src`, `title`, `allow`, and `allowFullScreen` on separate lines, and a closing `</iframe>`. Older or imported content may use self-closing iframe tags. Do not only match one-line iframe strings. If the markdown or MDX renderer would show the iframe markup as raw text, transform Blogr's whitelisted YouTube iframe shape into a safe embed component before rendering.
-
-Sanitize rendered content. Do not allow arbitrary scripts, unsafe event handlers, or untrusted iframe sources.
-
-## Public Blog Pages
-
-Add or reuse:
-
-- `/blog` for the blog index.
-- `/blog/[slug]` for one post.
-
-The article page should render the MDX or markdown body, show the title, description, feature image when present, render article images and YouTube videos, and use clear human-facing copy.
-
-If this app already has a blog system, connect the webhook to the existing model and pages instead of creating a duplicate system.
-
-## SEO And Discovery
-
-Webhook-published posts must be discoverable the same way built-in posts are.
-
-Update or add:
-
-- canonical metadata for `/blog/[slug]`
-- Open Graph and social metadata, including the stored feature image when present
-- sitemap entries with useful `lastmod` dates
-- RSS/feed entries if the app has a feed
-- any existing blog index, search, related-post, static params, or content registry flow that should include public blog posts
-
-If the framework caches routes, revalidate or refresh `/blog`, `/blog/[slug]`, sitemap, feed, and any related cached blog data after a successful webhook publish.
-
-## Next.js App Router Notes
-
-For a Next.js App Router app, use a route handler at:
+The skill keeps the agent-facing instructions split by purpose:
 
 ```text
-src/app/api/webhooks/blog-publisher/route.ts
+codex-skills/blogr-publishing-receiver/SKILL.md
+codex-skills/blogr-publishing-receiver/references/contract.md
+codex-skills/blogr-publishing-receiver/references/next-app-router.md
+codex-skills/blogr-publishing-receiver/references/convex.md
+codex-skills/blogr-publishing-receiver/references/r2.md
+codex-skills/blogr-publishing-receiver/references/mdx-rendering.md
+codex-skills/blogr-publishing-receiver/references/acceptance.md
+codex-skills/blogr-publishing-receiver/assets/fixtures/publish-articles.json
+codex-skills/blogr-publishing-receiver/assets/fixtures/update-article.json
+codex-skills/blogr-publishing-receiver/assets/fixtures/publish-articles-multimedia.json
 ```
 
-Use server-only env vars:
+## Fallback Brief
 
-```bash
-BLOG_PUBLISH_WEBHOOK_TOKEN=replace-with-the-same-token-used-in-blogr
-CONVEX_URL=https://your-deployment.convex.cloud
-# or NEXT_PUBLIC_CONVEX_URL=https://your-deployment.convex.cloud
-```
+When the skill is unavailable, the copied prompt tells Codex to:
 
-If the target app uses the default R2 storage path, set these on the hosting/server deployment because the webhook route uploads images directly:
+- implement the receiving route at `src/app/api/webhooks/blog-publisher/route.ts`
+- accept `publish_articles` with `data.articles`
+- accept `update_article` with `data.article`
+- upsert by `slug`
+- store `content_mdx`, falling back to `content_markdown`
+- copy all article images into R2 before saving
+- call Convex through `ConvexHttpClient` with `CONVEX_URL` or `NEXT_PUBLIC_CONVEX_URL` on `.convex.cloud`
+- avoid `.convex.site`, `CONVEX_SITE_URL`, and `NEXT_PUBLIC_CONVEX_SITE_URL` for Blogr publishing
+- avoid `R2_TOKEN`, `R2_PUBLIC_URL`, public bucket requirements, and custom domain requirements
+- use lightweight Convex summaries for public list and discovery reads
+- render Blogr MDX safely
+- return `{ "message": "Published." }` after a successful publish
+- finish with exact required setup values and verification commands
 
-```bash
-R2_ACCESS_KEY_ID=<access-key-id>
-R2_SECRET_ACCESS_KEY=<secret-access-key>
-R2_ENDPOINT=<endpoint>
-R2_BUCKET=<bucket>
-```
-
-Do not add `CONVEX_SITE_URL`, `NEXT_PUBLIC_CONVEX_SITE_URL`, `R2_TOKEN`, `R2_PUBLIC_URL`, or require an R2 custom domain for the default path. S3-compatible R2 credentials and signed or private serving URLs are enough unless the user explicitly chooses public bucket access.
-
-Keep helper files focused. Suggested file tree:
-
-```text
-src/app/api/webhooks/blog-publisher/route.ts
-src/app/api/webhooks/blog-publisher/schema.ts
-src/server/blogPublisher/collectBlogPublisherImageUrls.ts
-src/server/blogPublisher/downloadBlogPublisherImage.ts
-src/server/blogPublisher/createBlogPublisherR2Client.ts
-src/server/blogPublisher/buildBlogPublisherR2Key.ts
-src/server/blogPublisher/putBlogPublisherR2Object.ts
-src/server/blogPublisher/getBlogPublisherImageUrl.ts
-src/server/blogPublisher/rewriteBlogPublisherImageUrls.ts
-src/server/blogPublisher/validateBlogPublisherToken.ts
-src/server/blogPublisher/normalizeBlogPublisherArticles.ts
-src/server/blogPublisher/upsertBlogPublisherArticle.ts
-src/server/blogPublisher/renderBlogPublisherMdx.ts
-src/server/blogPublisher/types/BlogPublisherArticle.ts
-```
-
-## Receiver Behavior
-
-Handle events this way:
-
-- `publish_articles`: upsert every article in `data.articles`.
-- `update_article`: upsert `data.article`.
-- Existing posts must update their visible title, SEO title, description, body, image URLs, tags, source, and timestamps from the new payload.
-- Unknown events: return `400` with a clear error.
-- Missing required fields: return `400`.
-- Image copy failures for required article images: return `400` with a clear error.
-- Successful publish: return `200` with `{ "message": "Published." }`.
-
-## Acceptance Checklist
-
-- The webhook rejects requests without the bearer token.
-- The webhook accepts the Blogr payload.
-- Publishing the same slug twice updates one post instead of creating duplicates.
-- `update_article` refreshes the saved SEO title and description for the existing post.
-- The webhook copies `image_url` and markdown images into target-owned storage.
-- Saved article content uses target-owned image URLs, not Blogr URLs.
-- `/blog` lists the published post.
-- `/blog/[slug]` renders the post body, feature image, inline images, tables, code blocks, and YouTube videos.
-- `/blog/[slug]` renders `#` H1 headings as headings while keeping table-of-contents entries scoped to H2 through H6.
-- `/blog/[slug]` renders Blogr's multi-line YouTube iframe blocks instead of showing the raw iframe markup.
-- Sitemap and feed outputs include webhook-published posts.
-- Cached blog routes and discovery outputs refresh after publishing.
-- The target app documents the webhook env var and endpoint.
-- The implementation handoff names every required variable and groups them by where they must be set: hosting/server env, Convex deployment env, Cloudflare/R2, database setup, and Blogr Settings.
-- The implementation does not add or rely on `CONVEX_SITE_URL`, `NEXT_PUBLIC_CONVEX_SITE_URL`, or `.convex.site` for Blogr publishing.
-- The implementation handoff lists every manual setup step still required after code is merged.
-- Lint, typecheck, and build pass.
-
-## Final Handoff Requirements
-
-Before finishing, audit every setup value and manual step the target app needs.
-
-The final response must include a clear **Required setup** section with:
-
-- Vercel, hosting, or server env vars, including `BLOG_PUBLISH_WEBHOOK_TOKEN`, `CONVEX_URL` or `NEXT_PUBLIC_CONVEX_URL` when `ConvexHttpClient` is used, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_ENDPOINT`, `R2_BUCKET` when the default R2 path is used, and any site URL or framework-specific env vars needed by the implementation.
-- Convex deployment env vars required by the implementation. Do not list `CONVEX_SITE_URL` or `NEXT_PUBLIC_CONVEX_SITE_URL` for Blogr publishing.
-- Database setup steps, including Convex project setup, schema deployment, migrations, seed steps, or commands the user must run.
-- Cloudflare/R2 setup steps, including bucket creation, S3-compatible access key creation, CORS policy, and signed/private URL behavior the implementation expects. Do not require `R2_TOKEN`, `R2_PUBLIC_URL`, an R2 custom domain, a public bucket, or whole-bucket public access unless the user explicitly chose that setup.
-- Blogr setup steps: webhook URL, access token, and publisher label to enter in Blogr Settings. The publisher label becomes the payload's `source` value and is not the article author.
-- Optional env vars or follow-up steps, clearly labeled optional.
-- Verification commands that were run and anything the user still needs to run after deployment.
-
-Do not finish with vague wording like "set the needed env vars." Name every variable and where it must be set.
-
-## Blogr Setup After Target App Is Deployed
+## Blogr Setup After Deployment
 
 Open Blogr, choose the product workspace, then go to **Settings** and use the **Publishing** panel.
 
@@ -345,6 +72,4 @@ Enter:
 - Access token: the same value saved in the target app as `BLOG_PUBLISH_WEBHOOK_TOKEN`
 - Publisher label: `Blogr`
 
-Then open Blogr, choose a generated post, and click **Publish**.
-
-If publishing returns `Invalid access token.`, the receiving app is reachable but the token in Blogr does not exactly match `BLOG_PUBLISH_WEBHOOK_TOKEN` in the target app's active deployment. Check for copied spaces, quotes, stale deployment env vars, or setting the token in the wrong environment.
+The publisher label becomes the payload's `source` value. It is not the article author.

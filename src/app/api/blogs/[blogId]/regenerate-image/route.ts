@@ -88,6 +88,7 @@ export async function POST(request: Request, context: RegenerateImageRouteContex
             productId: input.productId,
             prompt: target.prompt,
             sectionHeading: previousImage?.sectionHeading,
+            sectionIndex: previousImage?.sectionIndex,
           },
           type: "blog.regenerateImage",
           userId,
@@ -119,6 +120,7 @@ export async function POST(request: Request, context: RegenerateImageRouteContex
       alt: target.alt,
       prompt: target.prompt,
       sectionHeading: previousImage?.sectionHeading,
+      sectionIndex: previousImage?.sectionIndex,
       token,
       userId,
     });

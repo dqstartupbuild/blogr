@@ -1,6 +1,7 @@
 import { buildMarkdownImage } from "./buildMarkdownImage";
 import { findMdxHeadingLineIndex } from "./findMdxHeadingLineIndex";
 import { getDistributedHeadingLineIndex } from "./getDistributedHeadingLineIndex";
+import { getBlogSupportingImages } from "./getBlogSupportingImages";
 import { getMarkdownImageUrls } from "./getMarkdownImageUrls";
 import type { BlogImage } from "./types/BlogImage";
 
@@ -14,8 +15,7 @@ export const insertMissingSupportingImages = ({
   mdx,
 }: InsertMissingSupportingImagesOptions) => {
   const existingUrls = new Set(getMarkdownImageUrls(mdx));
-  const supportingImages = images
-    .slice(1)
+  const supportingImages = getBlogSupportingImages(images)
     .filter((image) => image.url && !existingUrls.has(image.url));
 
   if (supportingImages.length === 0) return mdx;
@@ -36,6 +36,7 @@ export const insertMissingSupportingImages = ({
       headingLineIndexes: headingIndexes,
       lines,
       sectionHeading: image.sectionHeading,
+      sectionIndex: image.sectionIndex,
     });
     const fallbackHeadingIndex = getDistributedHeadingLineIndex({
       headingLineIndexes: headingIndexes,

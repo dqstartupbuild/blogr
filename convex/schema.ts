@@ -35,6 +35,7 @@ const imageValidator = v.object({
   prompt: v.string(),
   r2Key: v.optional(v.string()),
   sectionHeading: v.optional(v.string()),
+  sectionIndex: v.optional(v.number()),
   url: v.string(),
 });
 

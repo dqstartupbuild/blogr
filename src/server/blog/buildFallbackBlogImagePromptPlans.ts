@@ -1,6 +1,6 @@
-import { extractMdxHeadings } from "./extractMdxHeadings";
 import { buildSectionSpecificImagePrompt } from "./buildSectionSpecificImagePrompt";
-import { selectDistributedMdxHeadings } from "./selectDistributedMdxHeadings";
+import { extractMdxSections } from "./extractMdxSections";
+import { selectDistributedMdxSections } from "./selectDistributedMdxSections";
 import type { BlogGenerationSettings } from "@/features/workspace/types/BlogGenerationSettings";
 import type { BlogImagePromptPlan } from "./types/BlogImagePromptPlan";
 import type { StoredProduct } from "./types/StoredProduct";
@@ -22,13 +22,19 @@ export const buildFallbackBlogImagePromptPlans = ({
   settings,
   title,
 }: BuildFallbackBlogImagePromptPlansOptions): BlogImagePromptPlan[] => {
-  const headings = extractMdxHeadings(mdx);
-  const sectionHeadings = [
-    title,
-    ...selectDistributedMdxHeadings(headings, imageCount - 1),
+  const supportingSections = selectDistributedMdxSections(
+    extractMdxSections(mdx),
+    imageCount - 1,
+  );
+  const assignments = [
+    { sectionHeading: title, sectionIndex: undefined },
+    ...supportingSections.map((section) => ({
+      sectionHeading: section.heading,
+      sectionIndex: section.index,
+    })),
   ];
 
-  return sectionHeadings.map((sectionHeading, index) => {
+  return assignments.map(({ sectionHeading, sectionIndex }, index) => {
     const imageJob =
       index === 0 ? "Feature image for the article" : "Supporting section image";
 
@@ -42,6 +48,7 @@ export const buildFallbackBlogImagePromptPlans = ({
         settings,
       }),
       sectionHeading,
+      sectionIndex,
     };
   });
 };

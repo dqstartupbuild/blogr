@@ -16,7 +16,7 @@ The feature image does not show Move or Make feature image because it already ha
 
 ## Image Placement
 
-The image planner's `sectionHeading` now stays attached to the image through generation, R2 storage, Convex, downloads, and regeneration. Supporting images are inserted under the matching level-two heading. If generated metadata cannot be matched to a saved heading, the fallback distributes images from the beginning through the end of the article.
+The image planner's `sectionHeading` and stable `sectionIndex` stay attached to the image through generation, R2 storage, Convex, downloads, and regeneration. Supporting images are inserted under their assigned level-two section by index, so repeated or lightly edited headings do not move them toward the beginning. Heading matching and even distribution remain compatibility fallbacks for older saved images.
 
 Manual repositioning uses the same heading-aware insertion path. The app removes only the managed image markdown, leaves article content unchanged, and inserts the image immediately under the selected heading. It never inserts into a paragraph, list, table, or table of contents.
 
@@ -33,6 +33,7 @@ Managed image markdown and the feature-image frontmatter line are hidden from th
 - `convex/blogs/updateBlogImages.ts`
 - `src/server/blog/planBlogImagePrompts.ts`
 - `src/server/blog/insertMissingSupportingImages.ts`
+- `src/server/blog/findMdxHeadingLineIndex.ts`
 - `src/features/workspace/components/ImageActionsMenu.tsx`
 - `src/features/workspace/components/ImageAltTextDialog.tsx`
 - `src/features/workspace/components/ImageRepositionDialog.tsx`
@@ -60,6 +61,7 @@ convex/blogs/
   updateBlogImages.ts
 src/server/blog/
   insertMissingSupportingImages.ts
+  findMdxHeadingLineIndex.ts
   planBlogImagePrompts.ts
 src/features/workspace/
 ├── components/

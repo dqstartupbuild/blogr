@@ -30,10 +30,15 @@ export const buildBlogFeatureImageSwapChanges = ({
 
   const selectedSectionHeading = selectedImage.sectionHeading || "";
   const nextImages = [...positionedImages];
-  nextImages[0] = { ...selectedImage, sectionHeading: title };
+  nextImages[0] = {
+    ...selectedImage,
+    sectionHeading: title,
+    sectionIndex: undefined,
+  };
   nextImages[imageIndex] = {
     ...currentFeatureImage,
     sectionHeading: selectedSectionHeading,
+    sectionIndex: selectedImage.sectionIndex,
   };
 
   return {

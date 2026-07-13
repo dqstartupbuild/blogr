@@ -20,7 +20,7 @@ It researches the topic, applies the active workspace settings, retrieves produc
 10. YouTube videos are found only when the workspace setting is on. The YouTube Data API is used when `YOUTUBE_API_KEY` exists. Otherwise the workflow searches YouTube video pages through Exa when `EXA_API_KEY` exists, then Firecrawl when `FIRECRAWL_API_KEY` exists.
 11. Replicate writer generation uses the article style, writing rules, retrieved product context, selected internal links, associate brand links, optional repurposing source, toggles, and no image list before returning blog metadata and MDX in a simple XML shape.
 12. Clean tags are built from the keyword, title, SEO title, excerpt, and topic brief.
-13. The image-planning reviewer uses `REPLICATE_IMAGE_PLANNER_MODEL`, defaulting to `openai/gpt-5-mini`, to pick the sections that need visuals and write section-specific image prompts.
+13. The workflow divides the article's level-two sections into evenly spaced zones, assigns the requested supporting images across those zones, and asks the `REPLICATE_IMAGE_PLANNER_MODEL`, defaulting to `openai/gpt-5-mini`, to write prompts for those fixed locations.
 14. Replicate image generation creates the number of images chosen in settings when `REPLICATE_API_TOKEN` exists. Multiple images are generated one after another so every requested image gets its own model run.
 15. The generated image URLs are downloaded into R2. The worker or route uses the Convex R2 action when a Convex token is available, and otherwise writes directly to the same R2 bucket with the signed-in user's ID.
 16. The MDX cleanup updates the feature image, inserts generated images near section headings, converts YouTube markdown links into playable iframe embeds, and adds found YouTube videos when the writer did not include them.
@@ -85,7 +85,7 @@ The MDX prompt asks for a visible article title, a separate SEO title between 70
 
 When optional source text is provided, the writer is told to use it as a starting point, keep the useful ideas, and rewrite the piece into a fresh blog post for the active product and keyword.
 
-Images are planned after the article is written. The image-planning reviewer reads the finished MDX, chooses the best sections for visuals, and writes image prompts grounded in those sections instead of using generic brand-related scenes.
+Images are planned after the article is written. The workflow selects distributed section locations first, then the image-planning reviewer writes prompts grounded in those assigned section bodies instead of using generic brand-related scenes. The reviewer cannot change the assigned heading or stable section index.
 
 When YouTube videos are found but missing from the writer's MDX, the cleanup step appends a short helpful videos section with iframe embeds so the setting has a visible playable result.
 
@@ -97,8 +97,8 @@ The parser still accepts JSON, fenced JSON, and raw MDX so a slightly different
 model response does not break the whole job.
 
 The image cleanup step enforces one use per image URL. It keeps the feature
-image from being repeated and places missing supporting images by the next
-available section heading. Blog queries refresh R2 image URLs and rewrite old
+image from being repeated and places missing supporting images by their assigned
+section indexes. Heading matching and even distribution support older saved images that do not have an index. Blog queries refresh R2 image URLs and rewrite old
 signed URLs in MDX before returning a saved post.
 
 ## Source References

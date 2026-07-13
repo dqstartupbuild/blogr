@@ -6,6 +6,7 @@ type RegenerateBlogImageOptions = {
   alt: string;
   prompt: string;
   sectionHeading?: string;
+  sectionIndex?: number;
   token?: string;
   userId?: string;
 };
@@ -14,6 +15,7 @@ export const regenerateBlogImage = async ({
   alt,
   prompt,
   sectionHeading,
+  sectionIndex,
   token,
   userId,
 }: RegenerateBlogImageOptions): Promise<BlogImage | null> => {
@@ -28,7 +30,7 @@ export const regenerateBlogImage = async ({
   }
 
   return await storeGeneratedBlogImage({
-    image: { alt, prompt, sectionHeading, url },
+    image: { alt, prompt, sectionHeading, sectionIndex, url },
     token,
     userId,
   });

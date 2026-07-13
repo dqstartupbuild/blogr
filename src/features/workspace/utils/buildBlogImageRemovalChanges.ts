@@ -20,7 +20,11 @@ export const buildBlogImageRemovalChanges = ({
   const nextImages = positionedImages.filter((_, index) => index !== imageIndex);
 
   if (imageIndex === 0 && nextImages[0]) {
-    nextImages[0] = { ...nextImages[0], sectionHeading: title };
+    nextImages[0] = {
+      ...nextImages[0],
+      sectionHeading: title,
+      sectionIndex: undefined,
+    };
   }
 
   return {

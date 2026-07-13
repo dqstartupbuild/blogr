@@ -4,13 +4,23 @@ type FindMdxHeadingLineIndexOptions = {
   headingLineIndexes: number[];
   lines: string[];
   sectionHeading?: string;
+  sectionIndex?: number;
 };
 
 export const findMdxHeadingLineIndex = ({
   headingLineIndexes,
   lines,
   sectionHeading,
+  sectionIndex,
 }: FindMdxHeadingLineIndexOptions) => {
+  if (
+    typeof sectionIndex === "number" &&
+    sectionIndex >= 0 &&
+    sectionIndex < headingLineIndexes.length
+  ) {
+    return headingLineIndexes[sectionIndex] ?? null;
+  }
+
   const target = normalizeMdxHeadingText(sectionHeading || "");
 
   if (!target) {

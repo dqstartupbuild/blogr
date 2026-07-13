@@ -34,13 +34,15 @@ The article `created_at` and `updated_at` values use the time the user clicks **
 
 Open **Settings** for the active product workspace, then use the **Publishing** panel.
 
-The panel starts with a **Setup guide**. It gives the user the full workflow, a copyable Codex prompt for the target app, the webhook path, the token env var, a sample payload, and a quick checklist for the receiving app.
+The panel starts with a **Setup guide**. It gives the user a copyable Codex prompt for the target app, the webhook path, the token env var, a sample payload, and a quick checklist for the receiving app.
 
-The copyable Codex prompt tells the target app to inspect its existing database and object storage first. If durable storage is missing, it tells Codex to ask the user for a preference while recommending Convex article records and Cloudflare R2 copied directly from the receiving server route as the default. It also tells the target app to copy Blogr image URLs into durable object storage, rewrite article image URLs before saving, render Blogr's MDX and YouTube embeds, and include webhook-published posts in sitemap/feed discovery outputs. The default R2 instructions do not require `R2_TOKEN`, `R2_PUBLIC_URL`, an R2 custom domain, a public bucket, or whole-bucket public access; they prefer signed URLs or an existing private image-serving route.
+The copyable Codex prompt now asks Codex to use `$blogr-publishing-receiver` when that skill is installed. If the skill is not installed, the prompt tells Codex to keep going with a shorter fallback brief. This first version focuses only on Next.js App Router targets that use Convex article records and Cloudflare R2 for copied article images.
 
-The prompt also steers Next.js App Router targets away from forwarding Blogr publishing requests to Convex HTTP actions. The target webhook should validate the token, parse the payload, copy images, call Convex through `ConvexHttpClient` on the normal `.convex.cloud` URL when Convex is used, and revalidate blog routes from the receiving server route. It explicitly says not to add or rely on `CONVEX_SITE_URL`, `NEXT_PUBLIC_CONVEX_SITE_URL`, or `.convex.site` for Blogr publishing.
+The repo-owned skill lives in `codex-skills/blogr-publishing-receiver/`. It keeps the long implementation guidance in focused reference files for the webhook contract, Next.js App Router, Convex records, R2 image storage, MDX rendering, and acceptance tests. It also includes fixture payloads for `publish_articles`, `update_article`, and a multimedia article with frontmatter, markdown images, tables, code, and a multiline YouTube iframe.
 
-The prompt also tells the target app to keep public blog reads small. It asks for lightweight summaries, projections, or selected fields for blog indexes, sitemap, RSS/feed, search, related posts, static params, and filter views instead of loading full article bodies or image arrays. For Convex targets, it recommends read-model tables for public lists and discovery metadata. For SQL-style targets, it recommends field selection and indexes. For document databases, it recommends small index documents when list views would otherwise read full articles.
+The prompt and skill steer target apps away from forwarding Blogr publishing requests to Convex HTTP actions. The target webhook should validate the token, parse the payload, copy images, call Convex through `ConvexHttpClient` on the normal `.convex.cloud` URL, and revalidate blog routes from the receiving server route. They explicitly say not to add or rely on `CONVEX_SITE_URL`, `NEXT_PUBLIC_CONVEX_SITE_URL`, or `.convex.site` for Blogr publishing.
+
+The prompt and skill also tell the target app to keep public blog reads small. Convex targets should use lightweight summary or read-model records for blog lists, sitemap/feed metadata, search/filter data, and static params instead of loading full article bodies or image arrays.
 
 The user enters:
 
@@ -108,7 +110,7 @@ The receiving app should:
 
 - Accept `POST /api/webhooks/blog-publisher`.
 - Read `Authorization: Bearer <token>`.
-- Compare the token to a server-only env var.
+- Compare the token to `BLOG_PUBLISH_WEBHOOK_TOKEN`.
 - Validate `event_type`, `timestamp`, and article fields.
 - Upsert by `slug` so publishing the same blog again updates the existing post.
 - On every create or update, save the current title, SEO title, meta description, body, images, tags, source, and timestamps from the payload.
@@ -117,17 +119,15 @@ The receiving app should:
 - Keep `seo_title` between 70 and 110 characters and `meta_description` between 110 and 160 characters.
 - Store `content_mdx` or `content_markdown`.
 - Treat `image_url` and markdown image URLs as temporary source URLs.
-- Download article images during the webhook request, store them in the target app's durable object storage, and rewrite `image_url`, frontmatter `featureImage`, and markdown image URLs before saving the post.
+- Download article images during the webhook request, store them in Cloudflare R2, and rewrite `image_url`, frontmatter `featureImage`, and markdown image URLs before saving the post.
 - Own the publishing orchestration in the receiving server route. Do not forward Blogr publishing to Convex HTTP actions or `.convex.site`.
-- If Convex is used for article records, call it from the receiving server route with `ConvexHttpClient` and `CONVEX_URL` or `NEXT_PUBLIC_CONVEX_URL` on `.convex.cloud`.
+- Use Convex for article records. Call Convex from the receiving server route with `ConvexHttpClient` and `CONVEX_URL` or `NEXT_PUBLIC_CONVEX_URL` on `.convex.cloud`.
 - Keep public blog reads small. Do not load full article bodies, MDX, image arrays, or large metadata for blog index pages, sitemap, RSS/feed, search, related posts, static params, or filter views.
-- Store full content in the canonical article record, but use lightweight summaries, projections, selected fields, or small index documents for list and discovery views.
+- Store full content in the canonical article record, but use lightweight Convex summary or read-model records for list and discovery views.
 - Update any summary or read-model data during webhook create or update, and revalidate cached blog pages after publishing.
 - Use indexed slug lookups and cursor pagination for lists.
-- If Convex is used, prefer read-model tables for public lists, sitemap/feed metadata, and search/filter options. Avoid live subscriptions on public blog pages unless live updates are truly needed.
-- If SQL, Supabase, or Prisma is used, use field selection, indexes, and optionally materialized summary rows or views.
-- Ask the user for database and object storage preferences if the target app does not already have durable systems, defaulting to Convex article records and Cloudflare R2 uploaded from the receiving server route when the user wants the default.
-- Do not require `CONVEX_SITE_URL`, `NEXT_PUBLIC_CONVEX_SITE_URL`, `R2_TOKEN`, `R2_PUBLIC_URL`, an R2 custom domain, a public bucket, or whole-bucket public access when using the default path.
+- Prefer read-model tables for public lists, sitemap/feed metadata, and search/filter options. Avoid live subscriptions on public blog pages unless live updates are truly needed.
+- Do not require `CONVEX_SITE_URL`, `NEXT_PUBLIC_CONVEX_SITE_URL`, `R2_TOKEN`, `R2_PUBLIC_URL`, an R2 custom domain, a public bucket, or whole-bucket public access.
 - Finish with a required setup handoff that names every variable and groups it by where it must be set, including hosting/server env vars, Convex deployment env vars, Cloudflare/R2 setup, database setup, Blogr Settings, optional follow-ups, and verification commands.
 - Treat the Blogr publisher label as the webhook payload's `source` value. It is a sending-app label, not the article author.
 - Render Blogr MDX features including frontmatter stripping, H1 through H6 headings, links, lists, blockquotes, tables, code, markdown images, and YouTube iframe embeds or YouTube links.
@@ -160,6 +160,9 @@ Bearer auth is enough for the first version because this is a server-to-server w
 - `src/features/workspace/components/BlogPublishingReceiverDetails.tsx`
 - `src/features/workspace/utils/publishBlog.ts`
 - `src/features/workspace/utils/buildBlogPublishingCodexPrompt.ts`
+- `codex-skills/blogr-publishing-receiver/SKILL.md`
+- `codex-skills/blogr-publishing-receiver/references/*`
+- `codex-skills/blogr-publishing-receiver/assets/fixtures/*`
 - `src/app/api/blogs/publish/route.ts`
 - `src/app/api/blogs/publish/markPublishedBlogStatus.ts`
 - `src/app/api/blogs/publish/schema.ts`
@@ -191,6 +194,7 @@ convex/blogs/markBlogPublished.ts
 convex/products/*BlogPublishing*
 convex/products/publishBlogWithIntegration.ts
 docs/blog-webhook-publishing.md
+docs/blogr-publishing-receiver-skill.md
 docs/blog-tags.md
 docs/blog-published-status-filter.md
 docs/codex-target-app-blog-webhook.md

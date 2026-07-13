@@ -1,11 +1,12 @@
 import { buildImagePlannerStyleGuide } from "./buildImagePlannerStyleGuide";
+import { buildImagePlannerAssignedContext } from "./buildImagePlannerAssignedContext";
 import { buildProductVisualContext } from "./buildProductVisualContext";
-import { getImagePlannerArticleText } from "./getImagePlannerArticleText";
 import type { BlogGenerationSettings } from "@/features/workspace/types/BlogGenerationSettings";
+import type { BlogImagePromptPlan } from "./types/BlogImagePromptPlan";
 import type { StoredProduct } from "./types/StoredProduct";
 
 type BuildImagePlannerPromptOptions = {
-  imageCount: number;
+  assignments: BlogImagePromptPlan[];
   keyword: string;
   mdx: string;
   product: StoredProduct;
@@ -14,7 +15,7 @@ type BuildImagePlannerPromptOptions = {
 };
 
 export const buildImagePlannerPrompt = ({
-  imageCount,
+  assignments,
   keyword,
   mdx,
   product,
@@ -22,13 +23,14 @@ export const buildImagePlannerPrompt = ({
   title,
 }: BuildImagePlannerPromptOptions) => {
   return `
-Review this finished blog article and plan exactly ${imageCount} images for it.
+Create exactly ${assignments.length} image plans for the assigned article locations below.
 
 Return JSON only:
 {
   "images": [
     {
       "sectionHeading": "heading or article area this image supports",
+      "sectionIndex": 0,
       "alt": "short useful alt text",
       "prompt": "complete image generation prompt"
     }
@@ -36,9 +38,10 @@ Return JSON only:
 }
 
 Rules:
-- The first image must be the feature image for the article as a whole.
-- Every other image must support a specific section from the finished article.
-- Pick sections where a visual would make the explanation easier, more concrete, or more memorable.
+- The locations are already chosen. Return one image plan for each assigned location in the same order.
+- Copy every sectionHeading and sectionIndex exactly. Do not choose, rename, reorder, or skip sections.
+- The first assignment is the feature image for the article as a whole and has no sectionIndex.
+- Every other image must make its assigned section easier, more concrete, or more memorable.
 - Do not make generic brand, office, dashboard, abstract, or decorative images unless the section is actually about that.
 - Do not mention image placement mechanics. Write prompts for the image model only.
 - Include concrete details from the chosen section.
@@ -52,7 +55,7 @@ ${buildProductVisualContext(product)}
 Article title: ${title}
 Target keyword: ${keyword}
 
-Finished article:
-${getImagePlannerArticleText(mdx)}
+Assigned article locations:
+${JSON.stringify(buildImagePlannerAssignedContext(mdx, assignments), null, 2)}
 `.trim();
 };

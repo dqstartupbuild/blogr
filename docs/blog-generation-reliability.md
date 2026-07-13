@@ -10,12 +10,13 @@ If research search is unavailable, the app still writes from the saved product p
 
 1. `runBlogResearch` tries Firecrawl Search and returns an empty source list if search is unavailable.
 2. `writeBlogDraft` writes the article before images are generated.
-3. `planBlogImagePrompts` asks the image-planning reviewer to choose article sections and write image prompts. If that model fails, it falls back to the article headings.
+3. `planBlogImagePrompts` assigns evenly distributed article sections before asking the image-planning reviewer to write prompts for them. If that model fails or omits a plan, it uses a fallback prompt for the same assigned section.
 4. `generateBlogImages` asks for each image separately and keeps any image that returns a usable URL.
-5. `normalizeReplicateImageUrl` reads normal URLs and Replicate file outputs.
-6. `buildBlogWriterPrompt` asks Claude Sonnet 4.6 for simple XML so long MDX does not need escaped JSON newlines.
-7. `parseWriterDraft` tries XML first, JSON second, and raw MDX last.
-8. `normalizeBlogMdxImages` removes repeated markdown image URLs and inserts unused supporting images near section headings.
+5. `getBlogFeatureImage` uses section assignments to avoid promoting a supporting image when feature-image generation fails, while preserving first-image behavior for older saved articles.
+6. `normalizeReplicateImageUrl` reads normal URLs and Replicate file outputs.
+7. `buildBlogWriterPrompt` asks Claude Sonnet 4.6 for simple XML so long MDX does not need escaped JSON newlines.
+8. `parseWriterDraft` tries XML first, JSON second, and raw MDX last.
+9. `normalizeBlogMdxImages` removes repeated markdown image URLs and inserts unused supporting images at their stable level-two section indexes.
 
 ## Use Cases
 
@@ -25,13 +26,15 @@ If research search is unavailable, the app still writes from the saved product p
 - One image prompt fails while the other images succeed.
 - The writer repeats the feature image in several sections.
 - The writer forgets to place one of the supporting images.
-- The image-planning reviewer fails and the app falls back to article-heading prompts.
+- The image-planning reviewer fails and the app keeps the same distributed placements with fallback prompts.
+- Two article sections use the same heading text but retain separate image positions.
 
 ## Relevant Code
 
 - `src/server/blog/runBlogResearch.ts`
 - `src/server/blog/planBlogImagePrompts.ts`
 - `src/server/blog/generateBlogImages.ts`
+- `src/server/blog/getBlogFeatureImage.ts`
 - `src/server/blog/tryGenerateBlogImage.ts`
 - `src/server/replicate/normalizeReplicateImageUrl.ts`
 - `src/server/replicate/getReplicateFileOutputUrl.ts`
