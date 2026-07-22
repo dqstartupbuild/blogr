@@ -36,12 +36,12 @@ export const BlogPreviewPanel = ({
 }: BlogPreviewPanelProps) => {
   const sectionClassName =
     variant === "drawer"
-      ? "bg-white"
-      : "rounded-lg border border-black/10 bg-white p-5 shadow-sm";
+      ? "min-w-0 bg-white"
+      : "min-w-0 rounded-lg border border-black/10 bg-white p-5 shadow-sm";
   const markdownClassName =
     variant === "drawer"
-      ? "mt-6 rounded-lg border border-black/10 bg-white p-4"
-      : "mt-6 max-h-[520px] overflow-auto rounded-lg border border-black/10 bg-white p-4";
+      ? "mt-6 min-w-0 max-w-full rounded-lg border border-black/10 bg-white p-4"
+      : "mt-6 min-w-0 max-w-full max-h-[520px] overflow-auto rounded-lg border border-black/10 bg-white p-4";
 
   if (!blog) {
     return (
@@ -63,7 +63,7 @@ export const BlogPreviewPanel = ({
       <div className="flex flex-col gap-4 border-b border-black/10 pb-5 lg:flex-row lg:items-start lg:justify-between">
         <div className="min-w-0">
           <p className="text-sm font-semibold text-black/60">Preview</p>
-          <h2 className="mt-2 text-2xl font-semibold leading-tight text-black">
+          <h2 className="mt-2 [overflow-wrap:anywhere] text-2xl font-semibold leading-tight text-black">
             {blog.title}
           </h2>
           <div className="mt-3 flex flex-wrap items-center gap-3 text-sm text-black/60">
@@ -98,12 +98,12 @@ export const BlogPreviewPanel = ({
           ) : null}
         </div>
       </div>
-      <div className="mt-6 grid gap-5 xl:grid-cols-[minmax(0,1fr)_280px]">
+      <div className="mt-6 grid min-w-0 gap-5 xl:grid-cols-[minmax(0,1fr)_280px]">
         <article className="min-w-0 rounded-lg border border-black/10 bg-white p-5 shadow-sm">
-          <h3 className="text-3xl font-semibold leading-tight text-black">
+          <h3 className="[overflow-wrap:anywhere] text-3xl font-semibold leading-tight text-black">
             {blog.title}
           </h3>
-          <p className="mt-4 max-w-3xl text-base leading-7 text-black/65">
+          <p className="mt-4 max-w-3xl [overflow-wrap:anywhere] text-base leading-7 text-black/65">
             {blog.excerpt}
           </p>
           {blog.featureImageUrl && !isSummary ? (

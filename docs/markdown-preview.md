@@ -16,6 +16,8 @@ The workspace preview opens in a fixed right-side sidebar so users can inspect t
 
 The CSS modules beside `MarkdownPreview` make headings, links, lists, quotes, tables, code, images, and YouTube embeds easy to scan inside the existing preview surfaces.
 
+Preview text wraps long links and inline code on narrow screens. Content that needs to preserve its width, such as a table or fenced code block, scrolls inside its own preview area instead of widening the page. The article drawer and its content grids can shrink to the viewport, so the full article stays inside the mobile screen without clipping.
+
 Editable image previews use one kebab menu for Regenerate, Edit alt text, Move in article, Make feature image, and Remove image. Moving an image targets a complete level-two article section, so saved image markdown is placed under a heading rather than inside a paragraph, list, table, or table of contents.
 
 ## Relevant Code

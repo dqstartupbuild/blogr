@@ -16,14 +16,16 @@ export const BlogEditorPreview = ({
   updateBlogImages,
 }: BlogEditorPreviewProps) => {
   return (
-    <aside className="grid gap-4 xl:sticky xl:top-6 xl:self-start">
-      <section className="rounded-lg border border-black/10 bg-white p-4 shadow-sm">
+    <aside className="grid min-w-0 gap-4 xl:sticky xl:top-6 xl:self-start">
+      <section className="min-w-0 rounded-lg border border-black/10 bg-white p-4 shadow-sm">
         <h2 className="text-lg font-semibold text-black">Preview</h2>
-        <h3 className="mt-4 text-xl font-semibold leading-7 text-black">
+        <h3 className="mt-4 [overflow-wrap:anywhere] text-xl font-semibold leading-7 text-black">
           {blog.title}
         </h3>
-        <p className="mt-2 text-sm leading-6 text-black/65">{blog.excerpt}</p>
-        <div className="mt-4 max-h-[620px] overflow-auto rounded-lg border border-black/10 bg-white p-4">
+        <p className="mt-2 [overflow-wrap:anywhere] text-sm leading-6 text-black/65">
+          {blog.excerpt}
+        </p>
+        <div className="mt-4 min-w-0 max-w-full max-h-[620px] overflow-auto rounded-lg border border-black/10 bg-white p-4">
           <MarkdownPreview
             blogId={blog.id}
             images={blog.images}

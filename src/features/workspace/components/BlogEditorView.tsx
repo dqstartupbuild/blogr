@@ -36,15 +36,15 @@ export const BlogEditorView = ({
         setMode={() => undefined}
         workspaceSwitcher={workspaceSwitcher}
       />
-      <main className="min-w-0 flex-1">
-        <div className="mx-auto grid w-full max-w-7xl gap-6 px-4 py-6 sm:px-6 lg:px-8">
+      <main className="min-w-0 max-w-full flex-1">
+        <div className="mx-auto grid w-full min-w-0 max-w-7xl gap-6 px-4 py-6 sm:px-6 lg:px-8">
           <BlogEditorHeader
             downloadBlog={downloadBlog}
             isSaving={editor.isSaving}
             message={editor.message}
             saveBlog={editor.saveBlog}
           />
-          <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_420px]">
+          <div className="grid min-w-0 gap-5 xl:grid-cols-[minmax(0,1fr)_420px]">
             <BlogEditorFields
               images={downloadBlog.images}
               state={editor.state}

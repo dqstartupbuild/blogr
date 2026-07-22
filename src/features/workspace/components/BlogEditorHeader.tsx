@@ -32,7 +32,7 @@ export const BlogEditorHeader = ({
         <h1 className="mt-4 text-3xl font-semibold leading-tight text-black">
           Edit Article
         </h1>
-        <p className="mt-2 line-clamp-2 text-base leading-7 text-black/65">
+        <p className="mt-2 line-clamp-2 [overflow-wrap:anywhere] text-base leading-7 text-black/65">
           {downloadBlog.title}
         </p>
       </div>

@@ -82,7 +82,7 @@ export const BlogPreviewSidebar = ({
                 <X size={16} aria-hidden="true" />
               </button>
             </div>
-            <div className="min-h-0 flex-1 overflow-y-auto p-4">
+            <div className="min-h-0 min-w-0 flex-1 overflow-y-auto p-4">
               <BlogPreviewPanel
                 blog={blog}
                 deleteBlog={deleteBlog}

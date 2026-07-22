@@ -19,10 +19,10 @@ export const FilterSelect = ({
   value,
 }: FilterSelectProps) => {
   return (
-    <label className="grid min-w-44 gap-1 text-xs font-semibold text-black/60">
+    <label className="grid w-full min-w-0 gap-1 text-xs font-semibold text-black/60 lg:w-44 lg:shrink-0">
       <span>{label}</span>
       <select
-        className="h-11 rounded-md border border-black/15 bg-white px-3 text-sm font-medium text-black outline-none focus:border-black"
+        className="h-11 w-full min-w-0 max-w-full rounded-md border border-black/15 bg-white px-3 text-sm font-medium text-black outline-none focus:border-black"
         onChange={(event) => onChange(event.target.value)}
         value={value}
       >

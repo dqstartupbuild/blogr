@@ -28,7 +28,7 @@ export const BlogsPanel = ({
   const savePlan: SaveDiscoveryPlan = (item) => addTopic(item.title, item.notes);
 
   return (
-    <section className="space-y-6">
+    <section className="min-w-0 space-y-6">
       <WorkspacePageHeader
         description="Review and manage the articles you have generated."
         title="Articles"

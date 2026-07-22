@@ -19,7 +19,7 @@ export const BlogEditorFields = ({
   updateField,
 }: BlogEditorFieldsProps) => {
   return (
-    <section className="space-y-4 rounded-lg border border-black/10 bg-white p-4 shadow-sm">
+    <section className="min-w-0 space-y-4 rounded-lg border border-black/10 bg-white p-4 shadow-sm">
       <TextField
         id="blog-title"
         label="Article title"

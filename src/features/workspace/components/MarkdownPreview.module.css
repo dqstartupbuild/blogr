@@ -3,6 +3,8 @@
   font-family: var(--font-geist-sans), Arial, sans-serif;
   font-size: 0.9375rem;
   line-height: 1.7;
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 .markdownPreview > * + * {
@@ -92,6 +94,7 @@
 .markdownPreview pre code {
   background: transparent;
   border: 0;
+  overflow-wrap: normal;
   padding: 0;
 }
 

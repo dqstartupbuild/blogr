@@ -26,6 +26,8 @@ The live editor header includes the workspace switcher. If a user switches works
 
 The right-side preview uses `MarkdownPreview`, so headings, links, lists, quotes, images, YouTube videos, tables, and code blocks render like a blog instead of plain markdown text.
 
+On phones, every editor grid and form field is allowed to shrink to the viewport. The article body textarea fills its container without contributing an intrinsic desktop width, and the preview keeps wide content contained within the article surface. This prevents the editor from forcing page-level horizontal scrolling.
+
 ## Relevant Code
 
 - `src/app/blogs/[blogId]/page.tsx`

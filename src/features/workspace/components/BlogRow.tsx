@@ -32,7 +32,7 @@ export const BlogRow = ({
 
   return (
     <article
-      className={`grid gap-4 border-b border-black/10 bg-white p-4 text-black last:border-b-0 xl:grid-cols-[minmax(0,1.4fr)_minmax(160px,0.7fr)_120px_minmax(160px,0.8fr)_340px] xl:items-center ${
+      className={`grid min-w-0 gap-4 border-b border-black/10 bg-white p-4 text-black last:border-b-0 xl:grid-cols-[minmax(0,1.4fr)_minmax(160px,0.7fr)_120px_minmax(160px,0.8fr)_340px] xl:items-center ${
         isSelected ? "bg-black/5" : ""
       }`}
     >
@@ -45,7 +45,7 @@ export const BlogRow = ({
           <FileText size={18} aria-hidden="true" />
         </span>
         <span className="min-w-0">
-          <span className="block text-sm font-semibold leading-6">
+          <span className="block [overflow-wrap:anywhere] text-sm font-semibold leading-6">
             {blog.title}
           </span>
           <span className="mt-1 block text-sm text-black/60">
@@ -57,7 +57,7 @@ export const BlogRow = ({
         <p className="mb-1 text-xs font-semibold text-black/50 xl:hidden">
           Topic
         </p>
-        <p className="line-clamp-2 text-sm leading-6 text-black/70">
+        <p className="line-clamp-2 [overflow-wrap:anywhere] text-sm leading-6 text-black/70">
           {blog.keyword}
         </p>
       </div>
