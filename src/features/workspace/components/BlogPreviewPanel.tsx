@@ -2,6 +2,7 @@ import { Clock, Edit3 } from "lucide-react";
 import { ArticleDateSummary } from "./ArticleDateSummary";
 import { ArticleStatsPanel } from "./ArticleStatsPanel";
 import { ArticleStatusPanel } from "./ArticleStatusPanel";
+import { ArticleVersionHistoryButton } from "./ArticleVersionHistoryButton";
 import { BlogPublishButton } from "./BlogPublishButton";
 import { BlogZipButton } from "./BlogZipButton";
 import { DeleteActionButton } from "./DeleteActionButton";
@@ -80,6 +81,7 @@ export const BlogPreviewPanel = ({
           </div>
         </div>
         <div className="flex shrink-0 flex-wrap gap-2">
+          <ArticleVersionHistoryButton blog={blog} />
           <SecondaryAnchor href={`/blogs/${blog.id}`}>
             <Edit3 size={16} aria-hidden="true" />
             Edit

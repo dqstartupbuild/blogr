@@ -19,7 +19,7 @@ The receiving app should add:
 - `/blog` and `/blog/[slug]` pages when the app does not already have them
 - MDX rendering for Blogr articles, including tables, code, rewritten images, headings, table of contents links, and whitelisted YouTube embeds
 - sitemap/feed/cache refresh behavior when those outputs exist
-- tests for auth, payload validation, slug upserts, article updates, image rewrite behavior, MDX rendering, and discovery outputs
+- tests for auth, payload validation, stable-ID and slug upserts, preserved creation dates, refreshed update dates, article updates, image rewrite behavior, MDX rendering, and discovery outputs
 
 ## Skill Source
 

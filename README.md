@@ -82,6 +82,7 @@ npx convex env set R2_BUCKET <bucket>
 - [Topic discovery](docs/topic-discovery.md)
 - [Content calendar](docs/content-calendar.md)
 - [Blog generation workflow](docs/blog-generation-workflow.md)
+- [Article version history](docs/article-version-history.md)
 - [Associate brand links](docs/associate-brand-links.md)
 - [Article image planning agent](docs/article-image-planning-agent.md)
 - [Google Cloud AI worker](docs/google-cloud-ai-worker.md)

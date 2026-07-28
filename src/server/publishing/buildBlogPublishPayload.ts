@@ -1,5 +1,6 @@
 import type { BlogItem } from "@/features/workspace/types/BlogItem";
 import { buildBlogPublishArticle } from "./buildBlogPublishArticle";
+import { getBlogPublishCreatedAt } from "./getBlogPublishCreatedAt";
 import { getBlogPublishTimestamp } from "./getBlogPublishTimestamp";
 import type { BlogPublishEventType } from "./types/BlogPublishEventType";
 import type { BlogPublishPayload } from "./types/BlogPublishPayload";
@@ -11,8 +12,9 @@ export const buildBlogPublishPayload = (
 ): BlogPublishPayload => {
   const publishTimestamp = getBlogPublishTimestamp();
   const article = buildBlogPublishArticle(blog, {
-    publishTimestamp,
+    createdAt: getBlogPublishCreatedAt(blog, eventType, publishTimestamp),
     sourceName,
+    updatedAt: publishTimestamp,
   });
 
   if (eventType === "publish_articles") {

@@ -24,7 +24,7 @@ It researches the topic, applies the active workspace settings, retrieves produc
 14. Replicate image generation creates the number of images chosen in settings when `REPLICATE_API_TOKEN` exists. Multiple images are generated one after another so every requested image gets its own model run.
 15. The generated image URLs are downloaded into R2. The worker or route uses the Convex R2 action when a Convex token is available, and otherwise writes directly to the same R2 bucket with the signed-in user's ID.
 16. The MDX cleanup updates the feature image, inserts generated images near section headings, converts YouTube markdown links into playable iframe embeds, and adds found YouTube videos when the writer did not include them.
-17. The workspace saves the blog, tags, and image R2 keys through `upsertGeneratedBlog`, which marks the topic as written.
+17. The workspace saves the blog, tags, and image R2 keys through `upsertGeneratedBlog`, which archives the existing article first when the topic has already been written, then marks the topic as written.
 
 If research search is unavailable, the writer still uses the saved product
 profile, active internal links, and associate brand links. If an image fails, the blog still finishes with the

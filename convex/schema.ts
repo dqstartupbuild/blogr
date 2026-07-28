@@ -281,6 +281,55 @@ export default defineSchema({
       filterFields: ["userId", "productId"],
     }),
 
+  blogVersions: defineTable({
+    userId: v.string(),
+    productId: v.optional(v.id("products")),
+    topicId: v.optional(v.id("topics")),
+    blogId: v.id("blogs"),
+    versionNumber: v.number(),
+    keyword: v.string(),
+    title: v.string(),
+    seoTitle: v.optional(v.string()),
+    slug: v.string(),
+    excerpt: v.string(),
+    status: blogStatusValidator,
+    mdx: v.string(),
+    featureImageUrl: v.optional(v.string()),
+    tags: v.optional(v.array(v.string())),
+    images: v.array(imageValidator),
+    internalLinks: v.array(linkValidator),
+    youtubeVideos: v.array(linkValidator),
+    sources: v.array(linkValidator),
+    publishedAt: v.optional(v.number()),
+    blogCreatedAt: v.number(),
+    blogUpdatedAt: v.number(),
+    archivedAt: v.number(),
+  })
+    .index("by_blogId_versionNumber", ["blogId", "versionNumber"])
+    .index("by_userId_blogId_versionNumber", [
+      "userId",
+      "blogId",
+      "versionNumber",
+    ]),
+
+  blogVersionSummaries: defineTable({
+    userId: v.string(),
+    productId: v.optional(v.id("products")),
+    blogId: v.id("blogs"),
+    versionId: v.id("blogVersions"),
+    versionNumber: v.number(),
+    title: v.string(),
+    status: blogStatusValidator,
+    blogUpdatedAt: v.number(),
+    archivedAt: v.number(),
+  })
+    .index("by_blogId_versionNumber", ["blogId", "versionNumber"])
+    .index("by_userId_blogId_versionNumber", [
+      "userId",
+      "blogId",
+      "versionNumber",
+    ]),
+
   blogSummaries: defineTable({
     userId: v.string(),
     productId: v.id("products"),

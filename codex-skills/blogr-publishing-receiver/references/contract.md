@@ -53,7 +53,9 @@ Field mapping:
 - Store `source` as the sending app label. Do not treat it as the article author.
 - Treat `created_at` and `updated_at` as Blogr publish timestamps, not the original draft creation time.
 
-Upsert by `slug`. Publishing the same slug twice must update one post instead of creating duplicates. Existing posts must refresh the visible title, SEO title, description, body, image URLs, tags, source, and timestamps from the new payload.
+Match existing posts by the stable Blogr `sourceId` first, then by `slug` for older records. Publishing the same article twice must update one post instead of creating duplicates. Existing posts must refresh the visible title, SEO title, description, body, image URLs, tags, source, and `updated_at` value from the new payload.
+
+Preserve the original stored `created_at` when handling `update_article`, even if a conflicting creation date is received. The update must refresh the canonical article, its summary or read-model records, and any cached article, blog index, sitemap, or feed output.
 
 Keep `seo_title` between 70 and 110 characters and `meta_description` between 110 and 160 characters when the target app validates these lengths.
 

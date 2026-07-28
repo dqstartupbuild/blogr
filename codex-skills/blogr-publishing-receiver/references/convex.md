@@ -26,7 +26,7 @@ Create or reuse a canonical article record with fields equivalent to:
 - `publishedAt`
 - `updatedAt`
 
-Upsert by indexed `slug`.
+Index both `sourceId` and `slug`. Match the stable Blogr `sourceId` first, then use `slug` as the compatibility fallback for older records.
 
 ## Summary Records
 
@@ -46,7 +46,7 @@ Do not load full article MDX, full image arrays, or large metadata for blog inde
 
 Prefer focused Convex functions:
 
-- upsert by slug
+- upsert by source ID with a slug fallback
 - get one article by slug
 - list summaries with cursor pagination
 - list sitemap/feed metadata
@@ -55,7 +55,7 @@ On webhook create or update, update the canonical article and summary/read-model
 
 ## Required Checks
 
-- Publishing the same slug twice updates one article.
-- `update_article` refreshes SEO title and description.
+- Publishing the same source ID or slug twice updates one article.
+- `update_article` preserves the original publication date and refreshes content, SEO fields, summaries, and the updated date.
 - Public blog lists do not query full article bodies.
 - The route never calls Convex through `.convex.site`.

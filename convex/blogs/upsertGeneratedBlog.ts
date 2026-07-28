@@ -1,5 +1,6 @@
 import { v } from "convex/values";
 import { mutation } from "../_generated/server";
+import { archiveBlogVersion } from "../blogVersions/archiveBlogVersion";
 import { requireUserId } from "../identity/requireUserId";
 import { resolveActiveProductId } from "../products/resolveActiveProductId";
 import { findBlogSummaryByTopicId } from "../readModels/findBlogSummaryByTopicId";
@@ -71,6 +72,9 @@ export const upsertGeneratedBlog = mutation({
     const existingSummary = args.topicId
       ? await findBlogSummaryByTopicId(ctx, args.topicId)
       : null;
+    const existingSummaryBlog = existingSummary
+      ? await ctx.db.get(existingSummary.blogId)
+      : null;
     const existing = !existingSummary && args.topicId
       ? await ctx.db
           .query("blogs")
@@ -80,8 +84,12 @@ export const upsertGeneratedBlog = mutation({
 
     if (
       existingSummary &&
+      existingSummaryBlog &&
       existingSummary.userId === userId &&
-      existingSummary.productId === args.productId
+      existingSummary.productId === args.productId &&
+      existingSummaryBlog.userId === userId &&
+      (!existingSummaryBlog.productId ||
+        existingSummaryBlog.productId === args.productId)
     ) {
       const searchText = buildBlogSearchText({
         excerpt,
@@ -105,6 +113,7 @@ export const upsertGeneratedBlog = mutation({
         updatedAt: now,
       };
 
+      await archiveBlogVersion(ctx, existingSummaryBlog, now);
       await ctx.db.patch(existingSummary.blogId, {
         ...args,
         excerpt,
@@ -166,6 +175,7 @@ export const upsertGeneratedBlog = mutation({
         updatedAt: now,
       };
 
+      await archiveBlogVersion(ctx, existing, now);
       await ctx.db.patch(existing._id, {
         ...args,
         excerpt,

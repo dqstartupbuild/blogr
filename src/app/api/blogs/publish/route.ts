@@ -12,6 +12,7 @@ import { getPublicErrorMessage } from "@/server/http/getPublicErrorMessage";
 import { logRouteError } from "@/server/http/logRouteError";
 import { PublicError } from "@/server/http/PublicError";
 import { buildBlogPublishPayload } from "@/server/publishing/buildBlogPublishPayload";
+import { getBlogPublishEventType } from "@/server/publishing/getBlogPublishEventType";
 import { getBlogPublishEnvironmentDestination } from "@/server/publishing/getBlogPublishEnvironmentDestination";
 import { sendBlogPublishWebhook } from "@/server/publishing/sendBlogPublishWebhook";
 
@@ -23,7 +24,8 @@ export async function POST(request: Request) {
 
     const body = await request.json();
     const { blog } = blogPublishRequestSchema.parse(body);
-    const payload = buildBlogPublishPayload(blog, "publish_articles");
+    const eventType = getBlogPublishEventType(blog);
+    const payload = buildBlogPublishPayload(blog, eventType);
     let convexAuthToken: string | undefined;
 
     if (blog.productId && hasConvexUrl()) {
@@ -57,7 +59,7 @@ export async function POST(request: Request) {
 
     const fallbackPayload = buildBlogPublishPayload(
       blog,
-      "publish_articles",
+      eventType,
       destination.sourceName,
     );
     const message = await sendBlogPublishWebhook(fallbackPayload, destination);

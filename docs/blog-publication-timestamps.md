@@ -8,7 +8,7 @@ Articles now show three separate dates: Created, Updated, and Published. This ma
 
 1. New articles save `createdAt` and `updatedAt` as before.
 2. The first successful publish saves `publishedAt` and changes the article status to `published`.
-3. Publishing again keeps the original `publishedAt`, while later edits continue changing `updatedAt`.
+3. Publishing again sends an article update, keeps the original `publishedAt`, and changes `updatedAt` to the latest successful republish time.
 4. Blog summaries include `publishedAt`, so article lists and dashboard rows can show all three dates without loading full article content.
 5. Older published articles without `publishedAt` show their last known update as the best available publication date.
 6. Unpublished articles show **Published Not yet**.

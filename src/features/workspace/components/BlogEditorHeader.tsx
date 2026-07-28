@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { ArrowLeft, Save } from "lucide-react";
+import { ArticleVersionHistoryButton } from "./ArticleVersionHistoryButton";
 import { BlogZipButton } from "./BlogZipButton";
 import { PrimaryButton } from "./PrimaryButton";
 import type { BlogItem } from "../types/BlogItem";
@@ -40,6 +41,7 @@ export const BlogEditorHeader = ({
         {message ? (
           <span className="text-sm font-medium text-black">{message}</span>
         ) : null}
+        <ArticleVersionHistoryButton blog={downloadBlog} />
         <BlogZipButton blog={downloadBlog} />
         <PrimaryButton disabled={isSaving} onClick={saveBlog} type="button">
           <Save size={16} aria-hidden="true" />

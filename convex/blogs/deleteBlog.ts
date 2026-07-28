@@ -1,5 +1,6 @@
 import { v } from "convex/values";
 import { mutation } from "../_generated/server";
+import { deleteBlogVersions } from "../blogVersions/deleteBlogVersions";
 import { requireUserId } from "../identity/requireUserId";
 import { deleteBlogReadModels } from "../readModels/deleteBlogReadModels";
 import { upsertTopicReadModel } from "../readModels/upsertTopicReadModel";
@@ -42,6 +43,7 @@ export const deleteBlog = mutation({
     }
 
     await deleteBlogReadModels(ctx, blog);
+    await deleteBlogVersions(ctx, args.blogId);
     await ctx.db.delete(args.blogId);
   },
 });

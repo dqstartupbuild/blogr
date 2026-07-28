@@ -1,5 +1,6 @@
 import { v } from "convex/values";
 import { mutation } from "../_generated/server";
+import { archiveBlogVersion } from "../blogVersions/archiveBlogVersion";
 import { buildBlogSearchText } from "../blogs/buildBlogSearchText";
 import { validateSeoContentLengths } from "../blogs/validateSeoContentLengths";
 import { resolveActiveProductId } from "../products/resolveActiveProductId";
@@ -44,6 +45,16 @@ export const completeBlogGenerateAiJob = mutation({
       throw new Error("AI job not found.");
     }
 
+    if (job.status === "succeeded") {
+      const completedBlogId = (
+        job.result as { blogId?: typeof job.blogId } | undefined
+      )?.blogId;
+
+      if (completedBlogId) {
+        return completedBlogId;
+      }
+    }
+
     await resolveActiveProductId(ctx, job.userId, args.productId);
 
     const linkedTopic = args.topicId ? await ctx.db.get(args.topicId) : null;
@@ -59,6 +70,9 @@ export const completeBlogGenerateAiJob = mutation({
 
     const existingSummary = args.topicId
       ? await findBlogSummaryByTopicId(ctx, args.topicId)
+      : null;
+    const existingSummaryBlog = existingSummary
+      ? await ctx.db.get(existingSummary.blogId)
       : null;
     const existing = !existingSummary && args.topicId
       ? await ctx.db
@@ -92,8 +106,12 @@ export const completeBlogGenerateAiJob = mutation({
     };
     const blogId =
       existingSummary &&
+      existingSummaryBlog &&
       existingSummary.userId === job.userId &&
-      existingSummary.productId === args.productId
+      existingSummary.productId === args.productId &&
+      existingSummaryBlog.userId === job.userId &&
+      (!existingSummaryBlog.productId ||
+        existingSummaryBlog.productId === args.productId)
         ? existingSummary.blogId
         : existing &&
             existing.userId === job.userId &&
@@ -105,9 +123,15 @@ export const completeBlogGenerateAiJob = mutation({
             userId: job.userId,
           });
 
-    if (existingSummary && blogId === existingSummary.blogId) {
+    if (
+      existingSummary &&
+      existingSummaryBlog &&
+      blogId === existingSummary.blogId
+    ) {
+      await archiveBlogVersion(ctx, existingSummaryBlog, now);
       await ctx.db.patch(existingSummary.blogId, blogPayload);
     } else if (existing && blogId === existing._id) {
+      await archiveBlogVersion(ctx, existing, now);
       await ctx.db.patch(existing._id, blogPayload);
     }
 

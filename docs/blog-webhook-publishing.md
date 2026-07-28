@@ -14,7 +14,7 @@ Each product workspace can have its own publishing integration. This lets one ac
 2. The client calls `POST /api/blogs/publish` with the loaded blog draft.
 3. The route checks the signed-in user with `requireRouteUserId`.
 4. The route validates the blog payload with the shared blog item schema.
-5. `buildBlogPublishPayload` turns the blog into a `publish_articles` webhook payload with clean article tags.
+5. `buildBlogPublishPayload` sends `publish_articles` for a first publication and `update_article` when the article has been published before. Both payloads include clean article tags.
 6. If the blog belongs to a product workspace, the route calls the Convex `publishBlogWithIntegration` action.
 7. The Convex action reads the saved publishing integration for that product without returning the token to the browser.
 8. If the product does not have a saved integration, the route falls back to the deployment env vars.
@@ -28,7 +28,7 @@ Published blogs keep their `published` status in the Blogs tab, so users can fil
 
 Tags come from the saved blog tag list when it exists. Older blogs get clean fallback tags from the current keyword, title, SEO title, and meta description. Internal planning phrases are removed before the tags are sent.
 
-The article `created_at` and `updated_at` values use the time the user clicks **Publish**. They do not use the draft creation time, so the target blog can show when the article was actually sent live.
+On first publication, the article `created_at` and `updated_at` values use the time the user clicks **Publish**. When the user republishes it, `created_at` keeps that original publication time and `updated_at` records the latest successful republish.
 
 ## Settings Workflow
 
@@ -112,9 +112,10 @@ The receiving app should:
 - Read `Authorization: Bearer <token>`.
 - Compare the token to `BLOG_PUBLISH_WEBHOOK_TOKEN`.
 - Validate `event_type`, `timestamp`, and article fields.
-- Upsert by `slug` so publishing the same blog again updates the existing post.
+- Match existing posts by the stable Blogr article ID first, then by `slug` for older records.
+- Update the existing post when the same blog is published again.
 - On every create or update, save the current title, SEO title, meta description, body, images, tags, source, and timestamps from the payload.
-- Treat `created_at` and `updated_at` as the Blogr publish request time.
+- Preserve the original `created_at` on updates and replace `updated_at` with the latest successful republish time.
 - Store `seo_title` separately from the visible article title.
 - Keep `seo_title` between 70 and 110 characters and `meta_description` between 110 and 160 characters.
 - Store `content_mdx` or `content_markdown`.

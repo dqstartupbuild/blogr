@@ -28,6 +28,12 @@
 - For image storage in long-running routes, pass the route-verified user ID into R2 helpers. If Convex auth is unavailable, store directly in R2 with that user ID instead of calling a Convex action without a token.
 - Do not make scanning, writing, research, or other core generation flows fail just because an optional server-side Convex action cannot get a token.
 
+## Convex Deployment State
+- This project currently has no production Convex deployment.
+- Convex code generation and function pushes target the configured development deployment.
+- Do not use `npx convex deploy`, `--prod`, or describe Convex changes as production-deployed unless a production deployment is created and the user explicitly asks to deploy it.
+- In handoffs, state that schema and function changes are available in development and that production deployment is not currently applicable.
+
 ## Project Map
 - App routes and layouts: `src/app/`
 - Server helpers: `src/server/<domain>/`

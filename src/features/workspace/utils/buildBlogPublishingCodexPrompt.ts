@@ -29,11 +29,12 @@ Implementation brief:
 - Implement the route in src/app/api/webhooks/blog-publisher/route.ts.
 - The route must own the full flow: validate the token, parse the payload, copy images to R2, rewrite article image URLs, upsert Convex records, refresh cached blog pages, and return JSON.
 - Handle event_type "publish_articles" by saving every item in data.articles.
-- Also support event_type "update_article" with data.article for future updates.
-- Upsert posts by slug so publishing the same blog again updates the existing page.
+- Support event_type "update_article" with data.article.
+- Match an existing post by the stable Blogr article id first, then by slug for older records.
+- Publishing the same blog again must update the existing canonical article and every related summary/read-model record without creating a duplicate.
 - Store content_mdx as the source of truth, falling back to content_markdown.
-- Save title, seo_title, meta_description, body, images, tags, source, created_at, and updated_at from the payload on every create or update.
-- Treat created_at and updated_at as the time Blogr sent the publish request.
+- Save title, seo_title, meta_description, body, images, tags, source, created_at, and updated_at from the payload when creating an article.
+- On update_article, preserve the existing article's original created_at and replace updated_at with the latest payload value.
 - Store seo_title separately from the visible article title.
 - Copy image_url, markdown image URLs, and any frontmatter featureImage URL into Cloudflare R2 before saving. Rewrite saved body/image fields to target-owned URLs or keys.
 - Use safe image fetching: http/https only, timeout, image content-type check, and a reasonable file-size limit.
@@ -47,10 +48,11 @@ Implementation brief:
 - Add or reuse /blog and /blog/[slug] pages.
 - Render Blogr MDX safely: strip frontmatter, support headings, links, lists, blockquotes, tables, code, markdown images, H2-H6 table of contents, stable heading IDs, and whitelisted YouTube embeds including multiline iframe blocks.
 - Include webhook-published posts in metadata, sitemap, feed if present, and cached blog data. Revalidate or refresh relevant routes after publish.
+- Revalidate the article page, blog index, sitemap, and feed after both creates and updates.
 - Keep the token server-only. Do not expose it in browser code.
 - Return 200 with { "message": "Published." } after a successful publish.
 - Add focused docs for the webhook, env vars, file tree, and testing.
-- Add tests for bearer auth, payload validation, slug upserts, update_article SEO updates, R2 image copy/rewrite, MDX rendering, YouTube embeds, and sitemap/feed inclusion when those outputs exist.
+- Add tests for bearer auth, payload validation, stable-id and slug upserts, update_article content and SEO updates, preserved created_at, refreshed updated_at, exactly one saved article after republishing, R2 image copy/rewrite, MDX rendering, YouTube embeds, and sitemap/feed inclusion when those outputs exist.
 - Run lint, typecheck, and build before finishing.
 
 Final response requirements:

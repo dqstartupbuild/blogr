@@ -46,6 +46,8 @@ Generated blogs store a visible article title and can store a separate `seoTitle
 
 Generated blogs store `createdAt`, `updatedAt`, and an optional `publishedAt`. Created marks the original article record, Updated changes with article edits and publishing, and Published records the first successful publication. Published article summaries carry the same timestamp so lists and dashboard rows do not need to read full article content.
 
+Full rewrites also use the `blogVersions` and `blogVersionSummaries` tables. Before **Write blog** replaces an existing article, Blogr stores a complete read-only snapshot with its own version number and a small summary row. History lists page through summaries, while the selected version query loads the archived body and refreshes its signed R2 image URLs.
+
 Publishing a linked article also changes its topic status to `published`. The topic read model carries that status into the Topics and Calendar views. The existing calendar history backfill repairs older linked topics by comparing them with their article summaries.
 
 Generated blogs can store `tags`. Older blogs can omit this field, and publishing rebuilds clean fallback tags from the current blog fields.

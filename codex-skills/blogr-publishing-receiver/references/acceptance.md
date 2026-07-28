@@ -20,7 +20,10 @@ Add focused tests for:
 - wrong bearer token returns `401`
 - valid `publish_articles` payload creates posts
 - publishing the same slug twice updates one post
-- `update_article` refreshes SEO title and description
+- `update_article` matches the stable Blogr source ID before falling back to slug
+- `update_article` refreshes content, SEO title, description, and `updated_at`
+- `update_article` preserves the original `created_at`
+- publishing and then updating leaves exactly one saved article
 - top-level `image_url` is copied to R2 and rewritten
 - markdown image URLs are copied to R2 and rewritten
 - frontmatter `featureImage` is copied and rewritten when present

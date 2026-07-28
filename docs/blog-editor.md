@@ -6,7 +6,7 @@ Users can open a generated blog and edit the article title, SEO title, meta desc
 
 SEO titles should stay between 70 and 110 characters. Meta descriptions should stay between 110 and 160 characters.
 
-The editor header also lets users publish the loaded draft to the configured webhook destination or download it as a zip.
+The editor header also lets users open read-only version history, publish the loaded draft to the configured webhook destination, or download it as a zip.
 
 The preview also lets users refresh any image they don't like. A "Regenerate" button sits on top of every image in the preview, including the cover image. Clicking it swaps the image for a freshly generated one and updates the article body so the new image shows up everywhere the old one was used. See [blog-image-regeneration.md](blog-image-regeneration.md) for details.
 
@@ -26,6 +26,8 @@ The live editor header includes the workspace switcher. If a user switches works
 
 The right-side preview uses `MarkdownPreview`, so headings, links, lists, quotes, images, YouTube videos, tables, and code blocks render like a blog instead of plain markdown text.
 
+**Version history** opens every complete article that was archived before **Write blog** replaced it. Selecting an older version only changes the history preview and never edits the current article.
+
 On phones, every editor grid and form field is allowed to shrink to the viewport. The article body textarea fills its container without contributing an intrinsic desktop width, and the preview keeps wide content contained within the article surface. This prevents the editor from forcing page-level horizontal scrolling.
 
 ## Relevant Code
@@ -43,6 +45,7 @@ On phones, every editor grid and form field is allowed to shrink to the viewport
 - `src/features/workspace/components/BlogMdxTextarea.tsx`
 - `src/features/workspace/components/MarkdownPreview.tsx`
 - `src/features/workspace/components/BlogPublishButton.tsx`
+- `src/features/workspace/components/ArticleVersionHistoryButton.tsx`
 - `src/features/workspace/components/BlogZipButton.tsx`
 - `src/app/api/blogs/publish/route.ts`
 - `src/features/workspace/hooks/useBlogEditor.ts`
