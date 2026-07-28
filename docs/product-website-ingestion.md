@@ -29,6 +29,12 @@ slow scan times out after Firecrawl or Replicate runs, the workspace still keeps
 the site and niche instead of losing everything. This uses the same signed-in
 Convex client path that saves topics.
 
+For a repeat scan, that initial save keeps the existing scanned link list in both
+the browser and Convex. This prevents the temporary homepage-only scan record
+from erasing saved "do not use" choices before a background worker completes.
+The finished scan then adds newly found links while preserving matching link
+choices.
+
 When multiple product workspaces exist, `saveProductScan` receives the active
 product ID and updates that workspace only. If no product exists yet, the scan
 creates the first product workspace and makes it active.

@@ -18,6 +18,7 @@ const linkValidator = v.object({
 export const saveProductScan = mutation({
   args: {
     productId: v.optional(v.id("products")),
+    preserveSiteLinks: v.optional(v.boolean()),
     websiteUrl: v.string(),
     name: v.string(),
     description: v.string(),
@@ -39,7 +40,7 @@ export const saveProductScan = mutation({
   handler: async (ctx, args) => {
     const userId = await requireUserId(ctx);
     const now = Date.now();
-    const { productId, ...productDetails } = args;
+    const { preserveSiteLinks, productId, ...scannedProductDetails } = args;
     const existing = productId
       ? await ctx.db.get(productId)
       : await ctx.db
@@ -53,6 +54,12 @@ export const saveProductScan = mutation({
     }
 
     if (existing) {
+      const productDetails = preserveSiteLinks
+        ? {
+            ...scannedProductDetails,
+            siteLinks: existing.siteLinks,
+          }
+        : scannedProductDetails;
       const updatedProduct = {
         ...existing,
         ...productDetails,
@@ -73,7 +80,7 @@ export const saveProductScan = mutation({
     }
 
     const nextProduct = {
-      ...productDetails,
+      ...scannedProductDetails,
       userId,
       blogGenerationSettings: defaultBlogGenerationSettings,
       scannedAt: now,

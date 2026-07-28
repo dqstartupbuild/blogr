@@ -12,6 +12,8 @@ The Settings page shows `ProductLinksPanel` under the product scan controls. The
 
 `refreshProductLinks` calls `POST /api/product/links/refresh`, which uses the same sitemap, homepage, and Firecrawl crawl logic as the full product scan. The client merges the refreshed URLs with the current link states, so a paused URL stays paused when it is found again.
 
+Repeat full-site scans protect the current link list before the slow scan starts. The temporary product save keeps the existing Convex link list, and the pending browser state shows those same links instead of replacing them with a new homepage-only list. When the scan finishes, the same merge behavior preserves matching "do not use" choices and enables newly found links.
+
 `updateProductSiteLinks` saves the edited list to the active Convex product workspace. The link shape includes optional `isActive`; missing values are treated as active for older saved workspaces.
 
 ## Relevant Code
@@ -25,6 +27,7 @@ The Settings page shows `ProductLinksPanel` under the product scan controls. The
 - `src/features/workspace/components/ProductLinkFilterButton.tsx`
 - `src/features/workspace/hooks/useLiveWorkspace.ts`
 - `src/features/workspace/hooks/useDemoWorkspace.ts`
+- `src/features/workspace/mappers/buildPendingProductScanProduct.ts`
 - `src/features/workspace/utils/isLinkActive.ts`
 - `src/features/workspace/utils/filterActiveLinks.ts`
 - `src/features/workspace/utils/filterProductLinksByStatus.ts`

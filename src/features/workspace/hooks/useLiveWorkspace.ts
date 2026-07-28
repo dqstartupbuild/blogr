@@ -35,6 +35,7 @@ import { workspaceListPageSize } from "../constants/workspaceListPageSize";
 import { useCursorPagination } from "./useCursorPagination";
 import { useOneShotConvexQuery } from "./useOneShotConvexQuery";
 import { buildInitialProductScanProduct } from "../mappers/buildInitialProductScanProduct";
+import { buildPendingProductScanProduct } from "../mappers/buildPendingProductScanProduct";
 import { mapConvexBlog } from "../mappers/mapConvexBlog";
 import { mapConvexBlogSummary } from "../mappers/mapConvexBlogSummary";
 import { mapConvexProduct } from "../mappers/mapConvexProduct";
@@ -600,14 +601,19 @@ export const useLiveWorkspace = (
         niche,
         websiteUrl,
       });
+      const pendingProduct = buildPendingProductScanProduct({
+        existingSiteLinks: convexProductId ? product.siteLinks : undefined,
+        initialProduct,
+      });
 
       const savedProductId = await saveProductScan({
-        ...initialProduct,
+        ...pendingProduct,
+        preserveSiteLinks: Boolean(convexProductId),
         productId: convexProductId || undefined,
       });
       savedInitialProduct = true;
       setScannedProduct({
-        product: mapProductScanResult(initialProduct),
+        product: mapProductScanResult(pendingProduct),
         productId: savedProductId,
       });
       setProductScanMessage("Saved your site. Scanning for details.");
