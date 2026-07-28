@@ -44,7 +44,11 @@ Topic discovery calls `POST /api/topics/discover`, runs Apify Google Search Scra
 
 The discovery dialog also exposes non-topic insights as planning rows. Users can save People Also Ask questions, content gaps, comparison ideas, clusters, refresh suggestions, AI answer notes, and difficulty notes as topics with notes. Content gap rows save the actual gap title as the topic, while the row badge shows that it came from a gap.
 
-The calendar batch flow calls `POST /api/topics/batch-plan`, dedupes discovery outputs and product-niche expansion ideas into canonical topic candidates, and saves them through `createScheduledTopicBatch`. It fills up to 30 blank dates from today forward and never replaces already scheduled topics. Scheduled topics and topic rows open the shared topic action dialog with edit, repurpose, write, article preview, calendar scheduling, removal, and delete controls. Calendar scheduling is only offered for Saved and Failed topics.
+The calendar batch flow calls `POST /api/topics/batch-plan`, asks the configured writer model for a varied pool of natural short and long-tail keyword candidates, removes overlaps with existing topics and articles, and saves the selected candidates through `createScheduledTopicBatch`. It fills up to 30 blank dates from today forward and never replaces already scheduled topics. A natural-language fallback keeps calendar completion mandatory when AI is unavailable.
+
+Keyword selection does not claim search volume, ranking difficulty, or measured search intent. After selection, the existing Apify integration researches each exact keyword only to enrich its writing brief with questions, related searches, and ranking sources. Research failures do not remove scheduled keywords or leave requested dates empty.
+
+Scheduled topics and topic rows open the shared topic action dialog with edit, repurpose, write, article preview, calendar scheduling, removal, and delete controls. Calendar scheduling is only offered for Saved and Failed topics.
 
 When a live workspace opens the calendar, existing articles are backfilled onto calendar history through their linked topic. The topic creation day is used first, and the article creation day is used as the fallback. Written article topics stay visible as history instead of offering calendar removal.
 

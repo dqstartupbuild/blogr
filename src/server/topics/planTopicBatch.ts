@@ -1,12 +1,9 @@
-import { runGoogleSearchScraper } from "../apify/runGoogleSearchScraper";
 import { assignTopicCandidatesToDates } from "./assignTopicCandidatesToDates";
-import { buildTopicBatchDiscoveryQueries } from "./buildTopicBatchDiscoveryQueries";
-import { buildTopicCandidatesFromDiscovery } from "./buildTopicCandidatesFromDiscovery";
-import { buildExpandedTopicCandidates } from "./buildExpandedTopicCandidates";
+import { buildFallbackCalendarKeywordCandidates } from "./buildFallbackCalendarKeywordCandidates";
 import { buildUniqueTopicCandidates } from "./buildUniqueTopicCandidates";
-import { extractSerpSignals } from "./extractSerpSignals";
-import { generateTopicIdeas } from "./generateTopicIdeas";
-import { topicExpansionPatterns } from "./topicExpansionPatterns";
+import { filterExactDuplicateCalendarCandidates } from "./filterExactDuplicateCalendarCandidates";
+import { generateAiCalendarKeywordCandidates } from "./generateAiCalendarKeywordCandidates";
+import { researchCalendarKeywordCandidates } from "./researchCalendarKeywordCandidates";
 import type { ScheduledTopicCandidate } from "./types/ScheduledTopicCandidate";
 import type { TopicCandidate } from "./types/TopicCandidate";
 import type { TopicDiscoveryExistingBlog } from "./types/TopicDiscoveryExistingBlog";
@@ -42,55 +39,39 @@ export const planTopicBatch = async ({
     .map((blog) => ({ keyword: blog.keyword || blog.title }))
     .filter((blog) => blog.keyword.trim());
   const existingItems = [...existingTopics, ...existingBlogTopics];
-  let discoveryCandidates: TopicCandidate[] = [];
+  let aiCandidates: TopicCandidate[] = [];
 
   try {
-    const queries = buildTopicBatchDiscoveryQueries({
-      product,
-    });
-    const records = await runGoogleSearchScraper({
-      includeAiMode: false,
-      queries,
-      timeoutMs: 15000,
-    });
-    const signals = extractSerpSignals(records);
-    const discovery = await generateTopicIdeas({
+    aiCandidates = await generateAiCalendarKeywordCandidates({
       existingBlogs,
       existingTopics: existingTopics.map((topic) => topic.keyword),
       product,
-      signals,
+      requestedCount: dates.length,
     });
-    discoveryCandidates = buildTopicCandidatesFromDiscovery(discovery);
   } catch {
-    discoveryCandidates = [];
+    aiCandidates = [];
   }
 
-  let expansionOffset = 0;
-  const expansionBatchSize = Math.max(dates.length, topicExpansionPatterns.length);
-  const expandedCandidates: TopicCandidate[] = [];
-  let uniqueCandidates: TopicCandidate[] = [];
+  const uniqueCandidates = buildUniqueTopicCandidates({
+    candidates: aiCandidates,
+    existingTopics: existingItems,
+  });
 
-  while (uniqueCandidates.length < dates.length) {
-    const expansionBatch = buildExpandedTopicCandidates({
-      limit: expansionBatchSize,
-      offset: expansionOffset,
-      product,
-    });
+  if (uniqueCandidates.length < dates.length) {
+    const fallbackCandidates = filterExactDuplicateCalendarCandidates(
+      buildFallbackCalendarKeywordCandidates(product),
+      [...existingItems, ...uniqueCandidates],
+    );
 
-    if (expansionBatch.length === 0) {
-      break;
-    }
-
-    expandedCandidates.push(...expansionBatch);
-    uniqueCandidates = buildUniqueTopicCandidates({
-      candidates: [...discoveryCandidates, ...expandedCandidates],
-      existingTopics: existingItems,
-    });
-    expansionOffset += expansionBatchSize;
+    uniqueCandidates.push(...fallbackCandidates);
   }
+
+  const selectedCandidates = uniqueCandidates.slice(0, dates.length);
+  const researchedCandidates =
+    await researchCalendarKeywordCandidates(selectedCandidates);
 
   return assignTopicCandidatesToDates({
-    candidates: uniqueCandidates,
+    candidates: researchedCandidates,
     dates,
   });
 };

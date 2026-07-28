@@ -3,18 +3,20 @@ import type { GoogleSearchScraperRecord } from "./types/GoogleSearchScraperRecor
 
 type RunGoogleSearchScraperOptions = {
   includeAiMode?: boolean;
+  maxQueries?: number;
   queries: string[];
   timeoutMs?: number;
 };
 
 export const runGoogleSearchScraper = async ({
   includeAiMode = false,
+  maxQueries = 6,
   queries,
   timeoutMs = 240000,
 }: RunGoogleSearchScraperOptions): Promise<GoogleSearchScraperRecord[]> => {
   const cleanQueries = Array.from(
     new Set(queries.map((query) => query.trim()).filter(Boolean)),
-  ).slice(0, 6);
+  ).slice(0, Math.max(1, maxQueries));
 
   if (cleanQueries.length === 0) {
     throw new Error("Add a product niche or seed keyword first.");

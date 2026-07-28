@@ -29,7 +29,11 @@ Scheduled planning topics can be removed from the calendar without deleting the 
 
 Topics on the calendar use the `scheduled` status. New calendar topics are saved with `status: "scheduled"`, and older records that still have `status: "saved"` plus a `scheduledDate` are treated as Scheduled in the UI and topic filters.
 
-When the user clicks **Fill empty days**, the client sends up to 30 blank dates from today forward, product profile, existing topics, and existing article keywords to `POST /api/topics/batch-plan`. The route tries Google discovery through Apify with a short calendar-specific timeout, generates topic discovery data when search is available, converts normal ideas, gaps, questions, comparison ideas, AI answer notes, and difficulty notes into one shared candidate shape, and adds a deep product-niche expansion pool. Similar candidates are grouped before scheduling, then one unique candidate is returned for each blank date.
+When the user clicks **Fill empty days**, the client sends up to 30 blank dates from today forward, the product profile, existing topics, and existing article keywords to `POST /api/topics/batch-plan`. The planner asks the configured writer model for a deliberately oversized pool of concise customer-language keyword candidates. The prompt requires a mix of short and long-tail phrases, different reader problems and goals, and no claims about search volume, difficulty, rankings, or search intent.
+
+The planner rejects overlong and known template-like phrases, groups similar AI suggestions, and removes candidates that overlap existing topics or articles. If AI generation is unavailable or returns too few usable candidates, a bounded natural-language fallback supplies the missing dates. Calendar completion does not depend on external research, so every requested blank date still receives a keyword.
+
+After the keywords are selected, the planner sends those exact phrases through the existing Apify Google Search Scraper in one batch. That research is used only to enrich each topic's writing brief with People Also Ask questions, related searches, and ranking sources. Research failure leaves the selected keywords unchanged and never reduces the number of filled dates.
 
 The client saves returned candidates through `createScheduledTopicBatch`. The mutation re-checks ownership, occupied dates, existing keywords, article keywords, and intent keys before inserting rows. If the calendar changed while planning was running, filled dates are skipped instead of overwritten.
 
@@ -37,11 +41,11 @@ When a live workspace opens the calendar, `backfillWrittenTopicCalendarDates` re
 
 ## Dedupe Behavior
 
-The batch planner does not save every discovery bucket as a separate article. It first normalizes planner prefixes such as “Review difficulty for” and “Improve AI answer coverage for,” then builds an `intentKey` from the meaningful topic tokens.
+The batch planner builds an `intentKey` from the meaningful tokens in every AI keyword candidate.
 
-Similar candidates are grouped before scheduling. For example, a question, content gap, and difficulty note about the same pricing-page intent become one scheduled topic with merged notes instead of three articles competing for the same keyword.
+Similar AI candidates are grouped before scheduling so small wording changes do not become separate articles. Existing topic and article keywords are checked again before the batch is saved.
 
-The route builds enough long-tail product-niche candidates to fill the requested blank days even when search or AI returns a thin set of ideas. The expansion patterns mix buying, setup, comparison, troubleshooting, workflow, budget, onboarding, and review angles so the scheduled topics stay distinct instead of becoming small rewrites of the same keyword.
+The AI prompt requests more candidates than the calendar needs so deduplication can keep the strongest mix. The fallback exists only to preserve mandatory calendar completion when AI is unavailable; fallback notes clearly tell the user to run or review the keyword-specific brief before writing.
 
 ## Relevant Code
 
@@ -62,11 +66,12 @@ The route builds enough long-tail product-niche candidates to fill the requested
 - `src/features/workspace/utils/getSchedulableCalendarDateKeys.ts`
 - `src/features/workspace/hooks/useLiveWorkspace.ts`
 - `src/features/workspace/hooks/useDemoWorkspace.ts`
-- `src/server/topics/buildExpandedTopicCandidates.ts`
-- `src/server/topics/buildTopicExpansionBasePhrases.ts`
-- `src/server/topics/buildTopicExpansionScopes.ts`
-- `src/server/topics/topicExpansionPatterns.ts`
-- `src/server/topics/buildTopicCandidatesFromDiscovery.ts`
+- `src/server/topics/generateAiCalendarKeywordCandidates.ts`
+- `src/server/topics/buildCalendarKeywordSuggestionPrompt.ts`
+- `src/server/topics/isUsableCalendarKeyword.ts`
+- `src/server/topics/buildFallbackCalendarKeywordCandidates.ts`
+- `src/server/topics/researchCalendarKeywordCandidates.ts`
+- `src/server/topics/buildCalendarKeywordResearchNotes.ts`
 - `src/server/topics/buildUniqueTopicCandidates.ts`
 - `src/server/topics/groupTopicCandidates.ts`
 - `src/server/topics/mergeTopicCandidateGroup.ts`
@@ -105,8 +110,8 @@ src/features/workspace/components/TopicActionDialog.tsx
 src/features/workspace/components/TopicCalendarScheduleControl.tsx
 src/features/workspace/types/calendar/
 src/features/workspace/utils/*Calendar*
+src/server/topics/*CalendarKeyword*
 src/server/topics/*TopicCandidate*
-src/server/topics/*TopicExpansion*
 convex/topics/*Scheduled*
 convex/topics/backfillWrittenTopicCalendarDates.ts
 docs/content-calendar.md

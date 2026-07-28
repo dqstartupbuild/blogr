@@ -8,7 +8,7 @@ The app does not save every scraped idea automatically. It shows a review queue 
 
 The discovery dialog also shows planning ideas from the same search run. Users can save questions, gaps, comparison ideas, clusters, refresh notes, AI answer notes, and difficulty notes as planning topics.
 
-The content calendar also uses discovery data for batch planning. In that flow, the app converts normal ideas, gaps, questions, comparison ideas, AI answer notes, and difficulty notes into one shared candidate shape before saving anything. Similar candidates are grouped into one canonical scheduled topic so the calendar does not create several articles that compete for the same search intent. The calendar then adds product-niche expansion candidates so every blank day can still be filled when discovery is sparse.
+The content calendar has a separate AI-first keyword planner. It does not use topic-discovery SERP results to choose calendar keywords. After the calendar has selected one keyword for every requested date, it uses the existing search integration only to enrich the writing brief for each chosen keyword.
 
 ## How It Works
 
@@ -47,7 +47,7 @@ When the user writes a blog from that topic, `useLiveWorkspace` sends the saved 
 
 When a user clicks **Save plan** on a non-topic insight, the app saves that insight as a topic with its source context in notes. That gives users a simple way to turn gaps, refresh ideas, comparison angles, AI answer notes, and difficulty notes into work they can write or plan from later. Content gap plans save the actual gap title instead of an internal instruction like `Cover this gap`.
 
-When the calendar fills empty days, those same insight types are not saved as separate planning rows. They are first deduped by canonical keyword and intent key, then merged into the notes for one scheduled topic.
+Calendar filling remains separate from the discovery review queue. Discovery insights are not automatically converted into scheduled calendar keywords.
 
 Existing topics also have a **Find brief** or **View brief** action. Users can review the saved notes, refresh the brief from a new search, and then write the topic with that brief.
 
@@ -107,8 +107,7 @@ the Google Cloud AI worker.
 - Refresh older blogs with questions and angles that now appear in search.
 - Refresh the brief for a topic that was saved before discovery existed.
 - Add a refresh plan directly to an existing blog draft.
-- Fill blank calendar days with unique scheduled topics, even when search or AI returns only a few usable ideas.
-- Merge duplicate discovery buckets before creating a 30-day plan.
+- Research selected calendar keywords for writing-brief questions and sources without using that research to choose the keywords.
 
 ## File Tree
 
