@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Save } from "lucide-react";
 import { PrimaryButton } from "./PrimaryButton";
+import { ProductColorEditor } from "./ProductColorEditor";
 import { ProductExternalLinksEditor } from "./ProductExternalLinksEditor";
 import { ProductPricingEditor } from "./ProductPricingEditor";
 import { SectionTitle } from "./SectionTitle";
@@ -145,13 +146,8 @@ export const ProductDetailsPanel = ({
             setDraft((current) => ({ ...current, externalLinks }))
           }
         />
-        <StringListEditor
-          addLabel="Add color"
-          description="Use the brand colors you want reflected in generated images."
-          idPrefix="product-color"
-          label="Brand colors"
+        <ProductColorEditor
           onChange={(colors) => setDraft((current) => ({ ...current, colors }))}
-          placeholder="#000000"
           values={draft.colors}
         />
         <div className="flex flex-wrap items-center gap-3">

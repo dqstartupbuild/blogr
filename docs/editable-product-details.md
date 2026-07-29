@@ -16,7 +16,7 @@ The existing Firecrawl scan still gathers homepage content, detail pages, links,
 
 The scanner separately checks scraped links and markdown for known marketplaces such as the Apple App Store, Google Play, Chrome Web Store, Firefox Add-ons, Microsoft stores, Visual Studio Marketplace, Snap Store, Flathub, and Steam. Social links and unrelated external URLs are not added automatically.
 
-Missing details stay empty instead of being invented. Users can add, edit, or remove every feature, price, offer, color, and external link themselves.
+Missing details stay empty instead of being invented. Users can add, edit, or remove every feature, price, offer, color, and external link themselves. Each brand color includes a visual color box in Settings, so users can choose a shade or type its hex code.
 
 ## Saving
 
@@ -32,10 +32,13 @@ The writer receives features, pricing, offers, and external product links in its
 - `convex/products/productPriceValidator.ts`
 - `convex/products/productExternalLinkValidator.ts`
 - `src/features/workspace/components/ProductDetailsPanel.tsx`
+- `src/features/workspace/components/ProductColorEditor.tsx`
+- `src/features/workspace/components/ProductColorField.tsx`
 - `src/features/workspace/components/ProductPricingEditor.tsx`
 - `src/features/workspace/components/ProductExternalLinksEditor.tsx`
 - `src/features/workspace/components/StringListEditor.tsx`
 - `src/features/workspace/hooks/useLiveWorkspace.ts`
+- `src/features/workspace/utils/getColorPickerValue.ts`
 - `src/server/product/buildProductProfilePrompt.ts`
 - `src/server/product/collectProductExternalLinks.ts`
 - `src/server/product/scanProductWebsite.ts`
@@ -49,6 +52,7 @@ The writer receives features, pricing, offers, and external product links in its
 - Keep monthly and annual plans separate.
 - Record a free trial, launch discount, or free plan.
 - Add iOS, Android, browser extension, desktop store, or integration links.
+- Choose a brand color visually or enter its exact hex code.
 - Remove an outdated offer or marketplace listing.
 
 ## File Tree
@@ -61,13 +65,17 @@ convex/products/
 src/features/workspace/
 ├── components/
 │   ├── ProductDetailsPanel.tsx
+│   ├── ProductColorEditor.tsx
+│   ├── ProductColorField.tsx
 │   ├── ProductExternalLinksEditor.tsx
 │   ├── ProductPricingEditor.tsx
 │   └── StringListEditor.tsx
-└── types/
-    ├── ProductDetailsDraft.ts
-    ├── ProductExternalLink.ts
-    └── ProductPrice.ts
+├── types/
+│   ├── ProductDetailsDraft.ts
+│   ├── ProductExternalLink.ts
+│   └── ProductPrice.ts
+└── utils/
+    └── getColorPickerValue.ts
 src/server/product/
 ├── buildProductProfilePrompt.ts
 ├── collectProductExternalLinks.ts
