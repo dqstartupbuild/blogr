@@ -5,6 +5,7 @@ import { BlogPreviewSidebar } from "./BlogPreviewSidebar";
 import { BlogPublishingIntegrationPanel } from "./BlogPublishingIntegrationPanel";
 import { BlogsPanel } from "./BlogsPanel";
 import { CalendarPanel } from "./CalendarPanel";
+import { CalendarQueueSettingsPanel } from "./CalendarQueueSettingsPanel";
 import { DashboardPanel } from "./DashboardPanel";
 import { ProductLinksPanel } from "./ProductLinksPanel";
 import { ProductDetailsPanel } from "./ProductDetailsPanel";
@@ -216,9 +217,7 @@ export const WorkspaceContent = ({
               deleteTopic={deleteTopic}
               fillCalendarBlankDays={fillCalendarBlankDays}
               quickFillCalendar={quickFillCalendar}
-              saveCalendarQueueSettings={saveCalendarQueueSettings}
               knownEligibleTopicCount={knownEligibleTopicCount}
-              stableSeed={workspaceSwitcher.activeWorkspaceId}
               openBlogPreview={openBlogPreview}
               refreshTopicBrief={refreshTopicBrief}
               removeTopicFromCalendar={removeTopicFromCalendar}
@@ -232,7 +231,7 @@ export const WorkspaceContent = ({
           {mode === "settings" ? (
             <div className="space-y-5">
               <WorkspacePageHeader
-                description="Set up your product, publishing, and article defaults."
+                description="Set up your product, publishing, calendar, and article defaults."
                 title="Settings"
               />
               <ProductSetupPanel
@@ -262,6 +261,16 @@ export const WorkspaceContent = ({
                 productName={product.name}
                 saveIntegration={saveBlogPublishingIntegration}
                 statusMessage={publishingIntegrationStatusMessage}
+              />
+              <CalendarQueueSettingsPanel
+                candidateDateKeys={calendarState.fillableDateKeys}
+                isSaving={calendarState.isSavingQueueSettings}
+                key={`${workspaceSwitcher.activeWorkspaceId}:${JSON.stringify(
+                  calendarState.calendarQueueSettings,
+                )}`}
+                saveCalendarQueueSettings={saveCalendarQueueSettings}
+                settings={calendarState.calendarQueueSettings}
+                stableSeed={workspaceSwitcher.activeWorkspaceId}
               />
               <WorkspaceSettingsPanel
                 isSaving={isSavingBlogGenerationSettings}

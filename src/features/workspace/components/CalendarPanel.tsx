@@ -1,6 +1,5 @@
 import { CalendarFillButton } from "./CalendarFillButton";
 import { CalendarQuickFillButton } from "./CalendarQuickFillButton";
-import { CalendarQueueSettingsDialog } from "./CalendarQueueSettingsDialog";
 import { CalendarGrid } from "./CalendarGrid";
 import { CalendarMonthControls } from "./CalendarMonthControls";
 import { EmptyState } from "./EmptyState";
@@ -11,9 +10,6 @@ import type { CalendarState } from "../types/CalendarState";
 import type { DeleteTopic } from "../types/DeleteTopic";
 import type { FillCalendarBlankDays } from "../types/FillCalendarBlankDays";
 import type { QuickFillCalendar } from "../types/QuickFillCalendar";
-import type { SaveCalendarQueueSettings } from "../types/SaveCalendarQueueSettings";
-import { formatCalendarQueueSummary } from "../utils/formatCalendarQueueSummary";
-import { useState } from "react";
 import type { RemoveTopicFromCalendar } from "../types/RemoveTopicFromCalendar";
 import type { SaveTopicBrief } from "../types/SaveTopicBrief";
 import type { ScheduleTopicOnCalendar } from "../types/ScheduleTopicOnCalendar";
@@ -26,9 +22,7 @@ type CalendarPanelProps = {
   deleteTopic: DeleteTopic;
   fillCalendarBlankDays: FillCalendarBlankDays;
   quickFillCalendar: QuickFillCalendar;
-  saveCalendarQueueSettings: SaveCalendarQueueSettings;
   knownEligibleTopicCount: number;
-  stableSeed: string;
   openBlogPreview: (blogId: string) => void;
   refreshTopicBrief: (topicId: string) => Promise<string>;
   removeTopicFromCalendar: RemoveTopicFromCalendar;
@@ -48,9 +42,7 @@ export const CalendarPanel = ({
   deleteTopic,
   fillCalendarBlankDays,
   quickFillCalendar,
-  saveCalendarQueueSettings,
   knownEligibleTopicCount,
-  stableSeed,
   openBlogPreview,
   refreshTopicBrief,
   removeTopicFromCalendar,
@@ -60,7 +52,6 @@ export const CalendarPanel = ({
   topics,
   writeBlog,
 }: CalendarPanelProps) => {
-  const [isQueueDialogOpen, setIsQueueDialogOpen] = useState(false);
   const rangeLabel = formatCalendarRangeLabel(calendarState.dateKeys);
   const occupiedCalendarDates = topics
     .map((topic) => topic.scheduledDate)
@@ -84,7 +75,6 @@ export const CalendarPanel = ({
             onNextMonth={calendarState.goToNextMonth}
             onPreviousMonth={calendarState.goToPreviousMonth}
           />
-          <button className="h-10 rounded-md border border-black/15 bg-white px-4 text-sm font-semibold text-black transition hover:border-black" onClick={() => setIsQueueDialogOpen(true)} type="button">{formatCalendarQueueSummary(calendarState.calendarQueueSettings)}</button>
           <CalendarQuickFillButton disabled={calendarState.isLoading || calendarState.isFilling || calendarState.isQuickFilling || openQueueCount === 0 || knownEligibleTopicCount === 0} isFilling={calendarState.isQuickFilling} quickFillCalendar={quickFillCalendar} />
           <CalendarFillButton
             disabled={
@@ -145,7 +135,6 @@ export const CalendarPanel = ({
           writeBlog={writeBlog}
         />
       )}
-      {isQueueDialogOpen ? <CalendarQueueSettingsDialog candidateDateKeys={calendarState.fillableDateKeys} isSaving={calendarState.isSavingQueueSettings} onClose={() => setIsQueueDialogOpen(false)} saveCalendarQueueSettings={saveCalendarQueueSettings} settings={calendarState.calendarQueueSettings} stableSeed={stableSeed} /> : null}
     </section>
   );
 };
