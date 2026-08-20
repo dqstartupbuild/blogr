@@ -1,12 +1,13 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { demoBlogs } from "../constants/demoBlogs";
 import { demoProduct } from "../constants/demoProduct";
 import { demoProductWorkspace } from "../constants/demoProductWorkspace";
 import { demoTopicDiscoveryResult } from "../constants/demoTopicDiscoveryResult";
 import { demoTopics } from "../constants/demoTopics";
 import { defaultBlogGenerationSettings } from "../constants/defaultBlogGenerationSettings";
+import { defaultCalendarQueueSettings } from "../constants/defaultCalendarQueueSettings";
 import { emptyProduct } from "../constants/emptyProduct";
 import { workspaceListPageSize } from "../constants/workspaceListPageSize";
 import { useCursorPagination } from "./useCursorPagination";
@@ -24,6 +25,10 @@ import { formatCalendarMonthLabel } from "../utils/formatCalendarMonthLabel";
 import { getCalendarMonthDateKeys } from "../utils/getCalendarMonthDateKeys";
 import { getCalendarMonthStartDate } from "../utils/getCalendarMonthStartDate";
 import { getSchedulableCalendarDateKeys } from "../utils/getSchedulableCalendarDateKeys";
+import { buildCalendarQueueDateKeys } from "../utils/buildCalendarQueueDateKeys";
+import { canAddTopicToCalendar } from "../utils/canAddTopicToCalendar";
+import { normalizeCalendarQueueSettings } from "../utils/normalizeCalendarQueueSettings";
+import { buildQuickFillAssignments } from "../utils/buildQuickFillAssignments";
 import { getUniqueBlogTopics } from "../utils/getUniqueBlogTopics";
 import { isSameCalendarMonth } from "../utils/isSameCalendarMonth";
 import { mergePreviewBlogs } from "../utils/mergePreviewBlogs";
@@ -47,6 +52,7 @@ import type { WorkspaceSummary } from "../types/WorkspaceSummary";
 import type { WorkspaceViewMode } from "../types/WorkspaceViewMode";
 import type { BlogPublishingIntegrationDraft } from "../types/integrations/BlogPublishingIntegrationDraft";
 import type { UpdateBlogImages } from "../types/UpdateBlogImages";
+import type { CalendarQueueSettings } from "../types/CalendarQueueSettings";
 
 export const useDemoWorkspace = (initialMode: WorkspaceViewMode) => {
   const [mode, setMode] = useState<WorkspaceViewMode>(initialMode);
@@ -93,8 +99,23 @@ export const useDemoWorkspace = (initialMode: WorkspaceViewMode) => {
     useState<BlogStatusFilter>("unpublished");
   const [blogSearchQuery, setBlogSearchQuery] = useState("");
   const [blogTopicFilter, setBlogTopicFilter] = useState("all");
-  const [calendarMessage, setCalendarMessage] = useState("");
-  const [isFillingCalendar, setIsFillingCalendar] = useState(false);
+  const [calendarMessageState, setCalendarMessageState] = useState({
+    message: "",
+    workspaceId: "",
+  });
+  const [fillingCalendarWorkspaceId, setFillingCalendarWorkspaceId] = useState("");
+  const [quickFillingCalendarWorkspaceId, setQuickFillingCalendarWorkspaceId] = useState("");
+  const [savingCalendarQueueWorkspaceId, setSavingCalendarQueueWorkspaceId] = useState("");
+  const calendarMessage = calendarMessageState.workspaceId === activeWorkspaceId ? calendarMessageState.message : "";
+  const isFillingCalendar = fillingCalendarWorkspaceId === activeWorkspaceId;
+  const isQuickFillingCalendar = quickFillingCalendarWorkspaceId === activeWorkspaceId;
+  const isSavingCalendarQueueSettings = savingCalendarQueueWorkspaceId === activeWorkspaceId;
+  const setCalendarMessage = (message: string) => setCalendarMessageState({ message, workspaceId: activeWorkspaceId });
+  const setIsFillingCalendar = (isFilling: boolean) => setFillingCalendarWorkspaceId(isFilling ? activeWorkspaceId : "");
+  const setIsQuickFillingCalendar = (isFilling: boolean) => setQuickFillingCalendarWorkspaceId(isFilling ? activeWorkspaceId : "");
+  const setIsSavingCalendarQueueSettings = (isSaving: boolean) => setSavingCalendarQueueWorkspaceId(isSaving ? activeWorkspaceId : "");
+  const calendarFillActionRef = useRef<"ai" | "quick" | null>(null);
+  const [calendarQueueSettingsByWorkspace, setCalendarQueueSettingsByWorkspace] = useState<Record<string, CalendarQueueSettings>>({ [demoProductWorkspace.id]: defaultCalendarQueueSettings });
   const [calendarMonthDate, setCalendarMonthDate] = useState(() =>
     getCalendarMonthStartDate(new Date()),
   );
@@ -217,6 +238,12 @@ export const useDemoWorkspace = (initialMode: WorkspaceViewMode) => {
       ),
     [calendarDateKeys, workspaceTopics],
   );
+  const calendarQueueSettings = calendarQueueSettingsByWorkspace[activeWorkspaceId] || defaultCalendarQueueSettings;
+  const occupiedCalendarDateSet = useMemo(() => new Set(calendarTopics.map((topic) => topic.scheduledDate).filter((date): date is string => Boolean(date))), [calendarTopics]);
+  const queueDateKeys = useMemo(() => buildCalendarQueueDateKeys({ candidateDateKeys: fillableCalendarDateKeys, settings: calendarQueueSettings, stableSeed: activeWorkspaceId }), [activeWorkspaceId, calendarQueueSettings, fillableCalendarDateKeys]);
+  const openQueueDateKeys = useMemo(() => queueDateKeys.filter((date) => !occupiedCalendarDateSet.has(date)), [occupiedCalendarDateSet, queueDateKeys]);
+  const actionQueueDateKeys = useMemo(() => openQueueDateKeys.slice(0, 30), [openQueueDateKeys]);
+  const knownEligibleTopicCount = useMemo(() => workspaceTopics.filter((topic) => !topic.scheduledDate && canAddTopicToCalendar(topic)).length, [workspaceTopics]);
   const calendarState = useMemo(
     () => ({
       dateKeys: calendarDateKeys,
@@ -226,9 +253,14 @@ export const useDemoWorkspace = (initialMode: WorkspaceViewMode) => {
       goToPreviousMonth,
       isCurrentMonth,
       isFilling: isFillingCalendar,
+      isQuickFilling: isQuickFillingCalendar,
+      isSavingQueueSettings: isSavingCalendarQueueSettings,
       isLoading: false,
       message: calendarMessage,
       monthLabel,
+      calendarQueueSettings,
+      openQueueDateKeys,
+      queueDateKeys,
     }),
     [
       calendarDateKeys,
@@ -239,7 +271,12 @@ export const useDemoWorkspace = (initialMode: WorkspaceViewMode) => {
       goToPreviousMonth,
       isCurrentMonth,
       isFillingCalendar,
+      isQuickFillingCalendar,
+      isSavingCalendarQueueSettings,
       monthLabel,
+      calendarQueueSettings,
+      openQueueDateKeys,
+      queueDateKeys,
     ],
   );
   const topicListState: TopicListViewState = useMemo(
@@ -316,6 +353,10 @@ export const useDemoWorkspace = (initialMode: WorkspaceViewMode) => {
     topicSearchQuery,
     topicStatusFilter,
   ]);
+
+  useEffect(() => {
+    calendarFillActionRef.current = null;
+  }, [activeWorkspaceId]);
 
   useEffect(() => {
     resetBlogPagination();
@@ -558,14 +599,8 @@ export const useDemoWorkspace = (initialMode: WorkspaceViewMode) => {
   };
 
   const fillCalendarBlankDays = () => {
-    const occupiedDates = new Set(
-      calendarTopics
-        .map((topic) => topic.scheduledDate)
-        .filter((date): date is string => Boolean(date)),
-    );
-    const blankDates = fillableCalendarDateKeys
-      .filter((date) => !occupiedDates.has(date))
-      .slice(0, 30);
+    if (calendarFillActionRef.current) return;
+    const blankDates = actionQueueDateKeys;
     const existingKeywords = new Set(
       workspaceTopics.map((topic) => topic.keyword.toLowerCase()),
     );
@@ -574,10 +609,11 @@ export const useDemoWorkspace = (initialMode: WorkspaceViewMode) => {
     );
 
     if (blankDates.length === 0) {
-      setCalendarMessage("No upcoming empty days to fill.");
+      setCalendarMessage("No open queue dates are available in this month.");
       return;
     }
 
+    calendarFillActionRef.current = "ai";
     setIsFillingCalendar(true);
 
     const now = Date.now();
@@ -612,7 +648,45 @@ export const useDemoWorkspace = (initialMode: WorkspaceViewMode) => {
         : "No unique topics found yet.",
     );
     setIsFillingCalendar(false);
+    calendarFillActionRef.current = null;
     resetTopicPagination();
+  };
+
+  const quickFillCalendar = () => {
+    if (calendarFillActionRef.current) return;
+    if (!actionQueueDateKeys.length) { setCalendarMessage("All queue dates in this month are already filled."); return; }
+    if (!knownEligibleTopicCount) { setCalendarMessage("No saved topics are available for quick fill."); return; }
+    const now = Date.now();
+    calendarFillActionRef.current = "quick";
+    setIsQuickFillingCalendar(true);
+    setTopicsByWorkspace((current) => {
+      const currentTopics = current[activeWorkspaceId] || [];
+      const assignments = buildQuickFillAssignments(
+        currentTopics,
+        actionQueueDateKeys,
+      );
+      const assignment = new Map(
+        assignments.map((item) => [item.topicId, item.scheduledDate]),
+      );
+      const count = assignments.length;
+      const remainingCount = actionQueueDateKeys.length - count;
+      setCalendarMessage(count ? `Scheduled ${count} existing topics.${remainingCount > 0 ? ` ${remainingCount} queue dates remain open.` : ""}` : "No saved topics are available for quick fill.");
+      return { ...current, [activeWorkspaceId]: (current[activeWorkspaceId] || []).map((topic) => { const scheduledDate = assignment.get(topic.id); return scheduledDate ? { ...topic, scheduledDate, status: topic.status === "saved" ? "scheduled" : topic.status, updatedAt: now } : topic; }) };
+    });
+    window.setTimeout(() => {
+      calendarFillActionRef.current = null;
+      setIsQuickFillingCalendar(false);
+    }, 0);
+    resetTopicPagination();
+  };
+
+  const saveCalendarQueueSettings = (settings: CalendarQueueSettings) => {
+    setIsSavingCalendarQueueSettings(true);
+    const prior = calendarQueueSettings;
+    const normalized = normalizeCalendarQueueSettings(settings);
+    const next = normalized.cadence === "custom" && prior.cadence === "custom" && prior.intervalDays === normalized.intervalDays ? { ...normalized, anchorDate: prior.anchorDate } : normalized;
+    setCalendarQueueSettingsByWorkspace((current) => ({ ...current, [activeWorkspaceId]: next }));
+    setCalendarMessage("Calendar queue saved in preview."); setIsSavingCalendarQueueSettings(false);
   };
 
   const discoverTopicIdeas = async () => {
@@ -866,6 +940,10 @@ export const useDemoWorkspace = (initialMode: WorkspaceViewMode) => {
       ...current,
       [workspaceId]: defaultBlogGenerationSettings,
     }));
+    setCalendarQueueSettingsByWorkspace((current) => ({
+      ...current,
+      [workspaceId]: defaultCalendarQueueSettings,
+    }));
     setActiveWorkspaceId(workspaceId);
     setSelectedBlogId("");
     setSettingsStatusMessage("");
@@ -927,6 +1005,9 @@ export const useDemoWorkspace = (initialMode: WorkspaceViewMode) => {
     discoverBlogRefreshIdeas,
     discoverTopicIdeas,
     fillCalendarBlankDays,
+    quickFillCalendar,
+    saveCalendarQueueSettings,
+    knownEligibleTopicCount,
     deleteBlog,
     deleteTopic,
     refreshTopicBrief,

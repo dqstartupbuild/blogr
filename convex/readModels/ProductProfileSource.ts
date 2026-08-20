@@ -16,6 +16,7 @@ export type ProductProfileSource = {
   pricing?: Doc<"products">["pricing"];
   siteLinks: Doc<"products">["siteLinks"];
   blogGenerationSettings?: Doc<"products">["blogGenerationSettings"];
+  calendarQueueSettings?: Doc<"products">["calendarQueueSettings"];
   blogPublishingIntegration?: Doc<"products">["blogPublishingIntegration"];
   updatedAt: number;
 };

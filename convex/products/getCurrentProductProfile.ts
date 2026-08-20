@@ -1,5 +1,6 @@
 import { query } from "../_generated/server";
 import { requireUserId } from "../identity/requireUserId";
+import { defaultCalendarQueueSettings } from "./defaultCalendarQueueSettings";
 
 export const getCurrentProductProfile = query({
   args: {},
@@ -29,6 +30,7 @@ export const getCurrentProductProfile = query({
       return {
         audience: profile.audience,
         blogGenerationSettings: profile.blogGenerationSettings,
+        calendarQueueSettings: profile.calendarQueueSettings || defaultCalendarQueueSettings,
         blogPublishingIntegration: profile.blogPublishingIntegration,
         colors: profile.colors,
         competitors: profile.competitors || "",

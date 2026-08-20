@@ -5,6 +5,7 @@ import { upsertProductProfile } from "../readModels/upsertProductProfile";
 import { upsertProductWorkspaceSummary } from "../readModels/upsertProductWorkspaceSummary";
 import { saveWorkspaceSelection } from "../workspaceSelections/saveWorkspaceSelection";
 import { defaultBlogGenerationSettings } from "./defaultBlogGenerationSettings";
+import { defaultCalendarQueueSettings } from "./defaultCalendarQueueSettings";
 import { productExternalLinkValidator } from "./productExternalLinkValidator";
 import { productPriceValidator } from "./productPriceValidator";
 
@@ -83,6 +84,7 @@ export const saveProductScan = mutation({
       ...scannedProductDetails,
       userId,
       blogGenerationSettings: defaultBlogGenerationSettings,
+      calendarQueueSettings: defaultCalendarQueueSettings,
       scannedAt: now,
       createdAt: now,
       updatedAt: now,

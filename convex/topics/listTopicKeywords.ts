@@ -61,9 +61,6 @@ export const listTopicKeywords = query({
         status: topic.status,
       });
 
-      if (topics.length >= 250) {
-        break;
-      }
     }
 
     return topics;

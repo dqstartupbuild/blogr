@@ -28,6 +28,8 @@ import { updateTopicNotesMutation } from "@/server/convex/references/updateTopic
 import { updateTopicScheduledDateMutation } from "@/server/convex/references/updateTopicScheduledDateMutation";
 import { updateTopicStatusMutation } from "@/server/convex/references/updateTopicStatusMutation";
 import { updateBlogGenerationSettingsMutation } from "@/server/convex/references/updateBlogGenerationSettingsMutation";
+import { quickFillExistingTopicsMutation } from "@/server/convex/references/quickFillExistingTopicsMutation";
+import { updateCalendarQueueSettingsMutation } from "@/server/convex/references/updateCalendarQueueSettingsMutation";
 import { updateBlogImagesMutation } from "@/server/convex/references/updateBlogImagesMutation";
 import { upsertGeneratedBlogMutation } from "@/server/convex/references/upsertGeneratedBlogMutation";
 import { castTopicId } from "@/server/convex/castTopicId";
@@ -47,6 +49,9 @@ import { formatCalendarMonthLabel } from "../utils/formatCalendarMonthLabel";
 import { getCalendarMonthDateKeys } from "../utils/getCalendarMonthDateKeys";
 import { getCalendarMonthStartDate } from "../utils/getCalendarMonthStartDate";
 import { getSchedulableCalendarDateKeys } from "../utils/getSchedulableCalendarDateKeys";
+import { buildCalendarQueueDateKeys } from "../utils/buildCalendarQueueDateKeys";
+import { normalizeCalendarQueueSettings } from "../utils/normalizeCalendarQueueSettings";
+import { canAddTopicToCalendar } from "../utils/canAddTopicToCalendar";
 import { getScheduledAwareTopicStatus } from "../utils/getScheduledAwareTopicStatus";
 import { isSameCalendarMonth } from "../utils/isSameCalendarMonth";
 import { mergeProductLinkStates } from "../utils/mergeProductLinkStates";
@@ -76,12 +81,14 @@ import type { BlogPublishingIntegrationDraft } from "../types/integrations/BlogP
 import type { TopicDiscoveryRequest } from "../types/topicDiscovery/TopicDiscoveryRequest";
 import type { TopicDiscoveryResponse } from "../types/topicDiscovery/TopicDiscoveryResponse";
 import type { UpdateBlogImages } from "../types/UpdateBlogImages";
+import type { CalendarQueueSettings } from "../types/CalendarQueueSettings";
 
 export const useLiveWorkspace = (
   initialMode: WorkspaceViewMode,
   workspaceSwitcher: WorkspaceSwitcherState,
 ) => {
   const convex = useConvex();
+  const activeProductId = workspaceSwitcher.activeWorkspaceId;
   const [mode, setMode] = useState<WorkspaceViewMode>(initialMode);
   const [selectedBlogSelection, setSelectedBlogSelection] = useState<{
     blog?: BlogItem;
@@ -117,8 +124,29 @@ export const useLiveWorkspace = (
     useState<BlogStatusFilter>("unpublished");
   const [blogSearchQuery, setBlogSearchQuery] = useState("");
   const [blogTopicFilter, setBlogTopicFilter] = useState("all");
-  const [calendarMessage, setCalendarMessage] = useState("");
-  const [isFillingCalendar, setIsFillingCalendar] = useState(false);
+  const [calendarMessageState, setCalendarMessageState] = useState({
+    message: "",
+    productId: "",
+  });
+  const [fillingCalendarProductId, setFillingCalendarProductId] = useState("");
+  const [quickFillingCalendarProductId, setQuickFillingCalendarProductId] = useState("");
+  const [savingCalendarQueueProductId, setSavingCalendarQueueProductId] = useState("");
+  const calendarMessage =
+    calendarMessageState.productId === activeProductId
+      ? calendarMessageState.message
+      : "";
+  const isFillingCalendar = Boolean(fillingCalendarProductId);
+  const isQuickFillingCalendar = Boolean(quickFillingCalendarProductId);
+  const isSavingCalendarQueueSettings = savingCalendarQueueProductId === activeProductId;
+  const setCalendarMessage = (message: string) =>
+    setCalendarMessageState({ message, productId: activeProductId });
+  const setIsFillingCalendar = (isFilling: boolean) =>
+    setFillingCalendarProductId(isFilling ? activeProductId : "");
+  const setIsQuickFillingCalendar = (isFilling: boolean) =>
+    setQuickFillingCalendarProductId(isFilling ? activeProductId : "");
+  const setIsSavingCalendarQueueSettings = (isSaving: boolean) =>
+    setSavingCalendarQueueProductId(isSaving ? activeProductId : "");
+  const calendarFillActionRef = useRef<"ai" | "quick" | null>(null);
   const [readQueryRefreshKey, setReadQueryRefreshKey] = useState(0);
   const [calendarMonthDate, setCalendarMonthDate] = useState(() =>
     getCalendarMonthStartDate(new Date()),
@@ -165,7 +193,7 @@ export const useLiveWorkspace = (
     pageNumber: blogPageNumber,
     resetPagination: resetBlogPagination,
   } = useCursorPagination();
-  const activeProductId = workspaceSwitcher.activeWorkspaceId;
+  const activeProductIdRef = useRef(activeProductId);
   const ensuredReadModelProductRef = useRef("");
   const selectedBlogId =
     selectedBlogSelection?.productId === activeProductId
@@ -174,6 +202,10 @@ export const useLiveWorkspace = (
   const convexProductId = activeProductId
     ? castProductId(activeProductId)
     : null;
+
+  useEffect(() => {
+    activeProductIdRef.current = activeProductId;
+  }, [activeProductId]);
   const convexSelectedBlogId = selectedBlogId ? castBlogId(selectedBlogId) : null;
   const productProfileResult = useQuery(
     getCurrentProductProfileQuery,
@@ -271,6 +303,8 @@ export const useLiveWorkspace = (
   const createScheduledTopicBatch = useMutation(
     createScheduledTopicBatchMutation,
   );
+  const quickFillExistingTopics = useMutation(quickFillExistingTopicsMutation);
+  const updateCalendarQueueSettings = useMutation(updateCalendarQueueSettingsMutation);
   const createTopic = useMutation(createTopicMutation);
   const deleteBlogRecord = useMutation(deleteBlogMutation);
   const deleteTopicRecord = useMutation(deleteTopicMutation);
@@ -371,6 +405,7 @@ export const useLiveWorkspace = (
   const blogGenerationSettings = normalizeBlogGenerationSettings(
     productProfileResult?.blogGenerationSettings,
   );
+  const calendarQueueSettings = normalizeCalendarQueueSettings(productProfileResult?.calendarQueueSettings);
   const topics = useMemo(
     () => (topicResults?.page || []).map(mapConvexTopic),
     [topicResults],
@@ -383,6 +418,10 @@ export const useLiveWorkspace = (
     () => (scheduledTopicResults || []).map(mapConvexTopic),
     [scheduledTopicResults],
   );
+  const occupiedCalendarDateSet = useMemo(() => new Set(calendarTopics.map((topic) => topic.scheduledDate).filter((date): date is string => Boolean(date))), [calendarTopics]);
+  const queueDateKeys = useMemo(() => buildCalendarQueueDateKeys({ candidateDateKeys: fillableCalendarDateKeys, settings: calendarQueueSettings, stableSeed: activeProductId }), [activeProductId, calendarQueueSettings, fillableCalendarDateKeys]);
+  const openQueueDateKeys = useMemo(() => queueDateKeys.filter((date) => !occupiedCalendarDateSet.has(date)), [occupiedCalendarDateSet, queueDateKeys]);
+  const actionQueueDateKeys = useMemo(() => openQueueDateKeys.slice(0, 30), [openQueueDateKeys]);
   const visibleTopics = useMemo(() => {
     const topicMap = new Map<string, ReturnType<typeof mapConvexTopic>>();
 
@@ -422,6 +461,7 @@ export const useLiveWorkspace = (
 
     return Array.from(topicMap.values());
   }, [calendarTopics, topicKeywordResults, visibleTopics]);
+  const knownEligibleTopicCount = useMemo(() => schedulableTopics.filter((topic) => !topic.scheduledDate && canAddTopicToCalendar(topic)).length, [schedulableTopics]);
   const calendarState = useMemo(
     () => ({
       dateKeys: calendarDateKeys,
@@ -431,6 +471,8 @@ export const useLiveWorkspace = (
       goToPreviousMonth,
       isCurrentMonth,
       isFilling: isFillingCalendar,
+      isQuickFilling: isQuickFillingCalendar,
+      isSavingQueueSettings: isSavingCalendarQueueSettings,
       isLoading: Boolean(
         convexProductId &&
           mode === "calendar" &&
@@ -438,6 +480,9 @@ export const useLiveWorkspace = (
       ),
       message: calendarMessage,
       monthLabel,
+      calendarQueueSettings,
+      openQueueDateKeys,
+      queueDateKeys,
     }),
     [
       calendarDateKeys,
@@ -449,10 +494,15 @@ export const useLiveWorkspace = (
       goToPreviousMonth,
       isCurrentMonth,
       isFillingCalendar,
+      isQuickFillingCalendar,
+      isSavingCalendarQueueSettings,
       mode,
       monthLabel,
       scheduledTopicResults,
       topicKeywordResultsQuery.isLoading,
+      calendarQueueSettings,
+      openQueueDateKeys,
+      queueDateKeys,
     ],
   );
   const blogTopicOptions = useMemo(
@@ -866,25 +916,45 @@ export const useLiveWorkspace = (
   };
 
   const fillCalendarBlankDays = async () => {
-    if (!convexProductId) {
+    if (!convexProductId || calendarFillActionRef.current) {
       return;
     }
 
-    const occupiedDates = new Set(
-      calendarTopics
-        .map((topic) => topic.scheduledDate)
-        .filter((date): date is string => Boolean(date)),
-    );
-    const blankDates = fillableCalendarDateKeys
-      .filter((date) => !occupiedDates.has(date))
-      .slice(0, 30);
+    const operationProductId = activeProductId;
+    const blankDates = actionQueueDateKeys;
 
     if (blankDates.length === 0) {
-      setCalendarMessage("No upcoming empty days to fill.");
+      setCalendarMessage("No open queue dates are available in this month.");
       return;
     }
 
-    const fullProduct = await loadFullProduct();
+    calendarFillActionRef.current = "ai";
+    setIsFillingCalendar(true);
+    setCalendarMessage("Finding topics.");
+    let fullProduct;
+
+    try {
+      fullProduct = await loadFullProduct();
+    } catch (error) {
+      calendarFillActionRef.current = null;
+      setIsFillingCalendar(false);
+      if (activeProductIdRef.current === operationProductId) {
+        setCalendarMessage(
+          error instanceof Error
+            ? error.message
+            : "Could not load this workspace.",
+        );
+      }
+      return;
+    }
+
+    if (activeProductIdRef.current !== operationProductId) {
+      if (calendarFillActionRef.current === "ai") {
+        calendarFillActionRef.current = null;
+      }
+      setIsFillingCalendar(false);
+      return;
+    }
     const discoveryProduct = fullProduct
       ? {
           audience: fullProduct.audience,
@@ -903,11 +973,10 @@ export const useLiveWorkspace = (
 
     if (!discoveryProduct.niche?.trim() && !discoveryProduct.description?.trim()) {
       setCalendarMessage("Add a product niche before filling the calendar.");
+      calendarFillActionRef.current = null;
+      setIsFillingCalendar(false);
       return;
     }
-
-    setIsFillingCalendar(true);
-    setCalendarMessage("Finding topics.");
 
     try {
       const response = await fetch("/api/topics/batch-plan", {
@@ -929,6 +998,8 @@ export const useLiveWorkspace = (
       const data = (await response
         .json()
         .catch(() => ({}))) as CalendarBatchPlanResponse;
+
+      if (activeProductIdRef.current !== operationProductId) return;
 
       if (!response.ok || (!data.topics && !data.jobId)) {
         throw new Error(data.error || "Could not fill the calendar yet.");
@@ -962,7 +1033,9 @@ export const useLiveWorkspace = (
         topics,
       });
 
-      setCalendarMessage(
+      if (activeProductIdRef.current !== operationProductId) return;
+
+      if (activeProductIdRef.current === operationProductId) setCalendarMessage(
         result.createdCount > 0
           ? `Saved ${result.createdCount} new topics.`
           : "No unique topics found yet.",
@@ -970,14 +1043,47 @@ export const useLiveWorkspace = (
       resetTopicPagination();
       refreshReadQueries();
     } catch (error) {
-      setCalendarMessage(
-        error instanceof Error
-          ? error.message
-          : "Could not fill the calendar yet.",
-      );
+      if (activeProductIdRef.current === operationProductId) {
+        setCalendarMessage(
+          error instanceof Error
+            ? error.message
+            : "Could not fill the calendar yet.",
+        );
+      }
     } finally {
+      if (calendarFillActionRef.current === "ai") {
+        calendarFillActionRef.current = null;
+      }
       setIsFillingCalendar(false);
     }
+  };
+
+  const quickFillCalendar = async () => {
+    if (!convexProductId || calendarFillActionRef.current) return;
+    if (!actionQueueDateKeys.length) { setCalendarMessage("All queue dates in this month are already filled."); return; }
+    if (!knownEligibleTopicCount) { setCalendarMessage("No saved topics are available for quick fill."); return; }
+    const operationProductId = activeProductId;
+    calendarFillActionRef.current = "quick";
+    setIsQuickFillingCalendar(true); setCalendarMessage("Scheduling.");
+    try {
+      const result = await quickFillExistingTopics({ productId: convexProductId, scheduledDates: actionQueueDateKeys });
+      if (operationProductId !== activeProductIdRef.current) return;
+      setCalendarMessage(result.scheduledCount ? `Scheduled ${result.scheduledCount} existing topics.${result.unusedDateCount ? ` ${result.unusedDateCount} queue dates remain open.` : ""}` : "No saved topics are available for quick fill.");
+      resetTopicPagination(); refreshReadQueries();
+    } catch (error) { if (operationProductId === activeProductIdRef.current) setCalendarMessage(error instanceof Error ? error.message : "Could not schedule existing topics."); }
+    finally { if (calendarFillActionRef.current === "quick") calendarFillActionRef.current = null; setIsQuickFillingCalendar(false); }
+  };
+
+  const saveCalendarQueueSettings = async (settings: CalendarQueueSettings) => {
+    if (!convexProductId) return;
+    const operationProductId = activeProductId;
+    const previous = calendarQueueSettings;
+    const normalized = normalizeCalendarQueueSettings(settings);
+    const next = normalized.cadence === "custom" && previous.cadence === "custom" && previous.intervalDays === normalized.intervalDays ? { ...normalized, anchorDate: previous.anchorDate } : normalized;
+    setIsSavingCalendarQueueSettings(true);
+    try { await updateCalendarQueueSettings({ productId: convexProductId, settings: next }); if (operationProductId === activeProductIdRef.current) { setCalendarMessage("Calendar queue saved."); refreshReadQueries(); } }
+    catch (error) { if (operationProductId === activeProductIdRef.current) setCalendarMessage(error instanceof Error ? error.message : "Could not save the calendar queue."); }
+    finally { setIsSavingCalendarQueueSettings(false); }
   };
 
   const discoverTopicIdeas = async ({
@@ -1457,6 +1563,9 @@ export const useLiveWorkspace = (
     discoverBlogRefreshIdeas,
     discoverTopicIdeas,
     fillCalendarBlankDays,
+    quickFillCalendar,
+    saveCalendarQueueSettings,
+    knownEligibleTopicCount,
     isSavingBlogPublishingIntegration,
     isSavingBlogGenerationSettings,
     mode,

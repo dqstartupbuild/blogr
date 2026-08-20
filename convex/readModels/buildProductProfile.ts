@@ -1,10 +1,12 @@
 import { sanitizeBlogPublishingIntegration } from "../products/sanitizeBlogPublishingIntegration";
+import { defaultCalendarQueueSettings } from "../products/defaultCalendarQueueSettings";
 import type { ProductProfileSource } from "./ProductProfileSource";
 
 export const buildProductProfile = (product: ProductProfileSource) => {
   return {
     audience: product.audience,
     blogGenerationSettings: product.blogGenerationSettings,
+    calendarQueueSettings: product.calendarQueueSettings || defaultCalendarQueueSettings,
     blogPublishingIntegration: sanitizeBlogPublishingIntegration(
       product.blogPublishingIntegration,
     ),

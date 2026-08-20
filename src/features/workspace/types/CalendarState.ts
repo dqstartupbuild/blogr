@@ -1,4 +1,5 @@
 export type CalendarState = {
+  calendarQueueSettings: import("./CalendarQueueSettings").CalendarQueueSettings;
   dateKeys: string[];
   fillableDateKeys: string[];
   goToCurrentMonth: () => void;
@@ -6,7 +7,11 @@ export type CalendarState = {
   goToPreviousMonth: () => void;
   isCurrentMonth: boolean;
   isFilling: boolean;
+  isQuickFilling: boolean;
+  isSavingQueueSettings: boolean;
   isLoading: boolean;
   message: string;
   monthLabel: string;
+  openQueueDateKeys: string[];
+  queueDateKeys: string[];
 };

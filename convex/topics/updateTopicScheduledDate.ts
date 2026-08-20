@@ -1,8 +1,7 @@
 import { v } from "convex/values";
 import { mutation } from "../_generated/server";
 import { requireUserId } from "../identity/requireUserId";
-import { upsertTopicReadModel } from "../readModels/upsertTopicReadModel";
-import { buildTopicSearchText } from "./buildTopicSearchText";
+import { updateTopicCalendarSchedule } from "./updateTopicCalendarSchedule";
 
 export const updateTopicScheduledDate = mutation({
   args: {
@@ -53,36 +52,12 @@ export const updateTopicScheduledDate = mutation({
       }
     }
 
-    const status =
-        scheduledDate && topic.status === "saved"
-          ? "scheduled"
-          : !scheduledDate && topic.status === "scheduled"
-            ? "saved"
-            : topic.status;
-    const searchText = buildTopicSearchText({
-      canonicalKeyword: topic.canonicalKeyword,
-      intentKey: topic.intentKey,
-      keyword: topic.keyword,
-      notes: topic.notes,
+    await updateTopicCalendarSchedule(
+      ctx,
+      topic,
       scheduledDate,
-      sourceType: topic.sourceType,
-    });
-    const updatedTopic = {
-      ...topic,
-      productId: topicProductId,
-      scheduledDate,
-      searchText,
-      status,
-      updatedAt: Date.now(),
-    };
-
-    await ctx.db.patch(args.topicId, {
-      productId: updatedTopic.productId,
-      scheduledDate: updatedTopic.scheduledDate,
-      searchText,
-      status,
-      updatedAt: updatedTopic.updatedAt,
-    });
-    await upsertTopicReadModel(ctx, updatedTopic);
+      topicProductId,
+      Date.now(),
+    );
   },
 });

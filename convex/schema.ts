@@ -1,6 +1,7 @@
 import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
 import { blogGenerationSettingsValidator } from "./products/blogGenerationSettingsValidator";
+import { calendarQueueSettingsValidator } from "./products/calendarQueueSettingsValidator";
 import { blogPublishingIntegrationValidator } from "./products/blogPublishingIntegrationValidator";
 import { productExternalLinkValidator } from "./products/productExternalLinkValidator";
 import { productPriceValidator } from "./products/productPriceValidator";
@@ -74,6 +75,7 @@ export default defineSchema({
     productImageKeys: v.optional(v.array(v.string())),
     siteLinks: v.array(linkValidator),
     blogGenerationSettings: v.optional(blogGenerationSettingsValidator),
+    calendarQueueSettings: v.optional(calendarQueueSettingsValidator),
     blogPublishingIntegration: v.optional(blogPublishingIntegrationValidator),
     rawContext: v.string(),
     scannedAt: v.number(),
@@ -116,6 +118,7 @@ export default defineSchema({
     pricing: v.optional(v.array(productPriceValidator)),
     siteLinks: v.array(linkValidator),
     blogGenerationSettings: v.optional(blogGenerationSettingsValidator),
+    calendarQueueSettings: v.optional(calendarQueueSettingsValidator),
     blogPublishingIntegration: v.optional(publicBlogPublishingIntegrationValidator),
     updatedAt: v.number(),
   })

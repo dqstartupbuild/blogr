@@ -2,6 +2,7 @@ import type { MutationCtx } from "../_generated/server";
 import { upsertProductProfile } from "../readModels/upsertProductProfile";
 import { upsertProductWorkspaceSummary } from "../readModels/upsertProductWorkspaceSummary";
 import { defaultBlogGenerationSettings } from "./defaultBlogGenerationSettings";
+import { defaultCalendarQueueSettings } from "./defaultCalendarQueueSettings";
 
 export const createImportedProductWorkspace = async (
   ctx: MutationCtx,
@@ -28,6 +29,7 @@ export const createImportedProductWorkspace = async (
     productImageKeys: [],
     siteLinks: [],
     blogGenerationSettings: defaultBlogGenerationSettings,
+    calendarQueueSettings: defaultCalendarQueueSettings,
     rawContext: "",
     scannedAt: now,
     createdAt: now,

@@ -5,6 +5,7 @@ import { upsertProductProfile } from "../readModels/upsertProductProfile";
 import { upsertProductWorkspaceSummary } from "../readModels/upsertProductWorkspaceSummary";
 import { saveWorkspaceSelection } from "../workspaceSelections/saveWorkspaceSelection";
 import { defaultBlogGenerationSettings } from "./defaultBlogGenerationSettings";
+import { defaultCalendarQueueSettings } from "./defaultCalendarQueueSettings";
 
 export const createProductWorkspace = mutation({
   args: {
@@ -37,6 +38,7 @@ export const createProductWorkspace = mutation({
       productImageKeys: [],
       siteLinks: [],
       blogGenerationSettings: defaultBlogGenerationSettings,
+      calendarQueueSettings: defaultCalendarQueueSettings,
       rawContext: "",
       scannedAt: now,
       createdAt: now,

@@ -1,4 +1,6 @@
 import { CalendarFillButton } from "./CalendarFillButton";
+import { CalendarQuickFillButton } from "./CalendarQuickFillButton";
+import { CalendarQueueSettingsDialog } from "./CalendarQueueSettingsDialog";
 import { CalendarGrid } from "./CalendarGrid";
 import { CalendarMonthControls } from "./CalendarMonthControls";
 import { EmptyState } from "./EmptyState";
@@ -8,6 +10,10 @@ import type { AddScheduledTopic } from "../types/AddScheduledTopic";
 import type { CalendarState } from "../types/CalendarState";
 import type { DeleteTopic } from "../types/DeleteTopic";
 import type { FillCalendarBlankDays } from "../types/FillCalendarBlankDays";
+import type { QuickFillCalendar } from "../types/QuickFillCalendar";
+import type { SaveCalendarQueueSettings } from "../types/SaveCalendarQueueSettings";
+import { formatCalendarQueueSummary } from "../utils/formatCalendarQueueSummary";
+import { useState } from "react";
 import type { RemoveTopicFromCalendar } from "../types/RemoveTopicFromCalendar";
 import type { SaveTopicBrief } from "../types/SaveTopicBrief";
 import type { ScheduleTopicOnCalendar } from "../types/ScheduleTopicOnCalendar";
@@ -19,6 +25,10 @@ type CalendarPanelProps = {
   calendarState: CalendarState;
   deleteTopic: DeleteTopic;
   fillCalendarBlankDays: FillCalendarBlankDays;
+  quickFillCalendar: QuickFillCalendar;
+  saveCalendarQueueSettings: SaveCalendarQueueSettings;
+  knownEligibleTopicCount: number;
+  stableSeed: string;
   openBlogPreview: (blogId: string) => void;
   refreshTopicBrief: (topicId: string) => Promise<string>;
   removeTopicFromCalendar: RemoveTopicFromCalendar;
@@ -37,6 +47,10 @@ export const CalendarPanel = ({
   calendarState,
   deleteTopic,
   fillCalendarBlankDays,
+  quickFillCalendar,
+  saveCalendarQueueSettings,
+  knownEligibleTopicCount,
+  stableSeed,
   openBlogPreview,
   refreshTopicBrief,
   removeTopicFromCalendar,
@@ -46,24 +60,20 @@ export const CalendarPanel = ({
   topics,
   writeBlog,
 }: CalendarPanelProps) => {
+  const [isQueueDialogOpen, setIsQueueDialogOpen] = useState(false);
   const rangeLabel = formatCalendarRangeLabel(calendarState.dateKeys);
   const occupiedCalendarDates = topics
     .map((topic) => topic.scheduledDate)
     .filter((date): date is string => Boolean(date));
   const occupiedCalendarDateSet = new Set(occupiedCalendarDates);
   const filledCount = occupiedCalendarDateSet.size;
-  const blankCount = calendarState.dateKeys.filter(
-    (date) => !occupiedCalendarDateSet.has(date),
-  ).length;
-  const fillableBlankCount = calendarState.fillableDateKeys.filter(
-    (date) => !occupiedCalendarDateSet.has(date),
-  ).length;
+  const openQueueCount = calendarState.openQueueDateKeys.length;
 
   return (
     <section className="space-y-5">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <WorkspacePageHeader
-          description={`Fill up to 30 blank days in ${calendarState.monthLabel}. Written articles stay here for history.`}
+          description={`Schedule saved topics or create new topics with AI on the open dates in your queue. Each fill schedules up to 30 dates in ${calendarState.monthLabel}.`}
           title="Calendar"
         />
         <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center lg:justify-end">
@@ -74,11 +84,14 @@ export const CalendarPanel = ({
             onNextMonth={calendarState.goToNextMonth}
             onPreviousMonth={calendarState.goToPreviousMonth}
           />
+          <button className="h-10 rounded-md border border-black/15 bg-white px-4 text-sm font-semibold text-black transition hover:border-black" onClick={() => setIsQueueDialogOpen(true)} type="button">{formatCalendarQueueSummary(calendarState.calendarQueueSettings)}</button>
+          <CalendarQuickFillButton disabled={calendarState.isLoading || calendarState.isFilling || calendarState.isQuickFilling || openQueueCount === 0 || knownEligibleTopicCount === 0} isFilling={calendarState.isQuickFilling} quickFillCalendar={quickFillCalendar} />
           <CalendarFillButton
             disabled={
               calendarState.isFilling ||
+              calendarState.isQuickFilling ||
               calendarState.isLoading ||
-              fillableBlankCount === 0
+              openQueueCount === 0
             }
             fillCalendarBlankDays={fillCalendarBlankDays}
             isFilling={calendarState.isFilling}
@@ -97,7 +110,7 @@ export const CalendarPanel = ({
         <div>
           <p className="text-xs font-semibold uppercase text-black/40">Open</p>
           <p className="mt-1 text-2xl font-semibold text-black">
-            {blankCount}
+            {openQueueCount}
           </p>
         </div>
         <div>
@@ -132,6 +145,7 @@ export const CalendarPanel = ({
           writeBlog={writeBlog}
         />
       )}
+      {isQueueDialogOpen ? <CalendarQueueSettingsDialog candidateDateKeys={calendarState.fillableDateKeys} isSaving={calendarState.isSavingQueueSettings} onClose={() => setIsQueueDialogOpen(false)} saveCalendarQueueSettings={saveCalendarQueueSettings} settings={calendarState.calendarQueueSettings} stableSeed={stableSeed} /> : null}
     </section>
   );
 };

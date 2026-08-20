@@ -22,6 +22,8 @@ import type { DeleteBlog } from "../types/DeleteBlog";
 import type { DeleteTopic } from "../types/DeleteTopic";
 import type { DiscoverBlogRefreshIdeas } from "../types/DiscoverBlogRefreshIdeas";
 import type { FillCalendarBlankDays } from "../types/FillCalendarBlankDays";
+import type { QuickFillCalendar } from "../types/QuickFillCalendar";
+import type { SaveCalendarQueueSettings } from "../types/SaveCalendarQueueSettings";
 import type { ProductProfile } from "../types/ProductProfile";
 import type { ProductLinksState } from "../types/ProductLinksState";
 import type { ProductDetailsState } from "../types/ProductDetailsState";
@@ -57,6 +59,9 @@ type WorkspaceContentProps = {
   discoverBlogRefreshIdeas: DiscoverBlogRefreshIdeas;
   discoverTopicIdeas: DiscoverTopicIdeas;
   fillCalendarBlankDays: FillCalendarBlankDays;
+  quickFillCalendar: QuickFillCalendar;
+  saveCalendarQueueSettings: SaveCalendarQueueSettings;
+  knownEligibleTopicCount: number;
   isSavingBlogPublishingIntegration: boolean;
   isSavingBlogGenerationSettings: boolean;
   mode: WorkspaceViewMode;
@@ -110,6 +115,9 @@ export const WorkspaceContent = ({
   discoverBlogRefreshIdeas,
   discoverTopicIdeas,
   fillCalendarBlankDays,
+  quickFillCalendar,
+  saveCalendarQueueSettings,
+  knownEligibleTopicCount,
   isSavingBlogPublishingIntegration,
   isSavingBlogGenerationSettings,
   mode,
@@ -207,6 +215,10 @@ export const WorkspaceContent = ({
               calendarState={calendarState}
               deleteTopic={deleteTopic}
               fillCalendarBlankDays={fillCalendarBlankDays}
+              quickFillCalendar={quickFillCalendar}
+              saveCalendarQueueSettings={saveCalendarQueueSettings}
+              knownEligibleTopicCount={knownEligibleTopicCount}
+              stableSeed={workspaceSwitcher.activeWorkspaceId}
               openBlogPreview={openBlogPreview}
               refreshTopicBrief={refreshTopicBrief}
               removeTopicFromCalendar={removeTopicFromCalendar}

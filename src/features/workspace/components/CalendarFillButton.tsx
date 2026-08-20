@@ -22,7 +22,7 @@ export const CalendarFillButton = ({
       type="button"
     >
       <CalendarPlus size={16} aria-hidden="true" />
-      {isFilling ? "Finding topics..." : "Fill empty days"}
+      {isFilling ? "Finding topics..." : "AI fill"}
     </button>
   );
 };
