@@ -34,9 +34,9 @@ On first publication, the article `created_at` and `updated_at` values use the t
 
 Open **Settings** for the active product workspace, then use the **Publishing** panel.
 
-The panel starts with a **Setup guide**. It gives the user a copyable Codex prompt for the target app, the webhook path, the token env var, a sample payload, and a quick checklist for the receiving app.
+The panel starts with a **Setup guide**. It gives the user a copyable integration prompt for the target app, the webhook path, the token env var, a sample payload, and a quick checklist for the receiving app.
 
-The copyable Codex prompt now asks Codex to use `$blogr-publishing-receiver` when that skill is installed. If the skill is not installed, the prompt tells Codex to keep going with a shorter fallback brief. This first version focuses only on Next.js App Router targets that use Convex article records and Cloudflare R2 for copied article images.
+The integration prompt works with any coding agent. When the agent supports skills and `$blogr-publishing-receiver` is installed, the prompt asks it to use the skill. Otherwise, the complete fallback brief remains in the prompt. This first version focuses only on Next.js App Router targets that use Convex article records and Cloudflare R2 for copied article images.
 
 The repo-owned skill lives in `codex-skills/blogr-publishing-receiver/`. It keeps the long implementation guidance in focused reference files for the webhook contract, Next.js App Router, Convex records, R2 image storage, MDX rendering, and acceptance tests. It also includes fixture payloads for `publish_articles`, `update_article`, and a multimedia article with frontmatter, markdown images, tables, code, and a multiline YouTube iframe.
 
@@ -184,7 +184,7 @@ Bearer auth is enough for the first version because this is a server-to-server w
 - `src/features/workspace/components/BlogPublishingSetupGuide.tsx`
 - `src/features/workspace/components/BlogPublishingReceiverDetails.tsx`
 - `src/features/workspace/utils/publishBlog.ts`
-- `src/features/workspace/utils/buildBlogPublishingCodexPrompt.ts`
+- `src/features/workspace/utils/buildBlogPublishingIntegrationPrompt.ts`
 - `codex-skills/blogr-publishing-receiver/SKILL.md`
 - `codex-skills/blogr-publishing-receiver/references/*`
 - `codex-skills/blogr-publishing-receiver/assets/fixtures/*`
@@ -212,7 +212,7 @@ src/features/workspace/components/BlogPublishingSetupGuide.tsx
 src/features/workspace/constants/publishing/
 src/features/workspace/components/BlogPublishButton.tsx
 src/features/workspace/utils/publishBlog.ts
-src/features/workspace/utils/buildBlogPublishingCodexPrompt.ts
+src/features/workspace/utils/buildBlogPublishingIntegrationPrompt.ts
 src/features/workspace/types/integrations/
 src/features/workspace/types/publishing/
 convex/blogs/markBlogPublished.ts
@@ -222,5 +222,5 @@ docs/blog-webhook-publishing.md
 docs/blogr-publishing-receiver-skill.md
 docs/blog-tags.md
 docs/blog-published-status-filter.md
-docs/codex-target-app-blog-webhook.md
+docs/target-app-blog-publishing-brief.md
 ```

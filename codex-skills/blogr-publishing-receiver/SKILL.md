@@ -1,6 +1,6 @@
 ---
 name: blogr-publishing-receiver
-description: Build or update a Blogr publishing receiver in a Next.js App Router target app using Convex for article records and Cloudflare R2 for durable image storage. Use when a user asks Codex to integrate Blogr publishing, add a Blogr webhook, receive Blogr blog posts, implement POST /api/webhooks/blog-publisher, or make a Next.js app publish Blogr-generated articles with Convex and R2.
+description: Build or update a Blogr publishing receiver in a Next.js App Router target app using Convex for article records and Cloudflare R2 for durable image storage. Use when a user asks a coding agent to integrate Blogr publishing, add a Blogr webhook, receive Blogr blog posts, implement POST /api/webhooks/blog-publisher, or make a Next.js app publish Blogr-generated articles with Convex and R2.
 ---
 
 # Blogr Publishing Receiver

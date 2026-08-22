@@ -1,14 +1,14 @@
-# Codex Target App Blog Webhook Brief
+# Target App Blog Publishing Brief
 
-Copy the in-app prompt into Codex inside the target Next.js app that should receive blogs from Blogr.
+Copy the in-app integration prompt into the coding agent you use for the target Next.js app that should receive blogs from Blogr.
 
-The prompt first asks Codex to use `$blogr-publishing-receiver` when that skill is installed. If the skill is not installed, the prompt includes a shorter fallback brief that covers the supported stack for this version:
+If the coding agent supports skills, the prompt asks it to use `$blogr-publishing-receiver` when that skill is installed. Otherwise, the prompt is complete on its own and includes the supported stack for this version:
 
 - Next.js App Router
 - Convex article records
 - Cloudflare R2 article image storage
 
-## What Codex Should Build
+## What The Coding Agent Should Build
 
 The receiving app should add:
 
@@ -47,7 +47,7 @@ codex-skills/blogr-publishing-receiver/assets/fixtures/publish-articles-multimed
 
 ## Fallback Brief
 
-When the skill is unavailable, the copied prompt tells Codex to:
+When the skill is unavailable, the copied integration prompt tells the coding agent to:
 
 - implement the receiving route at `src/app/api/webhooks/blog-publisher/route.ts`
 - accept `publish_articles` with `data.articles`

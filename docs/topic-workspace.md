@@ -54,7 +54,7 @@ When a live workspace opens the calendar, existing articles are backfilled onto 
 
 Blog rows and the blog editor expose **Find refresh ideas** for existing blogs. In the blog list, users can filter unpublished and published posts, then save a refresh plan as a topic. In the editor, users can save the plan or add it directly to the draft.
 
-The Settings tab includes product setup, article settings, and a **Publishing** panel for the active product. The Publishing panel includes a setup guide, a copyable Codex prompt for the receiving app, webhook details, and the per-product connection fields. The selected blog preview exposes **Publish**, which sends the current blog to that product's saved webhook destination through `POST /api/blogs/publish`.
+The Settings tab includes product setup, article settings, and a **Publishing** panel for the active product. The Publishing panel includes a setup guide, a copyable integration prompt for the receiving app, webhook details, and the per-product connection fields. The selected blog preview exposes **Publish**, which sends the current blog to that product's saved webhook destination through `POST /api/blogs/publish`.
 
 ## Relevant Code
 

@@ -2,7 +2,7 @@
 
 ## What It Does
 
-The Blogr publishing receiver skill gives Codex a focused workflow for adding the receiving side of Blogr publishing to a target app.
+The Blogr publishing receiver skill gives supported coding agents a focused workflow for adding the receiving side of Blogr publishing to a target app.
 
 This first version only covers the stack we want to support now:
 
@@ -16,7 +16,7 @@ Other frameworks, databases, and storage providers can be added later as separat
 
 The skill lives in `codex-skills/blogr-publishing-receiver/`.
 
-`SKILL.md` contains the short workflow and hard rules. It tells Codex to inspect the target repo, confirm that it is a Next.js App Router app, use Convex and R2, add the webhook route, copy images before saving articles, render Blogr MDX, add public blog pages, provide the deployment-safe repo ingestion workflow, test the integration, and finish with exact setup steps.
+`SKILL.md` contains the short workflow and hard rules. It tells the coding agent to inspect the target repo, confirm that it is a Next.js App Router app, use Convex and R2, add the webhook route, copy images before saving articles, render Blogr MDX, add public blog pages, provide the deployment-safe repo ingestion workflow, test the integration, and finish with exact setup steps.
 
 The detailed instructions are split into reference files:
 
@@ -46,11 +46,11 @@ cp -R codex-skills/blogr-publishing-receiver ~/.codex/skills/
 
 The skill can also be symlinked during local development when you want Codex to read the repo-owned version directly.
 
-## Copyable Prompt
+## Integration Prompt
 
-The in-app **Copy Codex prompt** action now produces a shorter prompt.
+The in-app **Copy integration prompt** action produces the implementation brief.
 
-The prompt asks Codex to use `$blogr-publishing-receiver` when the skill is installed. If it is not installed, Codex should continue with the fallback brief in the prompt instead of stopping.
+The prompt works with any coding agent. If the agent supports skills and `$blogr-publishing-receiver` is installed, it can use the skill. Otherwise, it should continue with the complete fallback brief instead of stopping.
 
 The fallback brief stays intentionally narrow. It names the endpoint, auth behavior, expected payload, Convex/R2 architecture, image copying rules, MDX rendering expectations, deployment-safe ingestion, test coverage, and final setup requirements without carrying every detailed reference inline.
 
@@ -68,14 +68,14 @@ The skill keeps the core workflow small and loads the relevant detail by topic. 
 
 ## Relevant Code
 
-- `src/features/workspace/utils/buildBlogPublishingCodexPrompt.ts`
+- `src/features/workspace/utils/buildBlogPublishingIntegrationPrompt.ts`
 - `src/features/workspace/components/BlogPublishingSetupGuide.tsx`
 - `src/features/workspace/components/BlogPublishingReceiverDetails.tsx`
 - `src/features/workspace/constants/publishing/blogPublishingPayloadExample.ts`
 - `codex-skills/blogr-publishing-receiver/SKILL.md`
 - `codex-skills/blogr-publishing-receiver/references/`
 - `codex-skills/blogr-publishing-receiver/assets/fixtures/`
-- `docs/codex-target-app-blog-webhook.md`
+- `docs/target-app-blog-publishing-brief.md`
 - `docs/blog-webhook-publishing.md`
 
 ## File Tree
@@ -86,7 +86,7 @@ codex-skills/blogr-publishing-receiver/
   agents/openai.yaml
   references/
   assets/fixtures/
-src/features/workspace/utils/buildBlogPublishingCodexPrompt.ts
+src/features/workspace/utils/buildBlogPublishingIntegrationPrompt.ts
 docs/blogr-publishing-receiver-skill.md
-docs/codex-target-app-blog-webhook.md
+docs/target-app-blog-publishing-brief.md
 ```

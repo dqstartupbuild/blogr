@@ -1,4 +1,4 @@
-import { buildBlogPublishingCodexPrompt } from "../utils/buildBlogPublishingCodexPrompt";
+import { buildBlogPublishingIntegrationPrompt } from "../utils/buildBlogPublishingIntegrationPrompt";
 import { BlogPublishingCopyButton } from "./BlogPublishingCopyButton";
 import { BlogPublishingReceiverDetails } from "./BlogPublishingReceiverDetails";
 import { BlogPublishingSetupSteps } from "./BlogPublishingSetupSteps";
@@ -10,7 +10,7 @@ type BlogPublishingSetupGuideProps = {
 export const BlogPublishingSetupGuide = ({
   productName,
 }: BlogPublishingSetupGuideProps) => {
-  const codexPrompt = buildBlogPublishingCodexPrompt(productName);
+  const integrationPrompt = buildBlogPublishingIntegrationPrompt(productName);
 
   return (
     <section className="grid gap-4 border-t border-black pt-4">
@@ -27,8 +27,8 @@ export const BlogPublishingSetupGuide = ({
       <div className="flex flex-wrap gap-2">
         <BlogPublishingCopyButton
           copiedLabel="Prompt copied"
-          label="Copy Codex prompt"
-          text={codexPrompt}
+          label="Copy integration prompt"
+          text={integrationPrompt}
         />
       </div>
       <BlogPublishingReceiverDetails />

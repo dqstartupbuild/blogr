@@ -2,10 +2,10 @@ import { blogPublishingPayloadExample } from "../constants/publishing/blogPublis
 import { blogPublishingReceiverEndpoint } from "../constants/publishing/blogPublishingReceiverEndpoint";
 import { blogPublishingReceiverEnvVar } from "../constants/publishing/blogPublishingReceiverEnvVar";
 
-export const buildBlogPublishingCodexPrompt = (productName: string) => {
+export const buildBlogPublishingIntegrationPrompt = (productName: string) => {
   const productLabel = productName.trim() || "this product";
 
-  return `Use $blogr-publishing-receiver if that Codex skill is installed. If the skill is not installed, keep going and follow this brief.
+  return `If your coding agent supports skills and $blogr-publishing-receiver is installed, use it. Otherwise, keep going and follow this complete brief.
 
 Build a Blogr publishing receiver for ${productLabel} in this Next.js App Router app. For this setup, use Convex for article records and Cloudflare R2 for copied article images.
 
