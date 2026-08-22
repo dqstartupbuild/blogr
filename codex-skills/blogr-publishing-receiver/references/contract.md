@@ -24,6 +24,10 @@ Support both event shapes:
 
 Return `400` for unknown events or missing required fields. Return `200` with `{ "message": "Published." }` after a successful create or update.
 
+Before downloading images, creating R2 objects, or writing any article, preflight every normalized article in the entire request by stable `sourceId` first and `slug` second. If any matching article belongs to an ingestion batch whose status is `preparing`, `prepared`, or `active`, reject the whole request with HTTP `409` and a plain message: "Edit and commit the repo content, or roll back to database authority and republish before preparing again." A mixed request containing one protected article and one new article must make no side effects.
+
+Repeat the ownership check transactionally before final record writes. If a concurrent ownership change rejects the request after request-owned R2 uploads, delete only objects created by that request, or use an explicit object reservation. Do not delete pre-existing/shared R2 objects.
+
 ## Article Fields
 
 Required payload fields:

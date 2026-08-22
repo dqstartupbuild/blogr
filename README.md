@@ -93,7 +93,7 @@ npx convex env set R2_BUCKET <bucket>
 - [Blog editor](docs/blog-editor.md)
 - [Blog webhook publishing](docs/blog-webhook-publishing.md)
 - [Blogr publishing receiver skill](docs/blogr-publishing-receiver-skill.md)
-- [Codex target app blog webhook brief](docs/codex-target-app-blog-webhook.md)
+- [Target app blog publishing brief](docs/target-app-blog-publishing-brief.md)
 - [Zip export](docs/zip-export.md)
 - [Auth](docs/auth.md)
 - [Convex data](docs/convex-data.md)

@@ -1,14 +1,14 @@
-# Codex Target App Blog Webhook Brief
+# Target App Blog Publishing Brief
 
-Copy the in-app prompt into Codex inside the target Next.js app that should receive blogs from Blogr.
+Copy the in-app integration prompt into the coding agent you use for the target Next.js app that should receive blogs from Blogr.
 
-The prompt first asks Codex to use `$blogr-publishing-receiver` when that skill is installed. If the skill is not installed, the prompt includes a shorter fallback brief that covers the supported stack for this version:
+If the coding agent supports skills, the prompt asks it to use `$blogr-publishing-receiver` when that skill is installed. Otherwise, the prompt is complete on its own and includes the supported stack for this version:
 
 - Next.js App Router
 - Convex article records
 - Cloudflare R2 article image storage
 
-## What Codex Should Build
+## What The Coding Agent Should Build
 
 The receiving app should add:
 
@@ -20,6 +20,7 @@ The receiving app should add:
 - MDX rendering for Blogr articles, including tables, code, rewritten images, headings, table of contents links, and whitelisted YouTube embeds
 - sitemap/feed/cache refresh behavior when those outputs exist
 - tests for auth, payload validation, stable-ID and slug upserts, preserved creation dates, refreshed update dates, article updates, image rewrite behavior, MDX rendering, and discovery outputs
+- a user-run, deployment-safe repo ingestion workflow: prepare deterministic MDX from published database posts into an ingestion batch, commit and deploy it, then activate the one prepared batch only after a deployed manifest confirms exact source IDs, paths, SHA-256 revisions, and the batch entry set/hash
 
 ## Skill Source
 
@@ -46,12 +47,12 @@ codex-skills/blogr-publishing-receiver/assets/fixtures/publish-articles-multimed
 
 ## Fallback Brief
 
-When the skill is unavailable, the copied prompt tells Codex to:
+When the skill is unavailable, the copied integration prompt tells the coding agent to:
 
 - implement the receiving route at `src/app/api/webhooks/blog-publisher/route.ts`
 - accept `publish_articles` with `data.articles`
 - accept `update_article` with `data.article`
-- upsert by `slug`
+- upsert by stable Blogr source ID first, then by `slug` for compatibility
 - store `content_mdx`, falling back to `content_markdown`
 - copy all article images into R2 before saving
 - call Convex through `ConvexHttpClient` with `CONVEX_URL` or `NEXT_PUBLIC_CONVEX_URL` on `.convex.cloud`
@@ -60,6 +61,10 @@ When the skill is unavailable, the copied prompt tells Codex to:
 - use lightweight Convex summaries for public list and discovery reads
 - render Blogr MDX safely
 - return `{ "message": "Published." }` after a successful publish
+- provide `npm run blogr:ingest` for prepare (which prints a batch ID), `npm run blogr:ingest -- --activate --batch=<batchId> --deployment-url=https://...` after deployment, and `npm run blogr:ingest -- --abort --batch=<batchId>` for preparing/prepared batches, with dry-run, targeted/all, rollback, staging/atomic writes, collision and path safety checks, and no automatic commit/push/deploy/pruning
+- retain database content while its batch is preparing or prepared; only serve repo content after the selected prepared batch is atomically activated and a statically build-generated manifest keyed by batch ID validates each source ID + repo path + SHA-256 tuple and batch entry set/hash. Merge all active batches with database fallback during rolling deploys or rollback; abort detaches preparing/prepared records without deleting DB content
+- preflight the whole webhook payload before side effects; reject any payload containing a pending or repo-owned post with actionable `409`: edit and commit repo content, or roll back to database authority and republish before preparing again; clean up only request-owned R2 uploads if a final concurrent ownership check fails
+- configure `BLOG_REPO_DEPLOYMENT_ORIGIN` as the canonical HTTPS deployment allowlist and set the long random `BLOG_REPO_INGEST_SECRET` in authorized local/CI plus Convex/server environments, unless the target app has an equivalent named admin/deploy mechanism; never put the secret in arguments, browser code, or logs
 - finish with exact required setup values and verification commands
 
 ## Blogr Setup After Deployment
