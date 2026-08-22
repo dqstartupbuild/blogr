@@ -1,0 +1,16 @@
+.youtubeEmbed {
+  aspect-ratio: 16 / 9;
+  background: #000000;
+  border: 1px solid #000000;
+  border-radius: 0.375rem;
+  display: block;
+  overflow: hidden;
+  width: 100%;
+}
+
+.youtubeEmbed iframe {
+  border: 0;
+  display: block;
+  height: 100%;
+  width: 100%;
+}

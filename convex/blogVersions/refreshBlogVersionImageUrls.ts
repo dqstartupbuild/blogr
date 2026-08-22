@@ -1,0 +1,40 @@
+import type { Doc } from "../_generated/dataModel";
+import { getR2ImageUrl } from "../r2/getR2ImageUrl";
+import { shouldRefreshSignedImageUrl } from "../r2/shouldRefreshSignedImageUrl";
+
+export const refreshBlogVersionImageUrls = async (
+  version: Doc<"blogVersions">,
+) => {
+  const refreshedImages = await Promise.all(
+    version.images.map(async (image) => {
+      if (!image.r2Key || !shouldRefreshSignedImageUrl(image.url)) {
+        return image;
+      }
+
+      const freshUrl = await getR2ImageUrl(image.r2Key).catch(() => image.url);
+
+      return {
+        ...image,
+        url: freshUrl,
+      };
+    }),
+  );
+  const refreshedFeatureImageUrl =
+    refreshedImages[0]?.url || version.featureImageUrl;
+  const refreshedMdx = version.images.reduce((current, image, index) => {
+    const freshUrl = refreshedImages[index]?.url;
+
+    if (!image.url || !freshUrl || image.url === freshUrl) {
+      return current;
+    }
+
+    return current.split(image.url).join(freshUrl);
+  }, version.mdx);
+
+  return {
+    ...version,
+    featureImageUrl: refreshedFeatureImageUrl,
+    images: refreshedImages,
+    mdx: refreshedMdx,
+  };
+};

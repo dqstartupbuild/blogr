@@ -1,0 +1,39 @@
+import { storeProductScanImageUrls } from "./storeProductScanImageUrls";
+import type { ProductScanResult } from "./types/ProductScanResult";
+
+type StoreProductScanImagesOptions = {
+  product: ProductScanResult;
+  token?: string;
+  userId?: string;
+};
+
+export const storeProductScanImages = async ({
+  product,
+  token,
+  userId,
+}: StoreProductScanImagesOptions): Promise<ProductScanResult> => {
+  const [assets, productImages] = await Promise.all([
+    storeProductScanImageUrls({
+      category: "product-assets",
+      filenamePrefix: product.name || "asset",
+      token,
+      urls: product.assets,
+      userId,
+    }),
+    storeProductScanImageUrls({
+      category: "product-images",
+      filenamePrefix: product.name || "product-image",
+      token,
+      urls: product.productImages,
+      userId,
+    }),
+  ]);
+
+  return {
+    ...product,
+    assetKeys: assets.keys,
+    assets: assets.urls,
+    productImageKeys: productImages.keys,
+    productImages: productImages.urls,
+  };
+};

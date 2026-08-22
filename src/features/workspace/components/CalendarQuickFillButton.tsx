@@ -1,0 +1,3 @@
+import { ListPlus } from "lucide-react";
+import type { QuickFillCalendar } from "../types/QuickFillCalendar";
+export const CalendarQuickFillButton = ({ disabled, isFilling, quickFillCalendar }: { disabled: boolean; isFilling: boolean; quickFillCalendar: QuickFillCalendar }) => <button className="inline-flex h-10 items-center justify-center gap-2 whitespace-nowrap rounded-md border border-black/15 bg-white px-4 text-sm font-semibold text-black transition hover:border-black hover:bg-black hover:text-white disabled:cursor-not-allowed disabled:opacity-60" disabled={disabled} onClick={() => void Promise.resolve(quickFillCalendar()).catch(() => undefined)} type="button"><ListPlus size={16} aria-hidden="true" />{isFilling ? "Scheduling..." : "Quick fill"}</button>;

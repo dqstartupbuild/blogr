@@ -1,0 +1,115 @@
+import type { BlogImage } from "./types/BlogImage";
+import type { ResearchSource } from "./types/ResearchSource";
+import type { StoredProduct } from "./types/StoredProduct";
+import { buildAssociateBrandLinksPrompt } from "./buildAssociateBrandLinksPrompt";
+import { buildBlogGenerationSettingsPrompt } from "./buildBlogGenerationSettingsPrompt";
+import { buildBlogWriterProductContext } from "./buildBlogWriterProductContext";
+import { buildProductRagContextPrompt } from "./buildProductRagContextPrompt";
+import { buildRepurposedSourcePrompt } from "./buildRepurposedSourcePrompt";
+import { buildTopicBriefPrompt } from "./buildTopicBriefPrompt";
+import type { AssociateBrandLink } from "@/features/workspace/types/AssociateBrandLink";
+import type { BlogGenerationSettings } from "@/features/workspace/types/BlogGenerationSettings";
+import type { LinkItem } from "@/features/workspace/types/LinkItem";
+
+type BuildBlogWriterPromptOptions = {
+  associateBrandLinks: AssociateBrandLink[];
+  images: BlogImage[];
+  internalLinks: LinkItem[];
+  keyword: string;
+  product: StoredProduct;
+  productRagContext: string;
+  settings: BlogGenerationSettings;
+  sourceText?: string;
+  sources: ResearchSource[];
+  topicBrief?: string;
+  youtubeVideos: LinkItem[];
+};
+
+export const buildBlogWriterPrompt = ({
+  associateBrandLinks,
+  images,
+  internalLinks,
+  keyword,
+  product,
+  productRagContext,
+  settings,
+  sourceText,
+  sources,
+  topicBrief,
+  youtubeVideos,
+}: BuildBlogWriterPromptOptions) => {
+  return `
+Return exactly this XML shape with no markdown fence and no extra text:
+<title>human article title for the page H1</title>
+<seoTitle>search result title, 70 to 110 characters</seoTitle>
+<slug>url-safe-slug</slug>
+<excerpt>meta description, 110 to 160 characters</excerpt>
+<mdx>
+full MDX blog post
+</mdx>
+
+Write a longform blog post for the keyword: "${keyword}".
+
+Voice:
+- Human, simple, relatable, and useful.
+- Do not sound robotic.
+- Avoid jargon unless the topic truly needs it.
+- Explain every idea like the reader is smart but busy.
+- The post should feel complete, not thin.
+- Do not write like a textbook, brochure, or AI assistant.
+- Make it clear enough for a beginner.
+- Use technical detail only when the keyword truly needs technical detail.
+
+Product context:
+${buildBlogWriterProductContext(product)}
+
+${buildBlogGenerationSettingsPrompt(settings)}
+
+${buildProductRagContextPrompt(productRagContext)}
+
+${buildTopicBriefPrompt(topicBrief)}
+
+${buildRepurposedSourcePrompt(sourceText)}
+
+Research sources to use and cite:
+${JSON.stringify(sources, null, 2)}
+
+Internal links to include naturally:
+${JSON.stringify(internalLinks, null, 2)}
+
+${buildAssociateBrandLinksPrompt(associateBrandLinks)}
+
+YouTube videos to mention only if they fit naturally:
+${JSON.stringify(youtubeVideos, null, 2)}
+
+Images to lace through the post:
+${JSON.stringify(images, null, 2)}
+
+MDX rules:
+- Include frontmatter with title, seoTitle, description, targetKeyword, featureImage, and image alt text when available.
+- The frontmatter description must match the excerpt and be 110 to 160 characters.
+- The seoTitle is for SEO metadata and search previews. Do not force it to be the H1 unless it also reads naturally as the article title.
+- Put the feature image URL in frontmatter as featureImage.
+- Use only image URLs listed in "Images to lace through the post".
+- Never use product context asset URLs or product screenshot URLs as article images.
+- If the image list is empty, do not add image markdown and leave featureImage blank.
+- Use the feature image as a markdown image at most once.
+- Use each supporting image as a markdown image at most once.
+- Never repeat the same image URL in the MDX body.
+- Place supporting images near sections that match their alt text and purpose.
+- If only one image is available, use it once and do not repeat it.
+- Use one H1.
+- Include a direct answer near the top.
+- Use short paragraphs.
+- Use practical examples.
+- Add image markdown after the intro and throughout the post when image URLs are available.
+- Cite sources as normal markdown links inside relevant sections.
+- When YouTube videos are provided and useful, render them as playable iframe embeds, not as plain links.
+- Use YouTube embed URLs in this shape: https://www.youtube.com/embed/{videoId}.
+- Include the provided internal links and associate brand links naturally, not as a list unless it truly fits.
+- Only link to URLs from the internal links, associate brand links, research sources, and YouTube videos sections.
+- Write one complete MDX file, not an outline and not separate files.
+- Aim for 3,000 to 3,600 words when the topic can support it.
+- Never use em-dashes (—). Replace every em-dash with a comma, semicolon, period, or rephrase the sentence to avoid it. For example, change "Readers — especially beginners — often ask" to "Readers, especially beginners, often ask" or "Readers often ask, especially beginners."
+`.trim();
+};

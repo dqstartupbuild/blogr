@@ -1,17 +1,33 @@
 {
-  "name": "blogger",
+  "name": "blogr",
   "version": "0.1.0",
+  "license": "MIT",
   "private": true,
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "test": "vitest run src/features/workspace/utils/buildCalendarQueueDateKeys.test.ts src/features/workspace/utils/buildQuickFillAssignments.test.ts"
   },
   "dependencies": {
+    "@ai-sdk/openai": "^3.0.73",
+    "@aws-sdk/client-s3": "^3.1073.0",
+    "@aws-sdk/s3-request-presigner": "^3.1073.0",
+    "@clerk/nextjs": "^7.5.7",
+    "@convex-dev/r2": "^0.10.2",
+    "@convex-dev/rag": "^0.7.5",
+    "ai": "^6.0.208",
+    "convex": "^1.41.0",
+    "jszip": "^3.10.1",
+    "lucide-react": "^1.21.0",
     "next": "16.2.9",
     "react": "19.2.4",
-    "react-dom": "19.2.4"
+    "react-dom": "19.2.4",
+    "react-markdown": "^10.1.0",
+    "remark-gfm": "^4.0.1",
+    "replicate": "^1.4.0",
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
@@ -21,6 +37,11 @@
     "eslint": "^9",
     "eslint-config-next": "16.2.9",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^4.1.11"
+  },
+  "overrides": {
+    "postcss": "8.5.15",
+    "ws": "8.21.0"
   }
 }
