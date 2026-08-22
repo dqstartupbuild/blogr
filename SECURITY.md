@@ -8,7 +8,9 @@ Security fixes are handled for the current `main` branch and the latest tagged r
 
 Please do not report security issues in public GitHub issues.
 
-Use GitHub's private vulnerability reporting for this repository when it is available. If private reporting is not enabled, open a public issue that only asks for a private contact path. Do not include exploit details, secrets, tokens, user data, logs, screenshots, or reproduction steps in that public issue.
+Use GitHub's private vulnerability reporting for this repository. On the repository's **Security** tab, select **Report a vulnerability**. Do not report security issues in public GitHub issues, discussions, or pull requests.
+
+If private reporting is not available, contact the repository owner through an existing private, verified channel. Do not publish the vulnerability until a private reporting path is available.
 
 Include this information in the private report:
 

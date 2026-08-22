@@ -6,9 +6,11 @@ The app uses Clerk for auth, Convex for data, Firecrawl for website and web rese
 
 ## Project
 
-- [MIT license](LICENSE)
+- Blogr's software is available under the [MIT License](LICENSE).
+- The Blogr name, logo, icons, and other brand assets are not covered by the MIT License. See the [branding policy](BRANDING.md).
 - [Security policy](SECURITY.md)
 - [Contributing guide](CONTRIBUTING.md)
+- [Code of conduct](CODE_OF_CONDUCT.md)
 
 ## Local Setup
 

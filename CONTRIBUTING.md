@@ -2,6 +2,8 @@
 
 Thanks for improving Blogr. Keep changes small, focused, and easy to review.
 
+By participating, you agree to follow the [Code of Conduct](CODE_OF_CONDUCT.md).
+
 ## Local Setup
 
 ```bash
@@ -52,3 +54,7 @@ In the PR description, include:
 - How you tested it.
 - Any new environment variables or setup steps.
 - Any docs that were added or updated.
+
+## License and Branding
+
+Contributions to the software are provided under the [MIT License](LICENSE). The Blogr name, logo, icons, and other brand assets remain subject to the [branding policy](BRANDING.md).
