@@ -25,6 +25,9 @@ describe("runReplicateImage", () => {
     const fetchMock = vi
       .fn()
       .mockResolvedValueOnce(
+        new Response(null, { headers: { "Retry-After": "0" }, status: 429 }),
+      )
+      .mockResolvedValueOnce(
         new Response(
           JSON.stringify({
             id: "prediction-1",
@@ -33,6 +36,9 @@ describe("runReplicateImage", () => {
           }),
           { headers: { "Content-Type": "application/json" } },
         ),
+      )
+      .mockResolvedValueOnce(
+        new Response(null, { headers: { "Retry-After": "0" }, status: 429 }),
       )
       .mockResolvedValueOnce(
         new Response(
@@ -55,13 +61,26 @@ describe("runReplicateImage", () => {
     await expect(runReplicateImage("A test image")).resolves.toBe(
       "https://replicate.delivery/image.png",
     );
-    expect(fetchMock).toHaveBeenCalledTimes(3);
+    expect(fetchMock).toHaveBeenCalledTimes(5);
     expect(new URL(fetchMock.mock.calls[0][0].toString()).pathname).toBe(
       "/v1/models/google/nano-banana-2/predictions",
     );
     expect(new URL(fetchMock.mock.calls[1][0].toString()).pathname).toBe(
+      "/v1/models/google/nano-banana-2/predictions",
+    );
+    expect(new URL(fetchMock.mock.calls[2][0].toString()).pathname).toBe(
       "/v1/predictions/prediction-1",
     );
+    expect(new URL(fetchMock.mock.calls[3][0].toString()).pathname).toBe(
+      "/v1/predictions/prediction-1",
+    );
+    expect(
+      fetchMock.mock.calls.filter(
+        ([request]) =>
+          new URL(request.toString()).pathname ===
+          "/v1/models/google/nano-banana-2/predictions",
+      ),
+    ).toHaveLength(2);
   });
 
   it("uses the configured image model", async () => {

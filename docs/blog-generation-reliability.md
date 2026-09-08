@@ -11,7 +11,7 @@ If research search is unavailable, the app still writes from the saved product p
 1. `runBlogResearch` tries Firecrawl Search and returns an empty source list if search is unavailable.
 2. `writeBlogDraft` writes the article before images are generated.
 3. `planBlogImagePrompts` assigns evenly distributed article sections before asking the image-planning reviewer to write prompts for them. If that model fails or omits a plan, it uses a fallback prompt for the same assigned section.
-4. `generateBlogImages` asks for each image separately and keeps any image that returns a usable URL. `runReplicateImage` explicitly polls Replicate until each prediction is complete, including predictions that first report `processing`. Per-image failures log only the configured model, pipeline stage, error name, HTTP status, and network code when available.
+4. `generateBlogImages` asks for each image separately and keeps any image that returns a usable URL. `runReplicateImage` explicitly polls Replicate until each prediction is complete, including predictions that first report `processing`. Image-only HTTP 429 responses retry the same request up to three times, respecting `Retry-After` up to 60 seconds and otherwise waiting 10 seconds. Per-image failures log only the configured model, pipeline stage, error name, HTTP status, and network code when available.
 5. `getBlogFeatureImage` uses section assignments to avoid promoting a supporting image when feature-image generation fails, while preserving first-image behavior for older saved articles.
 6. `normalizeReplicateImageUrl` reads normal URLs and Replicate file outputs. A completed prediction without a usable URL is treated as an image failure, so it cannot be saved as an empty image.
 7. `buildBlogWriterPrompt` asks Claude Sonnet 4.6 for simple XML so long MDX does not need escaped JSON newlines.
@@ -41,6 +41,7 @@ If research search is unavailable, the app still writes from the saved product p
 - `src/server/replicate/normalizeReplicateImageUrl.ts`
 - `src/server/replicate/getReplicateFileOutputUrl.ts`
 - `src/server/replicate/getReplicateImageFailureDiagnostics.ts`
+- `src/server/replicate/createRetryingReplicateImageFetch.ts`
 - `src/server/replicate/runReplicateImage.test.ts`
 - `src/server/blog/tryGenerateBlogImage.test.ts`
 - `src/server/blog/buildBlogWriterPrompt.ts`
