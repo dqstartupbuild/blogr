@@ -246,6 +246,9 @@ gcloud run jobs deploy blogr-ai-worker \
 
 Then set the Cloud Run Job project, region, and name on the web deployment.
 
+Git pushes and Vercel deployments do not update this Cloud Run Job image. Deploy
+the worker separately after shared generation changes.
+
 Smoke check the deployed job:
 
 ```bash

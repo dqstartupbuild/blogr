@@ -19,6 +19,8 @@ test("turns exact-keyword SERP signals into a writing brief", () => {
       organicResults: [
         {
           description: "Practical ways to protect savings.",
+          // Required SerpOrganicResult fixture field; production mapping supplies it.
+          displayedUrl: "example.com/savings",
           title: "Stop Spending Your Savings",
           url: "https://example.com/savings",
         },
