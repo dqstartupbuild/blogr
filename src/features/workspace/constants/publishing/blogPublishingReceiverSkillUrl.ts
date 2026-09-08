@@ -1,2 +1,2 @@
 export const blogPublishingReceiverSkillUrl =
-  "https://github.com/dqstartupbuild/blogger/tree/main/codex-skills/blogr-publishing-receiver";
+  "https://github.com/dqstartupbuild/blogr/tree/main/codex-skills/blogr-publishing-receiver";

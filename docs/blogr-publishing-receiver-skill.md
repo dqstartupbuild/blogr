@@ -74,7 +74,7 @@ Validation for skill changes includes the system `quick_validate.py`, YAML and r
 
 ## Installing The Skill
 
-The generated integration prompt tells the receiving coding agent to download the complete [`codex-skills/blogr-publishing-receiver/`](https://github.com/dqstartupbuild/blogger/tree/main/codex-skills/blogr-publishing-receiver) folder before changing the target app. The agent installs or copies the folder into its supported skills directory, keeps the references and fixtures beside `SKILL.md`, reads the entrypoint, and invokes `$blogr-publishing-receiver`.
+The generated integration prompt tells the receiving coding agent to download the complete [`codex-skills/blogr-publishing-receiver/`](https://github.com/dqstartupbuild/blogr/tree/main/codex-skills/blogr-publishing-receiver) folder before changing the target app. The agent installs or copies the folder into its supported skills directory, keeps the references and fixtures beside `SKILL.md`, reads the entrypoint, and invokes `$blogr-publishing-receiver`.
 
 If the agent cannot access or install skills, it continues with the complete fallback brief embedded in the prompt. The folder name and invocation remain stable so installed copies stay discoverable.
 

@@ -1,6 +1,6 @@
 # Target App Blog Publishing Brief
 
-Copy the in-app integration prompt into the coding agent working in the target app. The prompt tells that agent to download the complete [`$blogr-publishing-receiver` skill folder](https://github.com/dqstartupbuild/blogger/tree/main/codex-skills/blogr-publishing-receiver), install it in the agent's supported skills directory, read `SKILL.md`, and use the skill. If skill access or installation is unavailable, the copied fallback prompt contains the same essential contract so work can continue.
+Copy the in-app integration prompt into the coding agent working in the target app. The prompt tells that agent to download the complete [`$blogr-publishing-receiver` skill folder](https://github.com/dqstartupbuild/blogr/tree/main/codex-skills/blogr-publishing-receiver), install it in the agent's supported skills directory, read `SKILL.md`, and use the skill. If skill access or installation is unavailable, the copied fallback prompt contains the same essential contract so work can continue.
 
 The supported reference stack is Next.js App Router, Convex article and summary records, and Cloudflare R2 images. The full setup brief includes deployment-safe repo ingestion; narrower repair tasks add it only when the user asks to move published database articles into checked-in content.
 
@@ -24,7 +24,7 @@ The identity must have publishing/admin permission for the target site. Shared s
 
 ## Skill Source
 
-The repo-owned skill can be downloaded from [GitHub](https://github.com/dqstartupbuild/blogger/tree/main/codex-skills/blogr-publishing-receiver). Keep the full folder together when installing it:
+The repo-owned skill can be downloaded from [GitHub](https://github.com/dqstartupbuild/blogr/tree/main/codex-skills/blogr-publishing-receiver). Keep the full folder together when installing it:
 
 ```text
 codex-skills/blogr-publishing-receiver/
