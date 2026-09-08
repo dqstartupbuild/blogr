@@ -8,8 +8,16 @@ export const tryGenerateBlogImage = async (
   try {
     const url = await runReplicateImage(image.prompt);
 
-    return url ? { ...image, url } : null;
-  } catch {
+    if (!url) {
+      console.warn("Blog image generation returned no image URL.");
+      return null;
+    }
+
+    return { ...image, url };
+  } catch (error) {
+    const errorName = error instanceof Error ? error.name : "UnknownError";
+    console.warn("Blog image generation failed.", errorName);
+
     return null;
   }
 };

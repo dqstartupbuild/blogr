@@ -12,6 +12,7 @@ export const runReplicateImage = async (prompt: string) => {
       output_format: "png",
       prompt,
     },
+    wait: { mode: "poll" },
   });
 
   return normalizeReplicateImageUrl(output);
