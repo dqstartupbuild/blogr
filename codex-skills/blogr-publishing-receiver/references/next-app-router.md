@@ -1,98 +1,57 @@
 # Next.js App Router Implementation
 
+Use the target repo's installed Next.js documentation and conventions first. The current official references are [Route Handlers](https://nextjs.org/docs/app/api-reference/file-conventions/route), [generateMetadata](https://nextjs.org/docs/app/api-reference/functions/generate-metadata), [sitemap files](https://nextjs.org/docs/app/api-reference/file-conventions/metadata/sitemap), [revalidatePath](https://nextjs.org/docs/app/api-reference/functions/revalidatePath), and [revalidateTag](https://nextjs.org/docs/app/api-reference/functions/revalidateTag).
+
 ## Route Handler
 
-Implement the webhook in:
+Implement or repair `src/app/api/webhooks/blog-publisher/route.ts`. Keep the route as the orchestration boundary:
 
-```text
-src/app/api/webhooks/blog-publisher/route.ts
-```
+1. authenticate the bearer token
+2. validate the complete envelope and enforce batch/image/byte limits
+3. normalize all articles
+4. preflight source identity, slug collision, and repo ownership for the whole request
+5. download approved images with bounded concurrency and upload them to request-owned R2 keys
+6. rewrite body/frontmatter/top-level image references to durable target-owned keys or routes
+7. call one authorized Convex mutation that transactionally repeats ownership checks and writes the bounded article batch plus summaries
+8. clean up only request-owned uploads after confirmed rejection; retain them while a timeout leaves commit status unknown
+9. refresh affected cache entries
+10. return success within Blogr's 15-second total deadline
 
-The route owns the full publishing flow:
+Do not forward the request through another HTTP endpoint, Convex HTTP action, `http.ts`, or `.convex.site`. Do not return `200` before durable R2 and database completion.
 
-1. Validate `Authorization: Bearer <token>`.
-2. Parse and validate the JSON payload.
-3. Normalize every article from `publish_articles` or `update_article`.
-4. Preflight ownership for the entire payload before image downloads or any other side effect; reject the whole request if any article is protected by an ingestion batch.
-5. Copy every required image to R2.
-6. Rewrite article image URLs before saving.
-7. Recheck ownership transactionally before final writes; clean up only request-owned R2 objects on a rejected concurrent change, or use a reservation.
-8. Upsert Convex records with `ConvexHttpClient`.
-9. Refresh cached blog routes and discovery outputs.
-10. Return `{ "message": "Published." }`.
+## Public Pages And Assets
 
-Do not forward this request to another route, a Convex HTTP action, a Convex HTTP route, or `.convex.site`.
+Add or reuse `/blog` and `/blog/[slug]` only when required by the user. The index reads lightweight summary records. The article page uses an indexed slug lookup, controlled Markdown rendering, SEO title/description, canonical metadata, and the stable feature image route.
 
-## Public Blog Pages
+For private R2 buckets, a route such as `/api/blog-assets/[...key]` may issue a fresh short-lived signed redirect or stream an approved published asset. Validate the key against stored published article references. Never accept an arbitrary bucket key and never persist the resulting presigned URL.
 
-Add or reuse:
+Keep signed redirects uncached or strictly shorter-lived than the signature. Track commit and cache-refresh results separately so a refresh error cannot delete an article's already-committed images.
 
-- `/blog`
-- `/blog/[slug]`
+## Discovery And Cache
 
-The index page should read lightweight summary records only. It should not load full MDX bodies, image arrays, or large metadata.
+Include published articles in the outputs that the target actually has: blog index, article metadata, sitemap, feed, static params, search, tags, and related posts. Use summary records rather than canonical MDX documents.
 
-The article page should fetch by indexed slug and render the full article body. It should include metadata from `seo_title`, `meta_description`, canonical URL data, and the stored feature image when present.
+After create or update, invalidate the affected article and shared discovery data using the target's established cache strategy. Apply `revalidatePath` or `revalidateTag` according to the installed Next version and existing cache ownership. In Next 16.2.9, the one-argument `revalidateTag(tag)` form is deprecated; an external webhook that requires immediate expiration can use `revalidateTag(tag, { expire: 0 })`, while `revalidateTag(tag, "max")` uses stale-while-revalidate.
 
-## Deployment-Safe Repo Ingestion
+When a slug changes, invalidate both the previous and new article paths and remove stale discovery entries using the mutation's previous/current slug result.
 
-Provide an explicit user-run command with two logical phases:
+When optional repo ingestion is requested, follow [repo-ingestion.md](repo-ingestion.md) for repo/database merging and activation rules. Do not duplicate that protocol here.
 
-```bash
-npm run blogr:ingest
-npm run blogr:ingest -- --activate --batch=<batchId> --deployment-url=https://your-site.example
-npm run blogr:ingest -- --abort --batch=<batchId>
-```
+## Environment And Setup
 
-The prepare phase exports published database articles to deterministic, checked-in MDX paths and prints/persists a batch ID. It supports `--dry-run`, all published articles by default, and targeted stable IDs/slugs. It must paginate, preserve SEO/frontmatter and target-owned R2 URLs, reject unsafe paths/frontmatter and collisions, use temporary staging plus atomic rename, and avoid volatile serialization values such as export timestamps. Do not export binary media. Never overwrite unmanaged files, prune files, commit, push, or deploy. Track independent ingestion batches (batch ID, schema version, entry set/hash, status preparing/prepared/active/rolled_back/aborted); only mark a batch prepared after every page succeeds. A source ID or slug cannot belong to more than one non-rolled-back/non-aborted batch.
-
-After the files are committed and deployed, activation must require `--batch=<batchId>` and fetch that batch's schema-versioned manifest route from `--deployment-url`. Generate manifests statically at build time from the exact checked-in MDX bytes, never from database or other dynamic data, and key entries by batch ID. Verify every tuple and the selected batch entry set/hash before changing authority. Accept only `BLOG_REPO_DEPLOYMENT_ORIGIN`, a configured canonical/allowlisted HTTPS deployment origin without embedded credentials, reject redirects, and reject an off-origin response. The database transition is one compare-and-set of the selected prepared batch record to active when schema/version and entry set/hash match; activating a later batch must not deactivate existing active batches. Do not treat files on the local machine as deployment proof. An optional CI job may run activation after a successful deploy using server-only credentials.
-
-Protect activation credentials as non-committed, server-only environment/admin/deploy values. Require `BLOG_REPO_INGEST_SECRET`, a long random value in authorized local/CI and Convex/server environments, unless an equivalent named admin/deploy mechanism already exists. Do not expose public unauthenticated state-changing endpoints, pass secrets in command arguments, browser code, or logs.
-
-Keep public rendering deployment-safe. Render from the repo only when the exact deployed manifest artifact/revision matches the database record's active batch; otherwise render its retained database content. Merge all active batches with database fallback. This includes first deploys, rolling deployments, failed deploys, and rollbacks. `--abort --batch=<batchId>` only accepts preparing/prepared batches, detaches records to restore database authority, marks the batch aborted, and retains generated files for explicit cleanup. Revalidate affected routes after activation, abort, or rollback.
-
-## SEO And Discovery
-
-Webhook-published and repo-ingested posts must participate in the target app's discovery outputs:
-
-- blog index
-- article metadata
-- sitemap `lastmod`
-- RSS/feed when the app has one
-- static params when the app uses static generation
-- search, related posts, and tag/filter views when they exist
-
-Use summary records or selected fields for sitemap, feed, search, related posts, static params, and filters. Avoid loading every full article to build these views.
-
-Merge deployed repo-manifest summaries with database summaries before generating every discovery output. Deduplicate stable source ID first and slug second. Omit a database summary only when the exact matching deployed repo artifact exists; otherwise keep it as the fallback.
-
-## Cache Refresh
-
-After a successful webhook publish, refresh cached routes and data used by:
-
-- `/blog`
-- `/blog/[slug]`
-- sitemap
-- feed
-- related cached blog lists
-
-Use the target app's established cache invalidation style. In App Router apps, `revalidatePath` or `revalidateTag` is usually appropriate.
-
-## Env Vars
-
-Server or hosting env vars:
+Preserve existing env names. Typical server values are:
 
 ```bash
-BLOG_PUBLISH_WEBHOOK_TOKEN=replace-with-the-token-entered-in-blogr
+BLOG_PUBLISH_WEBHOOK_TOKEN=<shared-blogr-token>
+BLOG_PUBLISH_CONVEX_SECRET=<server-to-convex-secret-if-no-existing-auth>
 CONVEX_URL=https://your-deployment.convex.cloud
-# or NEXT_PUBLIC_CONVEX_URL=https://your-deployment.convex.cloud
+# or an existing NEXT_PUBLIC_CONVEX_URL
 R2_ACCESS_KEY_ID=<access-key-id>
 R2_SECRET_ACCESS_KEY=<secret-access-key>
 R2_ENDPOINT=<account-r2-endpoint>
 R2_BUCKET=<bucket-name>
-BLOG_REPO_DEPLOYMENT_ORIGIN=https://your-production-site.example
-BLOG_REPO_INGEST_SECRET=<long-random-secret>
 ```
 
-Do not add `CONVEX_SITE_URL`, `NEXT_PUBLIC_CONVEX_SITE_URL`, `R2_TOKEN`, or `R2_PUBLIC_URL` for this integration.
+An existing `R2_BUCKET_NAME` or equivalent is valid. Add repo-ingestion values only when that optional capability is requested.
+
+Inspect the target's deployment state before giving commands. Explain code generation, development function pushes, and production deployment separately. Never deploy, commit, or push unless the user explicitly asks.

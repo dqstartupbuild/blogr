@@ -1,75 +1,64 @@
 # Convex Records
 
-## Client Usage
+## Client And Function Boundary
 
-Call Convex from the Next route handler with `ConvexHttpClient` and the normal Convex deployment URL:
+The Next route may use a request-scoped `ConvexHttpClient` with the normal `.convex.cloud` deployment URL, or the target's existing `convex/nextjs` server helpers. The [Convex App Router guide](https://docs.convex.dev/client/nextjs/app-router/server-rendering) covers Route Handler calls, and the [`ConvexHttpClient` API](https://docs.convex.dev/api/classes/browser.ConvexHttpClient) documents server-side credentials and public query/mutation calls.
 
-```text
-CONVEX_URL=https://your-deployment.convex.cloud
-```
+Do not use `.convex.site`, `CONVEX_SITE_URL`, or `NEXT_PUBLIC_CONVEX_SITE_URL` for Blogr publication. Preserve `CONVEX_URL` or `NEXT_PUBLIC_CONVEX_URL` when the target already uses it.
 
-`NEXT_PUBLIC_CONVEX_URL` is acceptable when the target app already uses it. Do not use `.convex.site` for Blogr publishing.
+Every callable publishing and ingestion function must authorize at the Convex boundary unless it is an intentionally public read exposing published fields only. Checking `BLOG_PUBLISH_WEBHOOK_TOKEN` only in the Next route leaves a direct-call bypass. Prefer the target's existing server identity/JWT or admin authorization. Otherwise:
 
-## Data Shape
+- create a dedicated server-to-Convex secret such as `BLOG_PUBLISH_CONVEX_SECRET`
+- set it in both the hosting/server environment and the Convex environment
+- pass it only server-to-server
+- check it in every externally callable publishing or ingestion function before reading or writing protected data
+- never expose it to browser bundles, logs, command arguments, or public docs containing real values
 
-Create or reuse a canonical article record with fields equivalent to:
+Use `ctx.auth.getUserIdentity()` when an established authenticated identity is suitable; see [Convex function authentication](https://docs.convex.dev/auth/functions-auth). An external `ConvexHttpClient` cannot call an `internalMutation`. Use an authenticated public callable wrapper whose mutation performs the bounded transaction, rather than documenting an impossible direct internal-function call.
 
-- `sourceId`
-- `title`
-- `seoTitle`
-- `slug`
-- `description`
-- `contentMdx`
-- `featureImageUrl` or `featureImageKey`
-- `tags`
-- `source`
-- `publishedAt`
-- `updatedAt`
-- `ingestionBatchId` (authority is derived from its batch status)
-- `repoPath`
-- `repoRevisionSha256`
-- `repoPreparedAt`, `repoActivatedAt`, and optional rollback timestamp
+Authorize the identity's publishing/admin permission for the target site; a non-null identity alone is insufficient. `setAuth()` expects an identity JWT, not an arbitrary shared secret. When using the secret alternative, require a non-empty configured expected value and a validated secret argument, and compare them inside each protected function. Fail closed when configuration is absent.
 
-Index both `sourceId` and `slug`. Match the stable Blogr `sourceId` first, then use `slug` as the compatibility fallback for older records.
+## Canonical And Summary Records
 
-## Summary Records
+Create or reuse a canonical article record with equivalents of:
 
-Public list and discovery views should use lightweight records, selected fields, or read models. A summary record should contain only what these views need, such as:
+- `sourceId`, `title`, `seoTitle`, `slug`, and `description`
+- `contentMdx`, `featureImageKey` or durable serving URL, `tags`, and `source`
+- `publishedAt` and `updatedAt`
+- optional repo fields: `ingestionBatchId`, `repoPath`, and `repoRevisionSha256`
 
-- `title`
-- `slug`
-- `description`
-- `featureImageUrl` or `featureImageKey`
-- `tags`
-- `publishedAt`
-- `updatedAt`
+Use indexed lookups for `sourceId` and `slug`; see [Convex indexes](https://docs.convex.dev/database/reading-data/indexes/). Stable source ID wins. Slug fallback applies only to legacy rows without a source ID. Reject a slug collision with a different established source ID.
 
-Do not load full article MDX, full image arrays, or large metadata for blog indexes, sitemap, feeds, search, related posts, static params, or filter choices.
+Repeated discovery queries should read a lightweight summary table that excludes body MDX and large arrays. Returning selected fields after loading a full canonical document does not reduce the underlying database read. Keep summary rows synchronized in the same mutation as canonical records.
 
-## Mutations And Queries
+Use cursor pagination for potentially large exports and lists; see [Convex pagination](https://docs.convex.dev/database/pagination).
 
-Prefer focused Convex functions:
+## Atomic Webhook Mutation
 
-- upsert by source ID with a slug fallback
-- get one article by slug
-- list summaries with cursor pagination
-- list sitemap/feed metadata
+R2 I/O happens before the final database mutation and cannot be part of a Convex transaction. Bound the accepted webhook article count so the final operation fits one mutation.
 
-On webhook create or update, update the canonical article and summary/read-model data in the same write flow so public reads stay cheap.
+That mutation must:
 
-## Repo Ownership State
+1. reject duplicate incoming IDs/slugs and recheck source-ID, requested-slug collision, and repo-batch ownership for every normalized article, even when an ID match exists
+2. fail the entire accepted batch if any check fails
+3. upsert every canonical article
+4. upsert every summary/read-model row
+5. commit all database changes together
 
-The repo ingestion command needs focused, optimistic Convex mutations/queries for paginated exports, prepare completion, activation, abort, and rollback. Create independent ingestion-batch/manifest records with batch ID, schema version, deterministic entry set/hash, and status `preparing`, `prepared`, `active`, `rolled_back`, or `aborted`. Articles and summaries reference their batch ID, deterministic repo path, and SHA-256 revision; database/repo-pending/repo authority is derived from the batch status rather than independently toggled per article. A source ID or slug may not belong to multiple non-rolled-back/non-aborted batches.
+Convex mutations are transactional; see [mutation transaction behavior](https://docs.convex.dev/functions/mutation-functions). Do not claim atomicity when looping over separate client mutation calls.
 
-Prepare prints and persists its batch ID, may attach validated staged pages to that `preparing` batch for safe resumption, and must not mark it `prepared` until all pages have passed validation and written atomically. Preparing/prepared batches remain database-authoritative. A partial failure exits nonzero with no authority transition. Activation requires an explicit batch ID, verifies that batch's deployed manifest entries/hash, and atomically compare-and-sets only that `prepared` batch record to `active`. Activating batch B does not deactivate active batch A. A bad deployment URL, schema, tuple, batch status, or hash mismatch must fail without changing authority. Abort only accepts preparing/prepared batches, detaches their records to restore database authority, marks the batch `aborted`, and retains generated files/data for explicit cleanup. Rollback flips only the selected active batch to `rolled_back`; retain database data and repo metadata/files for explicit cleanup later.
+A client timeout can leave the commit outcome unknown. Use an authorized operation/reservation status when reconciling it; never infer that uploaded objects are unused from a network error or cache-refresh failure. Preserve committed image references.
 
-Webhook upserts must preflight the complete payload by stable source ID first, then slug, before image downloads or any other side effect. If any matching record belongs to a preparing, prepared, or active batch, reject the entire request with an actionable HTTP `409`: edit and commit repo content, or roll back to database authority and republish before preparing again. After request-owned R2 uploads, repeat the ownership check transactionally before final writes; on a rejected concurrent change, delete only objects created by that request or use an explicit reservation. New records and database-authoritative records continue through normal publication. Do not expose ingestion mutations publicly or place credentials/secrets in client code, command arguments, or logs.
+Public queries may return published data only. Protected ownership preflights, publishing, prepare, activate, abort, rollback, and administrative export functions require boundary authorization even if the Next route is already protected.
 
-## Required Checks
+## Repo State
 
-- Publishing the same source ID or slug twice updates one article.
-- `update_article` preserves the original publication date and refreshes content, SEO fields, summaries, and the updated date.
-- Public blog lists do not query full article bodies.
-- The route never calls Convex through `.convex.site`.
-- A webhook payload containing any preparing/prepared/active article returns `409` before side effects; a new-only payload still publishes.
-- Database records and summaries are never automatically deleted during prepare, activation, or rollback.
+When repo ingestion is requested, follow [repo-ingestion.md](repo-ingestion.md). Keep independent batch records with `preparing | prepared | active | rolled_back | aborted` status. Authority derives from the referenced batch status, not an independently mutable article flag. One source ID or slug cannot belong to multiple non-terminal batches.
+
+Protect export, prepare completion, activation, abort, and rollback functions. Activation is one compare-and-set mutation on the selected prepared batch. Activating one batch must not deactivate other active batches.
+
+## Tests And Deployment
+
+Use [convex-test](https://docs.convex.dev/testing/convex-test) when it fits the target repo. Cover missing/invalid direct-call authorization, batch atomicity, ID/slug collisions, protected ownership, summary synchronization, and pagination.
+
+Inspect the target's actual Convex deployment state. Code generation and development pushes are not production deployment. This Blogr repository currently has no production Convex deployment, and editing this skill requires no schema or function push.

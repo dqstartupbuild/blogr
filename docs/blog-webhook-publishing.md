@@ -19,7 +19,7 @@ Each product workspace can have its own publishing integration. This lets one ac
 7. The Convex action reads the saved publishing integration for that product without returning the token to the browser.
 8. If the product does not have a saved integration, the route falls back to the deployment env vars.
 9. The webhook request is sent with `Authorization: Bearer <token>`.
-10. The target app copies article images into its own durable public storage, rewrites the saved article image URLs, and creates or updates the public blog post by `slug`.
+10. The target app copies article images into its own durable storage, rewrites saved image references to object keys or stable serving URLs, and creates or updates the public post by stable Blogr ID with legacy slug fallback.
 11. After a successful webhook response, Blogr marks the saved blog as `published`.
 
 Publishing uses the currently loaded draft. In the editor, that means a user can publish the text they are looking at after making changes.
@@ -36,11 +36,11 @@ Open **Settings** for the active product workspace, then use the **Publishing** 
 
 The panel starts with a **Setup guide**. It gives the user a copyable integration prompt for the target app, the webhook path, the token env var, a sample payload, and a quick checklist for the receiving app.
 
-The integration prompt works with any coding agent. When the agent supports skills and `$blogr-publishing-receiver` is installed, the prompt asks it to use the skill. Otherwise, the complete fallback brief remains in the prompt. This first version focuses only on Next.js App Router targets that use Convex article records and Cloudflare R2 for copied article images.
+The integration prompt works with any coding agent. It first tells the agent to download the complete [`$blogr-publishing-receiver` skill folder](https://github.com/dqstartupbuild/blogger/tree/main/codex-skills/blogr-publishing-receiver), install it in the agent's supported skills directory, read `SKILL.md`, and use the skill. If the agent cannot access or install skills, the complete fallback brief remains in the prompt so setup can continue. This first version focuses only on Next.js App Router targets that use Convex article records and Cloudflare R2 for copied article images.
 
-The repo-owned skill lives in `codex-skills/blogr-publishing-receiver/`. It keeps the long implementation guidance in focused reference files for the webhook contract, Next.js App Router, Convex records, R2 image storage, MDX rendering, and acceptance tests. It also includes fixture payloads for `publish_articles`, `update_article`, and a multimedia article with frontmatter, markdown images, tables, code, and a multiline YouTube iframe.
+The repo-owned skill lives in `codex-skills/blogr-publishing-receiver/`. It routes each task to focused references for the webhook contract, Next.js App Router, Convex records, R2 image storage, safe MDX rendering, optional repo ingestion, and acceptance tests. A renderer repair does not load or add ingestion unless the user asks. The skill also includes fixture payloads for `publish_articles`, `update_article`, and a multimedia article with frontmatter, markdown images, tables, code, and a multiline YouTube iframe.
 
-The prompt and skill steer target apps away from forwarding Blogr publishing requests to Convex HTTP actions. The target webhook should validate the token, parse the payload, copy images, call Convex through `ConvexHttpClient` on the normal `.convex.cloud` URL, and revalidate blog routes from the receiving server route. They explicitly say not to add or rely on `CONVEX_SITE_URL`, `NEXT_PUBLIC_CONVEX_SITE_URL`, or `.convex.site` for Blogr publishing.
+The prompt and skill steer target apps away from forwarding Blogr publishing requests to Convex HTTP actions. The target webhook validates the token, parses the payload, copies images, calls Convex through a request-scoped client on the normal `.convex.cloud` URL, and revalidates blog routes from the receiving server route. Every callable publishing or ingestion Convex function must also authorize at the Convex boundary, because Next route authentication alone does not stop a direct call. They explicitly say not to add or rely on `CONVEX_SITE_URL`, `NEXT_PUBLIC_CONVEX_SITE_URL`, or `.convex.site` for Blogr publishing.
 
 The prompt and skill also tell the target app to keep public blog reads small. Convex targets should use lightweight summary or read-model records for blog lists, sitemap/feed metadata, search/filter data, and static params instead of loading full article bodies or image arrays.
 
@@ -64,7 +64,9 @@ Activation verifies a schema-versioned manifest served by the deployed target ap
 
 Set `BLOG_REPO_INGEST_SECRET` to a long random value in the authorized local or CI environment and in the target's Convex/server environment. An existing named admin/deploy mechanism may replace it. Never pass the secret in command arguments, browser code, or logs.
 
-Before image downloads or any other side effect, the target app preflights the entire webhook payload by stable ID then slug. If any article belongs to a preparing, prepared, or active batch, the whole request receives `409`: edit and commit the repo content, or roll back to database authority and republish before preparing again. The target repeats that check transactionally before final writing; if it then fails, it removes only R2 objects created by that request or uses an explicit reservation. New-only article payloads continue to publish to the database. Abort detaches a preparing/prepared batch, restores database authority, marks it aborted, and leaves generated files for explicit cleanup; rollback flips only an active batch to rolled_back.
+Before image downloads or any other side effect, the target app preflights the entire webhook payload by stable ID, then legacy slug. It rejects duplicate incoming IDs/slugs and checks the requested slug even when the ID matches. Another canonical row on that slug is a conflict, never an overwrite. If any article belongs to a preparing, prepared, or active batch, the whole request receives `409` with the batch ID/status and the supported recovery cycle: abort or roll back as allowed, republish through Blogr, then prepare, deploy, and activate a new revision. Editing and committing the current file alone changes its SHA-256 and cannot activate it. The target repeats ownership checks in one bounded mutation that also writes every accepted canonical article and summary atomically. Confirmed rejection cleans only request-owned R2 objects; a timeout retains uploads until reconciliation resolves whether they committed. A cache-refresh error cannot delete committed images. New-only payloads continue to publish to the database.
+
+Preparation claims exported pages with a comparison against current database revisions and rechecks the full claim set before completion, preventing stale exports during concurrent publication. Activation and rollback refresh cached authority and discovery reads. Private image redirects must not be cached beyond signature expiry, and public-URL download validation binds the actual connection to approved addresses to prevent DNS rebinding.
 
 The user enters:
 
@@ -124,7 +126,7 @@ The route sends this shape:
 }
 ```
 
-MDX is the source of truth. `content_html` is intentionally blank because this app stores and edits articles as MDX. Blogr can include YAML frontmatter, H1 through H6 headings, markdown images, tables, code blocks, and YouTube iframe embeds in the MDX body.
+MDX is the source of truth. The sender requires `content_html` as a compatibility field and currently sends it blank, but receivers must not treat it as a trusted rendering shortcut. Blogr can include YAML frontmatter, H1 through H6 headings, markdown images, tables, code blocks, and YouTube iframe embeds in the MDX body.
 
 ## Target App Expectations
 
@@ -134,7 +136,9 @@ The receiving app should:
 - Read `Authorization: Bearer <token>`.
 - Compare the token to `BLOG_PUBLISH_WEBHOOK_TOKEN`.
 - Validate `event_type`, `timestamp`, and article fields.
+- Finish the durable R2 and database work inside Blogr's 15-second total response window. Bound the article/image counts, streaming bytes, media concurrency, and timeouts; do not return success early.
 - Match existing posts by the stable Blogr article ID first, then by `slug` for older records.
+- Use slug fallback only for a legacy record without a source ID. Reject a slug owned by a different source ID.
 - For database-authoritative posts, update the existing post when the same blog is published again.
 - For database-authoritative creates or updates, save the current title, SEO title, meta description, body, images, tags, source, and timestamps from the payload.
 - For database-authoritative updates, preserve the original `created_at` and replace `updated_at` with the latest successful republish time.
@@ -142,10 +146,12 @@ The receiving app should:
 - Keep `seo_title` between 70 and 110 characters and `meta_description` between 110 and 160 characters.
 - Store `content_mdx` or `content_markdown`.
 - Treat `image_url` and markdown image URLs as temporary source URLs.
-- For database-authoritative payloads, download article images during the webhook request, store them in Cloudflare R2, and rewrite `image_url`, frontmatter `featureImage`, and markdown image URLs before saving the post.
+- For database-authoritative payloads, download article images during the webhook request, store them in Cloudflare R2, and rewrite `image_url`, frontmatter `featureImage`, and markdown image URLs to object keys or stable serving URLs before saving the post. Do not persist expiring presigned URLs.
+- Treat remote images as SSRF input: use a trusted-host allowlist or validated public-address strategy, validate redirects, block private/special-use addresses and URL credentials, enforce streaming byte limits, verify raster types, and reject SVG by default.
 - Before any side effects, preflight the full webhook payload. If any article belongs to a preparing, prepared, or active ingestion batch, return whole-request `409` with the recovery message and make no article/image changes.
 - Own the publishing orchestration in the receiving server route. Do not forward Blogr publishing to Convex HTTP actions or `.convex.site`.
 - Use Convex for article records. Call Convex from the receiving server route with `ConvexHttpClient` and `CONVEX_URL` or `NEXT_PUBLIC_CONVEX_URL` on `.convex.cloud`.
+- Authorize every callable Convex publishing and ingestion function with an existing server identity or a dedicated secret set in hosting and Convex environments.
 - Keep public blog reads small. Do not load full article bodies, MDX, image arrays, or large metadata for blog index pages, sitemap, RSS/feed, search, related posts, static params, or filter views.
 - Store full content in the canonical article record, but use lightweight Convex summary or read-model records for list and discovery views.
 - Update any summary or read-model data during database-authoritative webhook create or update, and revalidate cached blog pages after publishing.
@@ -155,6 +161,7 @@ The receiving app should:
 - Finish with a required setup handoff that names every variable and groups it by where it must be set, including hosting/server env vars, Convex deployment env vars, Cloudflare/R2 setup, database setup, Blogr Settings, optional follow-ups, and verification commands.
 - Treat the Blogr publisher label as the webhook payload's `source` value. It is a sending-app label, not the article author.
 - Render Blogr MDX features including frontmatter stripping, H1 through H6 headings, links, lists, blockquotes, tables, code, markdown images, and YouTube iframe embeds or YouTube links.
+- Never compile received MDX or exported article files as trusted JavaScript. Reject imports, exports, JSX expressions, arbitrary components, scripts, unsafe handlers/URLs, and unapproved raw HTML; sanitize the allowed subset.
 - Render article `#` H1 lines as headings while keeping generated table-of-contents entries focused on H2 through H6 sections.
 - Support Blogr's multi-line YouTube iframe blocks and older self-closing iframe variants. If the target renderer would show the iframe markup as raw text, transform whitelisted YouTube iframe markup into a safe embed component before rendering.
 - Include webhook-published posts in sitemap/feed outputs and refresh cached blog pages after publishing.
@@ -175,7 +182,9 @@ The target webhook must be public but token-protected. Never put the webhook tok
 
 Saved product tokens are only read by Convex functions and the Next.js publish route. Client product queries return `hasAccessToken` instead of the token value.
 
-Bearer auth is enough for the first version because this is a server-to-server webhook. If the receiver later needs stronger replay protection, add a timestamped HMAC header while keeping bearer auth for compatibility.
+Bearer auth protects the public Next route, but direct Convex mutations need their own server identity or secret check. If the receiver later needs stronger replay protection, add a timestamped HMAC header while keeping bearer auth for compatibility.
+
+Implementation references: [Convex function authentication](https://docs.convex.dev/auth/functions-auth), [Convex transactional mutations](https://docs.convex.dev/functions/mutation-functions), [R2 authentication](https://developers.cloudflare.com/r2/api/tokens/), [R2 presigned URLs](https://developers.cloudflare.com/r2/api/s3/presigned-urls/), [Next.js MDX compilation](https://nextjs.org/docs/app/guides/mdx), [rehype-sanitize](https://github.com/rehypejs/rehype-sanitize), and [OWASP SSRF prevention](https://cheatsheetseries.owasp.org/cheatsheets/Server_Side_Request_Forgery_Prevention_Cheat_Sheet.html).
 
 ## Relevant Code
 

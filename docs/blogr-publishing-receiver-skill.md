@@ -2,81 +2,85 @@
 
 ## What It Does
 
-The Blogr publishing receiver skill gives supported coding agents a focused workflow for adding the receiving side of Blogr publishing to a target app.
-
-This first version only covers the stack we want to support now:
+`$blogr-publishing-receiver` helps a coding agent build, repair, or review the receiving side of Blogr publication. Its supported reference stack is:
 
 - Next.js App Router
-- Convex article records
+- Convex article and summary records
 - Cloudflare R2 image storage
+- optional deployment-safe database-to-repo article ingestion
 
-Other frameworks, databases, and storage providers can be added later as separate references instead of expanding the in-app prompt.
+The skill keeps narrower requests narrow. Repairing renderer security does not automatically add ingestion, and adding a webhook does not replace a target app's existing blog design or environment naming.
 
-## How It Works
+This repository contains the skill and the sender contract. It does not deploy a receiver into another app.
 
-The skill lives in `codex-skills/blogr-publishing-receiver/`.
+## Source Provenance
 
-`SKILL.md` contains the short workflow and hard rules. It tells the coding agent to inspect the target repo, confirm that it is a Next.js App Router app, use Convex and R2, add the webhook route, copy images before saving articles, render Blogr MDX, add public blog pages, provide the deployment-safe repo ingestion workflow, test the integration, and finish with exact setup steps.
+When the Blogr checkout is available, the skill tells agents to confirm the current sender shape in:
 
-The detailed instructions are split into reference files:
+- `convex/products/blogPublishArticleValidator.ts`
+- `convex/products/blogPublishPayloadValidator.ts`
+- `convex/products/publishBlogWithIntegration.ts`
+- `src/features/workspace/constants/publishing/blogPublishingPayloadExample.ts`
+- `src/features/workspace/utils/buildBlogPublishingIntegrationPrompt.ts`
+- `src/server/publishing/buildBlogPublishArticle.ts` and `src/server/publishing/getBlogPublishImageUrl.ts`
 
-- `contract.md` explains the webhook endpoint, auth, event shapes, article field mapping, and response behavior.
-- `next-app-router.md` explains route placement, public blog pages, SEO, discovery outputs, cache refresh, env vars, and deployed-manifest repo resolution.
-- `convex.md` explains canonical article records, summary records, indexes, `ConvexHttpClient` usage, and database-to-repo ownership states.
-- `r2.md` explains safe image downloads, R2 env vars, object uploads, and image URL rewriting.
-- `mdx-rendering.md` explains frontmatter, headings, table of contents links, images, sanitization, and YouTube embeds.
-- `acceptance.md` explains fixtures, test coverage, verification commands, and final handoff requirements.
+The sender includes `event_type`, `timestamp`, and `data`, and requires `content_html` alongside the Markdown/MDX fields. `content_html` is compatibility data and must not bypass safe rendering. Blogr allows 15 seconds for the complete webhook response.
 
-The fixture payloads live in `assets/fixtures/`:
+These source paths belong to Blogr, not the target app. A fresh target installation uses the bundled contract and fixtures when it has no Blogr checkout.
+
+Blogr can send an empty `image_url` when no feature image exists. The receiver skips that download and still handles body/frontmatter images.
+
+## Task-Routed References
+
+`SKILL.md` contains scope, routing, workflow, and cross-cutting invariants. It loads only the references needed for the current task:
+
+- `contract.md`: envelope, field mapping, timing, identity, collisions, and response behavior
+- `convex.md`: boundary authorization, atomic mutations, records, indexes, pagination, and read models
+- `r2.md`: credentials, durable object references, private serving routes, SSRF controls, and cleanup
+- `next-app-router.md`: route ownership, public pages, discovery, cache refresh, env setup, and deployment language
+- `mdx-rendering.md`: untrusted MDX/HTML handling, controlled Markdown, heading IDs, and exact YouTube validation
+- `repo-ingestion.md`: optional prepare, manifest proof, activation, fallback, abort, rollback, and revision cycle
+- `acceptance.md`: fixtures, risk-focused tests, commands, and handoff requirements
+
+A full install reads the complete receiver set. A renderer repair reads contract, Next.js, rendering, and acceptance. Repo ingestion is loaded only when requested.
+
+## Key Guarantees
+
+The guidance requires authorization at both the Next route and every callable Convex publishing/ingestion boundary, including permission for the target site. It uses one bounded final Convex mutation for ownership rechecks plus canonical and summary writes. R2 uploads happen before that transaction. Confirmed rejection cleans request-owned objects; an unknown commit outcome retains them until reconciliation proves they are unused. A cache-refresh failure cannot delete committed images.
+
+Saved articles retain R2 object keys and stable same-origin routes, or explicitly permanent public URLs. They do not persist expiring presigned URLs or cache signed redirects past expiry. Remote downloads use an allowlist or validated public-address strategy with connection binding, redirect, IP-range, streaming-size, MIME, timeout, and SVG controls.
+
+Received MDX is never compiled as trusted JavaScript. The renderer supports a controlled Markdown/YouTube subset and applies the same restrictions to repo-exported files.
+
+Stable Blogr source ID wins. Slug fallback is for legacy records without a source ID. The requested slug is checked even when the ID matches; another canonical record on that slug and duplicate incoming IDs/slugs are rejected.
+
+## Repo Ingestion
+
+Optional ingestion tracks independent `preparing | prepared | active | rolled_back | aborted` batches. Preparation creates deterministic MDX and SHA-256 revisions. Activation trusts only a statically built deployed manifest from the configured HTTPS origin. Multiple active batches coexist, and retained database content is the fallback when an exact artifact is absent.
+
+Each exported page is claimed with a database revision comparison, and preparation rechecks the full claimed revision set. This prevents an intervening webhook update from activating a stale export. Manifest and runtime content share the exact build artifact; activation and rollback refresh cached authority and discovery decisions.
+
+Editing and committing an active repo file changes its SHA-256 and does not activate that revision. The supported workflow is rollback or abort, republish through Blogr, prepare a new batch, deploy it, then activate it after manifest proof.
+
+## Fixtures And Validation
+
+Fixtures live in `assets/fixtures/`:
 
 - `publish-articles.json`
 - `update-article.json`
 - `publish-articles-multimedia.json`
 
-The fixture image URLs use reserved domains. Target app tests should mock image downloads and assert that saved content uses target-owned R2 URLs or keys.
+Validation for skill changes includes the system `quick_validate.py`, YAML and relative-link checks, JSON parsing, fixture-to-validator field checks, TODO-scaffold checks, and lint/typecheck when the copied TypeScript prompt changes.
 
 ## Installing The Skill
 
-To make `$blogr-publishing-receiver` discoverable in a local Codex environment, place the skill folder under the Codex skills directory:
+The generated integration prompt tells the receiving coding agent to download the complete [`codex-skills/blogr-publishing-receiver/`](https://github.com/dqstartupbuild/blogger/tree/main/codex-skills/blogr-publishing-receiver) folder before changing the target app. The agent installs or copies the folder into its supported skills directory, keeps the references and fixtures beside `SKILL.md`, reads the entrypoint, and invokes `$blogr-publishing-receiver`.
 
-```bash
-mkdir -p ~/.codex/skills
-cp -R codex-skills/blogr-publishing-receiver ~/.codex/skills/
-```
+If the agent cannot access or install skills, it continues with the complete fallback brief embedded in the prompt. The folder name and invocation remain stable so installed copies stay discoverable.
 
-The skill can also be symlinked during local development when you want Codex to read the repo-owned version directly.
+## Authoritative References
 
-## Integration Prompt
-
-The in-app **Copy integration prompt** action produces the implementation brief.
-
-The prompt works with any coding agent. If the agent supports skills and `$blogr-publishing-receiver` is installed, it can use the skill. Otherwise, it should continue with the complete fallback brief instead of stopping.
-
-The fallback brief stays intentionally narrow. It names the endpoint, auth behavior, expected payload, Convex/R2 architecture, image copying rules, MDX rendering expectations, deployment-safe ingestion, test coverage, and final setup requirements without carrying every detailed reference inline.
-
-## Repo Ingestion
-
-Target apps can move published database articles into checked-in MDX with explicit batch commands: prepare with `npm run blogr:ingest` (which prints/persists a batch ID), then activate after commit and deployment with `npm run blogr:ingest -- --activate --batch=<batchId> --deployment-url=https://...`. Use `npm run blogr:ingest -- --abort --batch=<batchId>` to abandon a preparing/prepared batch safely. Prepare creates deterministic MDX, validates paths/frontmatter and collisions, stages writes atomically, and tracks independent resumable batches. Only when all pages succeed does that batch become prepared; preparing/prepared records remain database-served.
-
-Activation verifies a schema-versioned manifest generated at build time from exact checked-in MDX bytes, never database/dynamic data. It is keyed by batch ID and validates every stable ID + repo path + SHA-256 tuple and each batch entry set/hash against the prepared export, accepts only `BLOG_REPO_DEPLOYMENT_ORIGIN` (a configured canonical/allowlisted HTTPS origin with no redirects or off-origin response), and uses one database compare-and-set to activate only the selected prepared batch. Multiple active batches coexist; public pages merge all active manifests and keep the database copy as fallback throughout rolling deploys and rollback. Discovery outputs merge deployed repo summaries and database summaries, deduplicated by stable ID then slug. No database record is removed automatically. Aborting a preparing/prepared batch detaches its records and restores database authority, while preserving generated files. Protected webhook payloads return actionable `409` before side effects; new-only payloads continue to publish normally. `BLOG_REPO_INGEST_SECRET` must be a long random non-committed secret set in authorized local/CI and Convex/server environments, unless the target already has an equivalent named admin/deploy mechanism.
-
-## Why It Is Split This Way
-
-The old prompt had to carry the whole implementation spec. That made it easier for target agents to miss late instructions or blend unrelated storage/framework advice.
-
-The skill keeps the core workflow small and loads the relevant detail by topic. This should make target-app output more consistent while keeping the copyable prompt useful for users who do not have the skill installed.
-
-## Relevant Code
-
-- `src/features/workspace/utils/buildBlogPublishingIntegrationPrompt.ts`
-- `src/features/workspace/components/BlogPublishingSetupGuide.tsx`
-- `src/features/workspace/components/BlogPublishingReceiverDetails.tsx`
-- `src/features/workspace/constants/publishing/blogPublishingPayloadExample.ts`
-- `codex-skills/blogr-publishing-receiver/SKILL.md`
-- `codex-skills/blogr-publishing-receiver/references/`
-- `codex-skills/blogr-publishing-receiver/assets/fixtures/`
-- `docs/target-app-blog-publishing-brief.md`
-- `docs/blog-webhook-publishing.md`
+Provider and security links live beside the decisions they support. The main sources are [Convex App Router usage](https://docs.convex.dev/client/nextjs/app-router/server-rendering), [Convex mutations](https://docs.convex.dev/functions/mutation-functions), [Convex function auth](https://docs.convex.dev/auth/functions-auth), [Cloudflare R2 credentials](https://developers.cloudflare.com/r2/api/tokens/), [Cloudflare R2 presigned URLs](https://developers.cloudflare.com/r2/api/s3/presigned-urls/), [Next.js MDX compilation](https://nextjs.org/docs/app/guides/mdx), [react-markdown](https://github.com/remarkjs/react-markdown), [rehype-sanitize](https://github.com/rehypejs/rehype-sanitize), and [OWASP SSRF prevention](https://cheatsheetseries.owasp.org/cheatsheets/Server_Side_Request_Forgery_Prevention_Cheat_Sheet.html).
 
 ## File Tree
 
@@ -85,8 +89,21 @@ codex-skills/blogr-publishing-receiver/
   SKILL.md
   agents/openai.yaml
   references/
+    contract.md
+    convex.md
+    r2.md
+    next-app-router.md
+    mdx-rendering.md
+    repo-ingestion.md
+    acceptance.md
   assets/fixtures/
+    publish-articles.json
+    update-article.json
+    publish-articles-multimedia.json
 src/features/workspace/utils/buildBlogPublishingIntegrationPrompt.ts
+src/features/workspace/utils/buildBlogPublishingIntegrationPrompt.test.ts
+src/features/workspace/constants/publishing/blogPublishingReceiverSkillUrl.ts
 docs/blogr-publishing-receiver-skill.md
 docs/target-app-blog-publishing-brief.md
+docs/blog-webhook-publishing.md
 ```
