@@ -23,6 +23,10 @@ Do not forward the request through another HTTP endpoint, Convex HTTP action, `h
 
 Add or reuse `/blog` and `/blog/[slug]` only when required by the user. The index reads lightweight summary records. The article page uses an indexed slug lookup, controlled Markdown rendering, SEO title/description, canonical metadata, and the stable feature image route.
 
+A non-empty `image_url` must populate the visible article feature image, not only an R2 record. Use its stable target-owned URL for article Open Graph, Twitter, and structured-data images too. Give visible images appropriate alt text and reserved dimensions/aspect ratio; preserve a deliberate image-free layout when absent. Do not invent descriptive alt text from facts unavailable to the receiver.
+
+Build article metadata from the canonical record: separate SEO title, description, absolute self-canonical, article-specific Open Graph/Twitter title and description, `og:type=article`, canonical article URL, and stable absolute image URL. Override inherited homepage social metadata and check file-based Open Graph/Twitter image conventions for unintended overrides. Supply consistent publication/modification dates and truthful BlogPosting JSON-LD, escaping `<` in serialized JSON before embedding it. Use an established author/publisher identity; the sender label is not an author. Do not fabricate people or credentials. Give the blog index its own metadata and canonical, and provide crawlable links to it from the existing site navigation.
+
 For private R2 buckets, a route such as `/api/blog-assets/[...key]` may issue a fresh short-lived signed redirect or stream an approved published asset. Validate the key against stored published article references. Never accept an arbitrary bucket key and never persist the resulting presigned URL.
 
 Keep signed redirects uncached or strictly shorter-lived than the signature. Track commit and cache-refresh results separately so a refresh error cannot delete an article's already-committed images.
@@ -30,6 +34,12 @@ Keep signed redirects uncached or strictly shorter-lived than the signature. Tra
 ## Discovery And Cache
 
 Include published articles in the outputs that the target actually has: blog index, article metadata, sitemap, feed, static params, search, tags, and related posts. Use summary records rather than canonical MDX documents.
+
+Sitemaps must include the blog index and published canonical articles. Choose explicit request-time freshness or a tested cache/revalidation policy for metadata routes; merely calling a database SDK does not prove a sitemap is dynamic. Do not use generation time as a static page's last-modified date. Use real modification dates or omit them.
+
+Return a valid RSS feed with required channel title, link, and description; stable item IDs; original publication dates; and canonical item links. Expose feed autodiscovery. If the target maintains `llms.txt`, preserve its existing guidance and add blog/feed links and, when desired, a bounded current article listing using the same summary source. This is optional agent discovery, not a Google ranking requirement. Do not add search, taxonomy, or related-post features solely to satisfy a checklist when the target has none.
+
+Distinguish missing content from backend failure: a failed article query must not become a cached 404, and a failed summary query must not become a successful empty sitemap/index/feed. Use safe diagnostics without logging secrets, and surface an appropriate server failure while preserving established verified repo fallbacks.
 
 After create or update, invalidate the affected article and shared discovery data using the target's established cache strategy. Apply `revalidatePath` or `revalidateTag` according to the installed Next version and existing cache ownership. In Next 16.2.9, the one-argument `revalidateTag(tag)` form is deprecated; an external webhook that requires immediate expiration can use `revalidateTag(tag, { expire: 0 })`, while `revalidateTag(tag, "max")` uses stale-while-revalidate.
 

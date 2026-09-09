@@ -85,3 +85,8 @@ The publisher label becomes `source`; it is not the article author.
 ## Sources
 
 See [Convex function authentication](https://docs.convex.dev/auth/functions-auth), [Convex transactional mutations](https://docs.convex.dev/functions/mutation-functions), [Cloudflare R2 authentication](https://developers.cloudflare.com/r2/api/tokens/), [R2 presigned URLs](https://developers.cloudflare.com/r2/api/s3/presigned-urls/), [Next.js MDX compilation](https://nextjs.org/docs/app/guides/mdx), and [OWASP SSRF prevention](https://cheatsheetseries.owasp.org/cheatsheets/Server_Side_Request_Forgery_Prevention_Cheat_Sheet.html).
+
+
+## Public output verification
+
+Follow the receiver skill's public SEO acceptance checks: render the copied feature image; use article-specific canonical, Open Graph, Twitter and BlogPosting data; refresh sitemap/feed and existing discovery outputs after publishing without a rebuild; preserve valid section links and headings around videos; and surface data failures instead of false 404s or empty indexes. See `codex-skills/blogr-publishing-receiver/references/next-app-router.md`, `mdx-rendering.md`, and `acceptance.md` for the maintained contract and local/deployed verification distinction.

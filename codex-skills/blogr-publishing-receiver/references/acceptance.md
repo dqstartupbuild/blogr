@@ -59,6 +59,21 @@ Test:
 - hostile lookalike YouTube hosts remain inert
 - repo-exported content uses the same controlled renderer and is never imported as executable remote MDX
 
+## Public SEO And Post-Publish Verification
+
+Use a real receiver fixture with a feature image and explicit heading IDs, plus a no-image fixture. Against the running built app, verify:
+
+- publication after startup appears in the article page, index, sitemap, valid RSS, and any existing dynamic agent-discovery output without rebuilding
+- the visible feature image loads successfully with reserved space, and its stable absolute URL appears in article Open Graph/Twitter and BlogPosting data
+- article SEO title, description, self-canonical, social fields, dates, and JSON-LD describe that article rather than inherited homepage defaults; the image-free case has intentional metadata
+- the blog index has its own metadata and a crawlable navigation link; the sitemap includes the index and article
+- feed channel fields are valid, item GUIDs are stable, and updates preserve original publication dates
+- rendered content has no redundant title/TOC, exposed `{#id}` markers, duplicate IDs, or broken local fragment links; a heading immediately following a video still renders
+- update and slug-change flows refresh all existing discovery/metadata surfaces and remove stale URL entries
+- data-access failures surface as server failures rather than false 404s or successful empty discovery output
+
+Use isolated fixture-backed integration tests when live publishing is outside the authorized scope. Report local verification and deployed verification separately. Test metadata and JSON-LD in rendered HTML/DOM, not only a helper object or a mocked mutation.
+
 ## Optional Repo Ingestion
 
 When ingestion is in scope, test:

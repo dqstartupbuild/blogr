@@ -70,6 +70,12 @@ Rendering and Next.js:
 - Add or reuse /blog and /blog/[slug] only when needed. Use seo_title and meta_description for metadata.
 - Include articles in the target's existing sitemap, feed, static params, search, tag, related-post, and cache flows. Use revalidatePath or revalidateTag according to this installed Next version.
 - If a slug changes, invalidate both old and new article paths and remove stale discovery entries.
+- Render a non-empty image_url as the visible article feature image using its stable copied URL, with reserved dimensions and appropriate alt text. Reuse that image in article-specific Open Graph, Twitter, and truthful BlogPosting JSON-LD; do not leave inherited homepage social fields or image-file overrides. Escape embedded JSON safely and use a real established author/publisher, never the source label as an invented author.
+- Set absolute article/index canonicals, article social URL/type/title/description, and consistent publication/update dates. Add a crawlable blog link to the site's existing navigation.
+- Include /blog and canonical articles in the sitemap with explicit request-time or tested revalidation behavior. Do not silently turn database failures into empty discovery output or false 404s. Use actual last-modified dates, not generation time.
+- RSS needs channel title/link/description, stable item IDs, original publication dates, canonical links, and feed autodiscovery. Preserve existing llms.txt guidance and include blog/feed links plus a bounded current article list when that discovery surface is desired; this is not a Google ranking requirement.
+- Share a parsed heading model across the body and TOC. Treat trailing {#custom-id} as validated inert IDs, remove the marker from labels, handle collisions and code fences, remove only a matching leading H1 and recognized redundant body TOC, and preserve headings immediately after supported video blocks.
+- Verify the running built app after publication without rebuilding: visible image, actual article metadata/JSON-LD, working fragment links, sitemap, valid feed, and existing discovery outputs. Repeat for updates, slug changes, no-image articles, and backend failures. Use isolated fixtures when live publishing is outside scope; report local versus deployed verification separately.
 
 Deployment-safe repo ingestion:
 - Include this optional capability for a full receiver setup, but do not add it during a narrower repair unless asked.

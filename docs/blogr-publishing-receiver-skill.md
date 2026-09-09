@@ -107,3 +107,8 @@ docs/blogr-publishing-receiver-skill.md
 docs/target-app-blog-publishing-brief.md
 docs/blog-webhook-publishing.md
 ```
+
+
+## Publication presentation and SEO acceptance
+
+The receiver references and generated integration prompt now distinguish durable receipt from a complete public article. They require visible feature-image rendering, article-specific social metadata and canonical, truthful BlogPosting data, explicit sitemap freshness, valid RSS, existing agent-discovery integration, safe shared heading/TOC parsing, and verification against a running built app. A successful webhook or helper-only test is not proof that the public article and discovery endpoints work. Local and deployed verification must be reported separately.

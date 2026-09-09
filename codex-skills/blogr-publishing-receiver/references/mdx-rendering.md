@@ -31,6 +31,12 @@ Apply safe URL policies to links and images. Render images only from the target'
 
 Generate deterministic, collision-safe, URL-safe IDs for H1 through H6. Render `#` lines as real H1 headings. Build the table of contents from H2 through H6 only.
 
+Support Blogr's trailing `{#custom-id}` heading syntax as inert data, removing it from visible labels and validating the ID. Use one parsed heading model for rendered IDs and the TOC, with collision handling shared across explicit and generated IDs. Ignore heading-like text inside code fences. Preserve meaningful Unicode labels and direct fragment links.
+
+When the page already renders the article title, remove only a matching leading body H1. If the page supplies a TOC, remove only a recognized redundant body TOC made of local section links; do not delete arbitrary sections named similarly or distinct body headings. Parse title/TOC normalization outside code fences.
+
+Preserve Markdown immediately following an allowed iframe/video block, including when the source omitted a blank line. Normalize supported embeds through the controlled pipeline without enabling executable MDX. Test the rendered DOM, not just independent heading helper output.
+
 Do not derive heading IDs from unsafe raw HTML. Verify duplicate headings, punctuation-only headings, Unicode, client navigation, and direct hash loads.
 
 ## YouTube Validation
