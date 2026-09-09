@@ -12,5 +12,7 @@ describe("buildBlogPublishingIntegrationPrompt", () => {
     expect(prompt).toContain("read its SKILL.md entrypoint");
     expect(prompt).toContain("use $blogr-publishing-receiver for this task");
     expect(prompt).toContain("complete fallback brief");
+    expect(prompt).toContain("compare the declared MIME type with the raster signature");
+    expect(prompt).toContain("RIFF/WEBP signatures");
   });
 });

@@ -42,7 +42,9 @@ Test:
 - expired signed redirects are never reused from cache; expired source media fails clearly without saving broken references
 - URL credentials, unsafe schemes/ports, private and special-use IPv4/IPv6 targets, DNS rebinding strategy failures, redirects, and off-allowlist hosts are rejected
 - byte limits are enforced while streaming without relying on `Content-Length`
-- invalid MIME/signature pairs and SVG are rejected by default
+- known image-format failures return an actionable 422 JSON error without article writes or leaked signed URLs, and clean earlier request-owned uploads
+- a JPEG response declared as `image/png` is rejected before storage, even though Blogr normalizes its own source images before publishing
+- recognized PNG, JPEG, GIF, and RIFF/WEBP signatures with matching declared MIME types are accepted; malformed or truncated signatures, non-raster bytes, and SVG are rejected by default
 - timeout, upload, rewrite, and final mutation failures do not delete shared objects
 
 ## Rendering

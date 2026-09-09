@@ -60,7 +60,7 @@ R2 credentials are created through Cloudflare's API-token interface, but runtime
 
 An empty `image_url` means there is no feature image. Skip its download while still copying body/frontmatter images; reject malformed non-empty URLs.
 
-Remote images are SSRF input. Use a trusted-host allowlist or validated public-address egress, revalidate redirects, reject private/special-use IP ranges and URL credentials, enforce byte limits while streaming, verify raster MIME/signature, and reject SVG by default.
+Remote images are SSRF input. Use a trusted-host allowlist or validated public-address egress, revalidate redirects, reject private/special-use IP ranges and URL credentials, enforce byte limits while streaming, verify that the declared raster MIME type matches the recognized bytes, and reject SVG by default. Blogr normalizes its source object MIME type before publication; receivers still reject any mismatch they receive.
 
 Bind connections to validated addresses or a trusted egress layer to prevent DNS rebinding. Do not cache signed asset redirects beyond their expiry. If incoming source media is already expired, obtain fresh media or republish instead of storing a broken reference.
 

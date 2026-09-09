@@ -93,6 +93,7 @@ import type * as r2_getSignedImageUrlExpirationMs from "../r2/getSignedImageUrlE
 import type * as r2_sanitizeR2KeyPart from "../r2/sanitizeR2KeyPart.js";
 import type * as r2_shouldRefreshSignedImageUrl from "../r2/shouldRefreshSignedImageUrl.js";
 import type * as r2_storeImageFromUrl from "../r2/storeImageFromUrl.js";
+import type * as r2_storeImageFromUrlActionHandler from "../r2/storeImageFromUrlActionHandler.js";
 import type * as rag_buildProductRagNamespace from "../rag/buildProductRagNamespace.js";
 import type * as rag_buildProductRagText from "../rag/buildProductRagText.js";
 import type * as rag_client from "../rag/client.js";
@@ -249,6 +250,7 @@ declare const fullApi: ApiFromModules<{
   "r2/sanitizeR2KeyPart": typeof r2_sanitizeR2KeyPart;
   "r2/shouldRefreshSignedImageUrl": typeof r2_shouldRefreshSignedImageUrl;
   "r2/storeImageFromUrl": typeof r2_storeImageFromUrl;
+  "r2/storeImageFromUrlActionHandler": typeof r2_storeImageFromUrlActionHandler;
   "rag/buildProductRagNamespace": typeof rag_buildProductRagNamespace;
   "rag/buildProductRagText": typeof rag_buildProductRagText;
   "rag/client": typeof rag_client;

@@ -1,3 +1,5 @@
+import { detectRasterImageFormat } from "../../../shared/raster/detectRasterImageFormat";
+
 type DownloadedImageUrl = {
   body: ArrayBuffer;
   contentType: string;
@@ -12,14 +14,15 @@ export const downloadImageUrl = async (
     return null;
   }
 
-  const contentType = response.headers.get("content-type") || "image/png";
+  const body = await response.arrayBuffer();
+  const format = detectRasterImageFormat(body);
 
-  if (!contentType.startsWith("image/")) {
+  if (!format) {
     return null;
   }
 
   return {
-    body: await response.arrayBuffer(),
-    contentType,
+    body,
+    contentType: format.contentType,
   };
 };

@@ -4,6 +4,8 @@
 
 Generated and scanned images are copied into Cloudflare R2. The app stores R2 object keys in Convex and serves fresh signed URLs from Convex queries.
 
+Before either upload path writes an object, it recognizes the image format from its leading bytes. PNG, JPEG, GIF, and RIFF/WEBP are supported. The recognized format determines both the stored MIME type and filename extension, so an upstream response that labels JPEG bytes as PNG is stored as `image/jpeg` with a `.jpg` key. This signature check does not fully decode an image. Malformed, truncated, unsupported, and SVG bytes are rejected instead of being stored with an incorrect type. Existing objects can retain legacy key suffixes when their corrected object MIME type already matches their bytes.
+
 This keeps article images and product scan images from depending on temporary third-party URLs from Replicate, Firecrawl, or scraped site metadata.
 
 ## How It Works
@@ -51,6 +53,7 @@ The R2 bucket must allow Convex to read and write objects.
 - `convex/convex.config.ts`
 - `convex/r2/client.ts`
 - `convex/r2/storeImageFromUrl.ts`
+- `shared/raster/detectRasterImageFormat.ts`
 - `convex/r2/getR2ImageUrl.ts`
 - `convex/r2/getSignedImageUrlExpirationMs.ts`
 - `convex/r2/shouldRefreshSignedImageUrl.ts`
@@ -84,6 +87,17 @@ convex/r2/
 convex/products/refreshProductImageUrls.ts
 convex/blogs/refreshBlogImageUrls.ts
 src/server/r2/
+shared/raster/
 src/server/product/storeProductScanImages.ts
 src/server/blog/storeGeneratedBlogImages.ts
 ```
+
+## September 9, 2026 publishing repair
+
+Two Solo Quest feature images were stored with `image/png` metadata although their bytes were JPEG. Their R2 Content-Type was corrected to `image/jpeg` in place after an image decoder identified both as 1376 × 768 JPEGs. Keys, bytes, and article references were retained, so legacy `.png` suffixes remain harmless. The existing signed URLs returned HTTP 200 with matching JPEG headers and passed Solo Quest's actual signature validator after repair.
+
+Affected articles:
+- The Best Gamified Habit Apps for Personal Goals in 2026
+- Small Daily Actions That Actually Move You Toward Big Goals
+
+The corrected Convex storage function was pushed to the configured development deployment. Blogr has no production Convex deployment. The Next.js fallback and setup prompt changes require the normal Vercel release; Solo Quest's HTTP 422 error improvement likewise requires its web release. No article was republished during verification.

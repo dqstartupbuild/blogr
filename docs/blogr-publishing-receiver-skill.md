@@ -48,7 +48,7 @@ A full install reads the complete receiver set. A renderer repair reads contract
 
 The guidance requires authorization at both the Next route and every callable Convex publishing/ingestion boundary, including permission for the target site. It uses one bounded final Convex mutation for ownership rechecks plus canonical and summary writes. R2 uploads happen before that transaction. Confirmed rejection cleans request-owned objects; an unknown commit outcome retains them until reconciliation proves they are unused. A cache-refresh failure cannot delete committed images.
 
-Saved articles retain R2 object keys and stable same-origin routes, or explicitly permanent public URLs. They do not persist expiring presigned URLs or cache signed redirects past expiry. Remote downloads use an allowlist or validated public-address strategy with connection binding, redirect, IP-range, streaming-size, MIME, timeout, and SVG controls.
+Saved articles retain R2 object keys and stable same-origin routes, or explicitly permanent public URLs. They do not persist expiring presigned URLs or cache signed redirects past expiry. Remote downloads use an allowlist or validated public-address strategy with connection binding, redirect, IP-range, streaming-size, timeout, and byte-signature controls. Receivers compare a declared raster MIME type with recognized bytes before storage and reject malformed, truncated, mismatched, or SVG content by default. Blogr normalizes its source objects before publication without changing that receiving-side requirement.
 
 Received MDX is never compiled as trusted JavaScript. The renderer supports a controlled Markdown/YouTube subset and applies the same restrictions to repo-exported files.
 
