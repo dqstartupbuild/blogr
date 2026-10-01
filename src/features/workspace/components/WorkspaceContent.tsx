@@ -12,6 +12,7 @@ import { ProductDetailsPanel } from "./ProductDetailsPanel";
 import { ProductSetupPanel } from "./ProductSetupPanel";
 import { TopicsPanel } from "./TopicsPanel";
 import { WorkspaceSettingsPanel } from "./WorkspaceSettingsPanel";
+import { LocalBackupPanel } from "./LocalBackupPanel";
 import { WorkspacePageHeader } from "./WorkspacePageHeader";
 import { WorkspaceShell } from "./WorkspaceShell";
 import type { BlogItem } from "../types/BlogItem";
@@ -79,9 +80,11 @@ type WorkspaceContentProps = {
   saveProductDetails: SaveProductDetails;
   saveBlogGenerationSettings: (
     settings: BlogGenerationSettings,
+    expectedUpdatedAt: number,
   ) => void | Promise<void>;
   saveBlogPublishingIntegration: (
     integration: BlogPublishingIntegrationDraft,
+    expectedUpdatedAt: number,
   ) => void | Promise<void>;
   schedulableTopics: TopicItem[];
   scheduleTopicOnCalendar: ScheduleTopicOnCalendar;
@@ -235,13 +238,13 @@ export const WorkspaceContent = ({
                 title="Settings"
               />
               <ProductSetupPanel
-                key={`${product.websiteUrl}:${product.niche}`}
+                key={workspaceSwitcher.activeWorkspaceId}
                 product={product}
                 productScanState={productScanState}
                 scanProduct={scanProduct}
               />
               <ProductDetailsPanel
-                key={`${workspaceSwitcher.activeWorkspaceId}:${product.updatedAt || 0}`}
+                key={workspaceSwitcher.activeWorkspaceId}
                 product={product}
                 productDetailsState={productDetailsState}
                 saveProductDetails={saveProductDetails}
@@ -255,9 +258,8 @@ export const WorkspaceContent = ({
               <BlogPublishingIntegrationPanel
                 integration={product.blogPublishingIntegration}
                 isSaving={isSavingBlogPublishingIntegration}
-                key={`${workspaceSwitcher.activeWorkspaceId}:${JSON.stringify(
-                  product.blogPublishingIntegration,
-                )}`}
+                key={workspaceSwitcher.activeWorkspaceId}
+                productUpdatedAt={product.updatedAt || 0}
                 productName={product.name}
                 saveIntegration={saveBlogPublishingIntegration}
                 statusMessage={publishingIntegrationStatusMessage}
@@ -265,18 +267,17 @@ export const WorkspaceContent = ({
               <CalendarQueueSettingsPanel
                 candidateDateKeys={calendarState.fillableDateKeys}
                 isSaving={calendarState.isSavingQueueSettings}
-                key={`${workspaceSwitcher.activeWorkspaceId}:${JSON.stringify(
-                  calendarState.calendarQueueSettings,
-                )}`}
+                key={workspaceSwitcher.activeWorkspaceId}
+                productUpdatedAt={product.updatedAt || 0}
                 saveCalendarQueueSettings={saveCalendarQueueSettings}
                 settings={calendarState.calendarQueueSettings}
                 stableSeed={workspaceSwitcher.activeWorkspaceId}
               />
+              <LocalBackupPanel />
               <WorkspaceSettingsPanel
                 isSaving={isSavingBlogGenerationSettings}
-                key={`${workspaceSwitcher.activeWorkspaceId}:${JSON.stringify(
-                  blogGenerationSettings,
-                )}`}
+                key={workspaceSwitcher.activeWorkspaceId}
+                productUpdatedAt={product.updatedAt || 0}
                 saveSettings={saveBlogGenerationSettings}
                 settings={blogGenerationSettings}
                 statusMessage={settingsStatusMessage}

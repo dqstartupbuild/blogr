@@ -1,28 +1,24 @@
 "use client";
 
-import { useEffect, useMemo, useRef } from "react";
-import { useMutation, useQuery } from "convex/react";
-import { castProductId } from "@/server/convex/castProductId";
-import { createProductWorkspaceMutation } from "@/server/convex/references/createProductWorkspaceMutation";
-import { ensureProductWorkspaceSummariesMutation } from "@/server/convex/references/ensureProductWorkspaceSummariesMutation";
-import { getProductWorkspacesQuery } from "@/server/convex/references/getProductWorkspacesQuery";
-import { setActiveProductWorkspaceMutation } from "@/server/convex/references/setActiveProductWorkspaceMutation";
-import { mapConvexProductWorkspace } from "../mappers/mapConvexProductWorkspace";
+import { useMemo } from "react";
+import { useMutation, useQuery } from "@/local/client/hooks";
+import { castProductId } from "@/local/client/castProductId";
+import { createProductWorkspaceMutation } from "@/local/client/references/createProductWorkspaceMutation";
+import { getProductWorkspacesQuery } from "@/local/client/references/getProductWorkspacesQuery";
+import { setActiveProductWorkspaceMutation } from "@/local/client/references/setActiveProductWorkspaceMutation";
+import { mapLocalProductWorkspace } from "../mappers/mapLocalProductWorkspace";
 import type { CreateProductWorkspaceInput } from "../types/CreateProductWorkspaceInput";
 import type { WorkspaceSwitcherState } from "../types/WorkspaceSwitcherState";
+import type { ProductWorkspace } from "../types/ProductWorkspace";
 
 export const useLiveWorkspaceSwitcher = (): WorkspaceSwitcherState => {
-  const didEnsureSummariesRef = useRef(false);
-  const workspaceResult = useQuery(getProductWorkspacesQuery);
+  const workspaceResult = useQuery<{ products: Array<ProductWorkspace & { _id: string }>; activeProductId?: string }>(getProductWorkspacesQuery);
   const createProductWorkspace = useMutation(createProductWorkspaceMutation);
-  const ensureProductWorkspaceSummaries = useMutation(
-    ensureProductWorkspaceSummariesMutation,
-  );
   const setActiveProductWorkspace = useMutation(
     setActiveProductWorkspaceMutation,
   );
   const workspaces = useMemo(
-    () => (workspaceResult?.products || []).map(mapConvexProductWorkspace),
+    () => (workspaceResult?.products || []).map(mapLocalProductWorkspace),
     [workspaceResult],
   );
   const activeWorkspaceId = workspaceResult?.activeProductId || "";
@@ -30,16 +26,6 @@ export const useLiveWorkspaceSwitcher = (): WorkspaceSwitcherState => {
     () => workspaces.find((workspace) => workspace.id === activeWorkspaceId),
     [activeWorkspaceId, workspaces],
   );
-
-  useEffect(() => {
-    if (didEnsureSummariesRef.current || workspaceResult === undefined) {
-      return;
-    }
-
-    didEnsureSummariesRef.current = true;
-
-    void ensureProductWorkspaceSummaries().catch(() => undefined);
-  }, [ensureProductWorkspaceSummaries, workspaceResult]);
 
   const selectWorkspace = async (workspaceId: string) => {
     if (!workspaceId || workspaceId === activeWorkspaceId) {

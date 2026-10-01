@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useVersionedDraft } from "../hooks/useVersionedDraft";
 import { Save } from "lucide-react";
 import { PrimaryButton } from "./PrimaryButton";
 import { ProductColorEditor } from "./ProductColorEditor";
@@ -25,7 +25,7 @@ export const ProductDetailsPanel = ({
   productDetailsState,
   saveProductDetails,
 }: ProductDetailsPanelProps) => {
-  const [draft, setDraft] = useState<ProductDetailsDraft>({
+  const { draft, setDraft, expectedUpdatedAt, hasConflict } = useVersionedDraft<ProductDetailsDraft>({
     audience: product.audience,
     colors: product.colors,
     competitors: product.competitors,
@@ -37,7 +37,7 @@ export const ProductDetailsPanel = ({
     offers: product.offers,
     pricing: product.pricing,
     websiteUrl: product.websiteUrl,
-  });
+  }, product.updatedAt || 0);
 
   return (
     <section className="rounded-lg border border-black/10 bg-white p-4 shadow-sm">
@@ -45,11 +45,12 @@ export const ProductDetailsPanel = ({
       <p className="mt-2 text-sm leading-6 text-black/60">
         Keep these details accurate so every article understands what you sell.
       </p>
+      {hasConflict ? <p className="mt-3 text-sm text-red-700" role="alert">This project changed on another tab. Your edits are still here. Reload to review the latest saved details before saving.</p> : null}
       <form
         className="mt-4 grid gap-4"
         onSubmit={(event) => {
           event.preventDefault();
-          void Promise.resolve(saveProductDetails(draft)).catch(() => undefined);
+          void Promise.resolve(saveProductDetails(draft, expectedUpdatedAt)).catch(() => undefined);
         }}
       >
         <div className="grid gap-3 md:grid-cols-2">

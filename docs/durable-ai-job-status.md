@@ -1,5 +1,7 @@
 # Durable AI Job Status
 
+> Historical implementation note: this page describes the former hosted implementation. Blogger now saves locally. See [Local Blogger application](local-application.md) for current behavior.
+
 ## Overview
 
 Durable AI work can keep running after its first web request returns. Signed-in clients can now check a job they own and receive its current status or finished result. This prevents a temporary database read problem from making successful blog writing, planning, scanning, image, brief, or discovery work look like it failed.

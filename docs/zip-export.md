@@ -1,44 +1,7 @@
-# Zip Export
+# Download an article ZIP
 
-## What It Does
+Choose **Download ZIP** from an article. Blogr packages the current editor draft as an MDX file, `metadata.json`, a README, and image files it can retrieve. Managed local images are read directly from the constrained `BLOGR_HOME/media` folder and referenced with ZIP-relative paths in the MDX. External images are fetched with the same public-image safety checks.
 
-Users can download a generated blog as a zip that can be dropped into an MDX blog repo.
+The ZIP is a portable article package, not a whole-workspace backup. Use **Download backup** in Settings to save projects, topics, articles, versions, settings, and managed images together. ZIP download works without an AI key or account.
 
-## How It Works
-
-Downloading from the app calls `POST /api/blogs/download` with the blog that is already loaded in the browser.
-
-The download route checks the signed-in user, collects feature and inline image URLs from the posted blog, fetches any images it can, rewrites those image URLs to local `./images/...` paths, and builds a zip.
-
-If an image cannot be fetched, the original remote URL stays in the MDX.
-
-The old `GET /api/blogs/[blogId]/download` route returns a simple message so
-stale links do not trigger a server-side Convex read.
-
-## Zip Contents
-
-- `{slug}.mdx`
-- `README.md`
-- `metadata.json`
-- `images/` with downloaded images
-
-## Relevant Code
-
-- `src/app/api/blogs/download/route.ts`
-- `src/features/workspace/components/BlogZipButton.tsx`
-- `src/features/workspace/utils/downloadBlogZip.ts`
-- `src/server/download/buildBlogZip.ts`
-- `src/server/download/collectBlogImageUrls.ts`
-- `src/server/download/downloadBlogImages.ts`
-- `src/server/download/replaceImageUrlsInMdx.ts`
-- `src/server/download/buildBlogMetadata.ts`
-- `src/server/download/buildBlogReadme.ts`
-
-## File Tree
-
-```text
-src/app/api/blogs/download/
-src/features/workspace/components/BlogZipButton.tsx
-src/features/workspace/utils/
-src/server/download/
-```
+Relevant code: `src/app/api/blogs/download/route.ts`, `src/server/download/buildBlogZip.ts`, and `src/local/server/buildLocalExport.ts`.

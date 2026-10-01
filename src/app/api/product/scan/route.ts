@@ -1,77 +1,33 @@
 import { NextResponse } from "next/server";
-import { getConvexAuthToken } from "@/server/auth/getConvexAuthToken";
-import { getOptionalConvexAuthToken } from "@/server/auth/getOptionalConvexAuthToken";
-import { createBlogAiJob } from "@/server/blogAiWorker/createBlogAiJob";
-import { hasBlogAiWorkerJob } from "@/server/blogAiWorker/hasBlogAiWorkerJob";
-import { waitForBlogAiJob } from "@/server/blogAiWorker/waitForBlogAiJob";
-import { requireRouteUserId } from "@/server/auth/requireRouteUserId";
-import { castProductId } from "@/server/convex/castProductId";
-import { getErrorStatus } from "@/server/http/getErrorStatus";
-import { getPublicErrorMessage } from "@/server/http/getPublicErrorMessage";
+import { assertLocalRequest } from "@/local/server/assertLocalRequest";
+import { readLocalJson } from "@/local/server/readLocalJson";
+import { readLocalState } from "@/local/server/readLocalState";
+import { updateLocalState } from "@/local/server/updateLocalState";
+import { mutateProduct } from "@/local/server/mutateProduct";
+import { localErrorResponse } from "@/local/server/localErrorResponse";
 import { scanAndStoreProductWebsite } from "@/server/product/scanAndStoreProductWebsite";
-import { indexProductRagContext } from "@/server/rag/indexProductRagContext";
-import { logRouteError } from "@/server/http/logRouteError";
 import { productScanRequestSchema } from "./schema";
-
+import { mergeProductLinkStates } from "@/features/workspace/utils/mergeProductLinkStates";
+import { withManagedMediaScope } from "@/local/server/withManagedMediaScope";
+export const runtime = "nodejs";
 export const maxDuration = 300;
-
 export async function POST(request: Request) {
-  try {
-    const userId = await requireRouteUserId();
-
-    const body = await request.json();
-    const input = productScanRequestSchema.parse(body);
-    const productId = input.productId ? castProductId(input.productId) : undefined;
-
-    if (hasBlogAiWorkerJob() && productId) {
-      const token = await getConvexAuthToken();
-      const jobId = await createBlogAiJob({
-        input: {
-          convexAuthToken: token,
-          input,
-          type: "product.scan",
-          userId,
-        },
-        productId,
-        token,
-      });
-      const job = await waitForBlogAiJob({ jobId, token });
-
-      if (job?.status === "failed") {
-        throw new Error(job.error || "Could not scan that site yet.");
-      }
-
-      return NextResponse.json(
-        {
-          jobId,
-          product: (job?.result as { product?: unknown } | undefined)?.product,
-          status: job?.status || "queued",
-        },
-        { status: job?.status === "succeeded" ? 200 : 202 },
-      );
-    }
-
-    const token = await getOptionalConvexAuthToken();
-    const storedProduct = await scanAndStoreProductWebsite({
-      niche: input.niche,
-      token,
-      userId,
-      websiteUrl: input.websiteUrl,
+  try { return await withManagedMediaScope(async () => {
+    assertLocalRequest(request);
+    const input = productScanRequestSchema.parse(await readLocalJson(request));
+    const before = await readLocalState();
+    const original = before.products.find((item) => item.id === input.productId);
+    if (input.productId && !original) throw new Error("Workspace not found.");
+    const product = await scanAndStoreProductWebsite({ websiteUrl: input.websiteUrl, niche: input.niche });
+    const state = await readLocalState();
+    const existing = state.products.find((item) => item.id === input.productId);
+    const siteLinks = existing ? mergeProductLinkStates({ currentLinks: existing.siteLinks, refreshedLinks: product.siteLinks }) : product.siteLinks;
+    const saved = await updateLocalState(state.revision, (next) => {
+      const current = next.products.find((item) => item.id === input.productId);
+      if (original && (!current || current.updatedAt !== original.updatedAt)) throw new Error("This project changed during the scan. Review it before trying again.");
+      return mutateProduct(next, "saveProductScanMutation", { ...product, siteLinks, productId: input.productId });
     });
-
-    await indexProductRagContext({
-      product: storedProduct,
-      productId: input.productId,
-      token,
-    });
-
-    return NextResponse.json({ product: storedProduct });
-  } catch (error) {
-    logRouteError(error);
-
-    return NextResponse.json(
-      { error: getPublicErrorMessage(error) },
-      { status: getErrorStatus(error) },
-    );
-  }
+    return NextResponse.json({ product, productId: saved.result }, { headers: { "Cache-Control": "no-store" } });
+  });
+  } catch (error) { return localErrorResponse(error); }
 }

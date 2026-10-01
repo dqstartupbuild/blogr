@@ -1,5 +1,7 @@
 # Article Image Planning Agent
 
+> Historical implementation note: this page describes the former hosted implementation. Blogger now saves locally. See [Local Blogger application](local-application.md) for current behavior.
+
 ## What It Does
 
 The article is written before images are generated. After the writer returns MDX, the app divides its level-two sections into evenly spaced zones and assigns supporting images across the full article. A second Replicate model then writes image prompts for those exact assigned sections.

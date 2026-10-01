@@ -34,6 +34,7 @@ export const useBlogImageActions = ({
 }: UseBlogImageActionsOptions) => {
   const [isAltDialogOpen, setIsAltDialogOpen] = useState(false);
   const [isMoveDialogOpen, setIsMoveDialogOpen] = useState(false);
+  const [isRemoveDialogOpen, setIsRemoveDialogOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState("");
   const resolvedImageIndex =
@@ -85,13 +86,11 @@ export const useBlogImageActions = ({
   };
 
   const remove = () => {
-    if (
-      resolvedImageIndex === null ||
-      !window.confirm("Remove this image from the article?")
-    ) {
-      return;
-    }
+    if (resolvedImageIndex !== null) setIsRemoveDialogOpen(true);
+  };
 
+  const confirmRemove = () => {
+    if (resolvedImageIndex === null) return;
     void saveChanges(
       buildBlogImageRemovalChanges({
         imageIndex: resolvedImageIndex,
@@ -99,7 +98,7 @@ export const useBlogImageActions = ({
         mdx,
         title,
       }),
-    ).catch(() => undefined);
+    ).then(() => setIsRemoveDialogOpen(false)).catch(() => undefined);
   };
 
   const saveAlt = async (nextAlt: string) => {
@@ -143,6 +142,7 @@ export const useBlogImageActions = ({
     error,
     isAltDialogOpen,
     isMoveDialogOpen,
+    isRemoveDialogOpen,
     isSaving,
     makeFeature,
     openAltDialog: () => {
@@ -154,6 +154,8 @@ export const useBlogImageActions = ({
       setIsMoveDialogOpen(true);
     },
     remove,
+    confirmRemove,
+    cancelRemove: () => setIsRemoveDialogOpen(false),
     saveAlt,
     saveMove,
     sectionHeadings,

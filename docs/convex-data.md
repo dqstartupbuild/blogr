@@ -1,5 +1,7 @@
 # Convex Data
 
+> Historical implementation note: this page describes the former hosted implementation. Blogger now saves locally. See [Local Blogger application](local-application.md) for current behavior.
+
 ## What It Does
 
 Convex stores product workspaces, blog generation settings, blog publishing integrations, R2 image keys, active workspace selections, saved topics, scheduled topic dates, topic dedupe metadata, generated blogs, list search metadata, blog tags, and component-managed product context embeddings.

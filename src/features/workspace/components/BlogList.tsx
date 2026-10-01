@@ -28,7 +28,7 @@ export const BlogList = ({
 
   return (
     <div className="min-w-0 max-w-full overflow-hidden rounded-lg border border-black/10 bg-white shadow-sm">
-      <div className="hidden grid-cols-[minmax(0,1.4fr)_minmax(160px,0.7fr)_120px_minmax(160px,0.8fr)_340px] gap-4 border-b border-black/10 px-4 py-3 text-sm font-semibold text-black/60 xl:grid">
+      <div className="hidden grid-cols-[minmax(220px,1.4fr)_minmax(150px,0.7fr)_110px_minmax(150px,0.8fr)_300px] gap-4 border-b border-black/10 px-4 py-3 text-sm font-semibold text-black/60 2xl:grid">
         <span>Title</span>
         <span>Topic</span>
         <span>Status</span>

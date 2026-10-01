@@ -1,5 +1,7 @@
 # Blog Published Status Filter
 
+> Historical implementation note: this page describes the former hosted implementation. Blogger now saves locally. See [Local Blogger application](local-application.md) for current behavior.
+
 ## What It Does
 
 Blogs can now be marked as published after a successful publish request. The Blogs tab has a simple filter bar so users can switch between all posts, posts that have not been published yet, and posts that have already been published.

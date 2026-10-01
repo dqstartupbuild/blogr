@@ -1,16 +1,16 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { usePaginatedQuery, useQuery } from "convex/react";
+import { usePaginatedQuery, useQuery } from "@/local/client/hooks";
 import { ArticleVersionHistoryList } from "./ArticleVersionHistoryList";
 import { ArticleVersionPreview } from "./ArticleVersionPreview";
 import { SecondaryButton } from "./SecondaryButton";
-import { castBlogId } from "@/server/convex/castBlogId";
-import { castBlogVersionId } from "@/server/convex/castBlogVersionId";
-import { castProductId } from "@/server/convex/castProductId";
-import { getBlogVersionQuery } from "@/server/convex/references/getBlogVersionQuery";
-import { listBlogVersionsQuery } from "@/server/convex/references/listBlogVersionsQuery";
-import { mapConvexBlogVersion } from "../mappers/mapConvexBlogVersion";
+import { castBlogId } from "@/local/client/castBlogId";
+import { castBlogVersionId } from "@/local/client/castBlogVersionId";
+import { castProductId } from "@/local/client/castProductId";
+import { getBlogVersionQuery } from "@/local/client/references/getBlogVersionQuery";
+import { listBlogVersionsQuery } from "@/local/client/references/listBlogVersionsQuery";
+import { mapLocalBlogVersion } from "../mappers/mapLocalBlogVersion";
 import type { ArticleVersionSummary } from "../types/ArticleVersionSummary";
 import type { BlogItem } from "../types/BlogItem";
 
@@ -56,7 +56,7 @@ export const ArticleVersionHistoryContent = ({
       : "skip",
   );
   const selectedVersion = useMemo(
-    () => (versionResult ? mapConvexBlogVersion(versionResult) : undefined),
+    () => (versionResult ? mapLocalBlogVersion(versionResult) : undefined),
     [versionResult],
   );
 

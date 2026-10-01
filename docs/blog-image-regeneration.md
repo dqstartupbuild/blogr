@@ -1,5 +1,7 @@
 # Blog Image Regeneration
 
+> Historical implementation note: this page describes the former hosted implementation. Blogger now saves locally. See [Local Blogger application](local-application.md) for current behavior.
+
 ## What It Does
 
 Users can refresh any image they don't like, right inside the AI article preview. A small "Regenerate" button sits on top of every image in the article preview, including the cover image. Clicking it opens the image prompt first, so the user can change what the next image should show before creating it. Submitting that prompt swaps the image for a freshly generated one and updates the article body so the new image shows up everywhere the old one was used.

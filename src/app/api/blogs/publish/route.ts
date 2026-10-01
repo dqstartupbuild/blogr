@@ -1,80 +1,45 @@
-import { fetchAction } from "convex/nextjs";
 import { NextResponse } from "next/server";
-import { markPublishedBlogStatus } from "./markPublishedBlogStatus";
-import { blogPublishRequestSchema } from "./schema";
-import { getConvexAuthToken } from "@/server/auth/getConvexAuthToken";
-import { requireRouteUserId } from "@/server/auth/requireRouteUserId";
-import { castProductId } from "@/server/convex/castProductId";
-import { hasConvexUrl } from "@/server/convex/hasConvexUrl";
-import { publishBlogWithIntegrationAction } from "@/server/convex/references/publishBlogWithIntegrationAction";
-import { getErrorStatus } from "@/server/http/getErrorStatus";
-import { getPublicErrorMessage } from "@/server/http/getPublicErrorMessage";
-import { logRouteError } from "@/server/http/logRouteError";
-import { PublicError } from "@/server/http/PublicError";
+import { assertLocalRequest } from "@/local/server/assertLocalRequest";
+import { readLocalJson } from "@/local/server/readLocalJson";
+import { readLocalState } from "@/local/server/readLocalState";
+import { updateLocalState } from "@/local/server/updateLocalState";
+import { mutateBlog } from "@/local/server/mutateBlog";
+import { localErrorResponse } from "@/local/server/localErrorResponse";
 import { buildBlogPublishPayload } from "@/server/publishing/buildBlogPublishPayload";
 import { getBlogPublishEventType } from "@/server/publishing/getBlogPublishEventType";
 import { getBlogPublishEnvironmentDestination } from "@/server/publishing/getBlogPublishEnvironmentDestination";
+import { getBlogPublishToken } from "@/server/publishing/getBlogPublishToken";
 import { sendBlogPublishWebhook } from "@/server/publishing/sendBlogPublishWebhook";
-
+import { blogPublishRequestSchema } from "./schema";
+export const runtime = "nodejs";
 export const maxDuration = 60;
-
 export async function POST(request: Request) {
   try {
-    await requireRouteUserId();
-
-    const body = await request.json();
-    const { blog } = blogPublishRequestSchema.parse(body);
-    const eventType = getBlogPublishEventType(blog);
-    const payload = buildBlogPublishPayload(blog, eventType);
-    let convexAuthToken: string | undefined;
-
-    if (blog.productId && hasConvexUrl()) {
-      convexAuthToken = await getConvexAuthToken();
-      const result = await fetchAction(
-        publishBlogWithIntegrationAction,
-        {
-          payload,
-          productId: castProductId(blog.productId),
-        },
-        { token: convexAuthToken },
-      );
-
-      if (result.published) {
-        await markPublishedBlogStatus(blog, convexAuthToken).catch(
-          () => undefined,
-        );
-
-        return NextResponse.json({
-          message: result.message || "Published.",
-          published: true,
-        });
-      }
+    assertLocalRequest(request);
+    const input = blogPublishRequestSchema.parse(await readLocalJson(request));
+    const state = await readLocalState();
+    const blog = state.blogs.find((item) => item.id === input.blog.id && item.productId === input.blog.productId);
+    if (!blog) throw new Error("Article not found.");
+    const product = state.products.find((item) => item.id === blog.productId);
+    const configured = getBlogPublishEnvironmentDestination();
+    const destination = product?.blogPublishingIntegration?.enabled
+      ? product.blogPublishingIntegration.webhookUrl && getBlogPublishToken(product.id)
+        ? { token: getBlogPublishToken(product.id), url: product.blogPublishingIntegration.webhookUrl, sourceName: product.blogPublishingIntegration.sourceName || "Blogr" }
+        : null
+      : configured;
+    if (!destination) throw new Error("Set BLOG_PUBLISH_WEBHOOK_URL and BLOG_PUBLISH_WEBHOOK_TOKEN before publishing.");
+    if (blog.images.some((image) => image.url.startsWith("/api/local/")) || blog.featureImageUrl?.startsWith("/api/local/") || blog.mdx.includes("/api/local/media/")) throw new Error("This article has images saved only on this computer. Export it or use a publishing receiver that accepts uploaded images.");
+    const message = await sendBlogPublishWebhook(buildBlogPublishPayload(blog, getBlogPublishEventType(blog), destination.sourceName), destination);
+    try {
+      const latest = await readLocalState();
+      await updateLocalState(latest.revision, (next) => {
+        const current = next.blogs.find((item) => item.id === blog.id && item.productId === blog.productId);
+        if (!current || current.updatedAt !== blog.updatedAt) throw new Error("The article changed during publishing.");
+        return mutateBlog(next, "markBlogPublishedMutation", { blogId: blog.id, productId: blog.productId });
+      });
+      return NextResponse.json({ published: true, message: message || "Published." }, { headers: { "Cache-Control": "no-store" } });
+    } catch {
+      return NextResponse.json({ published: true, message: "The receiving site accepted this article, but its local status could not be saved because the article changed or storage failed. Reload and check before publishing again." }, { headers: { "Cache-Control": "no-store" } });
     }
-
-    const destination = getBlogPublishEnvironmentDestination();
-
-    if (!destination) {
-      throw new PublicError("Add a publishing integration in Settings before publishing.");
-    }
-
-    const fallbackPayload = buildBlogPublishPayload(
-      blog,
-      eventType,
-      destination.sourceName,
-    );
-    const message = await sendBlogPublishWebhook(fallbackPayload, destination);
-    await markPublishedBlogStatus(blog, convexAuthToken).catch(() => undefined);
-
-    return NextResponse.json({
-      message: message || "Published.",
-      published: true,
-    });
-  } catch (error) {
-    logRouteError(error);
-
-    return NextResponse.json(
-      { error: getPublicErrorMessage(error) },
-      { status: getErrorStatus(error) },
-    );
-  }
+  } catch (error) { return localErrorResponse(error); }
 }

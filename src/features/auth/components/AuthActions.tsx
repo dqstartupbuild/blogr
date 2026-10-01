@@ -1,11 +1,2 @@
 "use client";
-
-import { LiveAuthActions } from "./LiveAuthActions";
-
-export const AuthActions = () => {
-  if (!process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY) {
-    return null;
-  }
-
-  return <LiveAuthActions />;
-};
+export const AuthActions = () => <span className="text-xs text-black/55">Saved on this computer</span>;

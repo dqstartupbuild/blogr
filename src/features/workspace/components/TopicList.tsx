@@ -47,7 +47,7 @@ export const TopicList = ({
         <span>Articles</span>
         <span className="text-right">Actions</span>
       </div>
-      {topics.map((topic) => (
+      {[...new Map(topics.map((topic) => [topic.id, topic])).values()].map((topic) => (
         <TopicRow
           calendarDateKeys={calendarDateKeys}
           deleteTopic={deleteTopic}

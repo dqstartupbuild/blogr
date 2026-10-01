@@ -1,5 +1,7 @@
 # Product Link Management
 
+> Historical implementation note: this page describes the former hosted implementation. Blogger now saves locally. See [Local Blogger application](local-application.md) for current behavior.
+
 ## What It Does
 
 Each product workspace keeps the links found during the site scan. Users can refresh those links from Settings, mark links as "do not use," and turn those links back on later.

@@ -1,5 +1,7 @@
 # Topic and Blog List Pagination
 
+> Historical implementation note: this page describes the former hosted implementation. Blogger now saves locally. See [Local Blogger application](local-application.md) for current behavior.
+
 ## What It Does
 
 The Topics and Articles tabs load one page of rows at a time. Each page shows at most 10 items, with simple Previous and Next controls.

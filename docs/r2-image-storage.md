@@ -1,5 +1,7 @@
 # R2 Image Storage
 
+> Historical implementation note: this page describes the former hosted implementation. Blogger now saves locally. See [Local Blogger application](local-application.md) for current behavior.
+
 ## What It Does
 
 Generated and scanned images are copied into Cloudflare R2. The app stores R2 object keys in Convex and serves fresh signed URLs from Convex queries.

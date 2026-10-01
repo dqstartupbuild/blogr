@@ -13,6 +13,7 @@ type CalendarQueueSettingsPanelProps = {
   saveCalendarQueueSettings: SaveCalendarQueueSettings;
   settings: CalendarQueueSettings;
   stableSeed: string;
+  productUpdatedAt: number;
 };
 
 export const CalendarQueueSettingsPanel = ({
@@ -21,6 +22,7 @@ export const CalendarQueueSettingsPanel = ({
   saveCalendarQueueSettings,
   settings,
   stableSeed,
+  productUpdatedAt,
 }: CalendarQueueSettingsPanelProps) => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
@@ -52,6 +54,7 @@ export const CalendarQueueSettingsPanel = ({
           saveCalendarQueueSettings={saveCalendarQueueSettings}
           settings={settings}
           stableSeed={stableSeed}
+          productUpdatedAt={productUpdatedAt}
         />
       ) : null}
     </section>

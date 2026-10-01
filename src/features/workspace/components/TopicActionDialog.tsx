@@ -13,6 +13,7 @@ import { TopicRepurposeButton } from "./TopicRepurposeButton";
 import { TopicRepurposeDialog } from "./TopicRepurposeDialog";
 import { TopicSourceBadge } from "./TopicSourceBadge";
 import { TopicWriteButton } from "./TopicWriteButton";
+import { CreateBlankArticleButton } from "./CreateBlankArticleButton";
 import { canAddTopicToCalendar } from "../utils/canAddTopicToCalendar";
 import { canRemoveTopicFromCalendar } from "../utils/canRemoveTopicFromCalendar";
 import { formatCalendarDateBadge } from "../utils/formatCalendarDateBadge";
@@ -136,6 +137,7 @@ export const TopicActionDialog = ({
               void Promise.resolve(writeBlog(topic.id)).catch(() => undefined);
             }}
           />
+          {!topic.blogId && !isWriting ? <CreateBlankArticleButton onCreated={handleOpenBlog} topic={topic} /> : null}
           {canShowCalendarRemoveControl ? (
             <TopicRemoveFromCalendarButton
               onRemoved={onClose}

@@ -1,5 +1,7 @@
 # RAG Product Context
 
+> Historical implementation note: this page describes the former hosted implementation. Blogger now saves locally. See [Local Blogger application](local-application.md) for current behavior.
+
 ## What It Does
 
 Product website scans are indexed with the Convex RAG component. When a blog is generated, the workflow retrieves the most relevant scanned product context for that keyword and gives it to the writer.

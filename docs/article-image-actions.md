@@ -1,5 +1,7 @@
 # Article Image Actions
 
+> Historical implementation note: this page describes the former hosted implementation. Blogger now saves locally. See [Local Blogger application](local-application.md) for current behavior.
+
 ## Overview
 
 Article images can be managed directly from the article preview. Each image has one kebab menu, keeping all image actions together without covering the image with several buttons.

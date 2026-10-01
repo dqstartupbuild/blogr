@@ -3,7 +3,6 @@ import { z } from "zod";
 export const blogImageSchema = z.object({
   alt: z.string(),
   prompt: z.string(),
-  r2Key: z.string().optional(),
   sectionHeading: z.string().optional(),
   sectionIndex: z.number().int().nonnegative().optional(),
   url: z.string(),

@@ -1,16 +1,3 @@
-import { isAuthDisabledForPreview } from "@/server/auth/isAuthDisabledForPreview";
-import { WorkspaceView } from "./WorkspaceView";
+import { LiveWorkspaceView } from "./LiveWorkspaceView";
 import type { WorkspaceViewMode } from "../types/WorkspaceViewMode";
-
-type WorkspacePageProps = {
-  initialMode: WorkspaceViewMode;
-};
-
-export const WorkspacePage = ({ initialMode }: WorkspacePageProps) => {
-  return (
-    <WorkspaceView
-      forceDemo={isAuthDisabledForPreview()}
-      initialMode={initialMode}
-    />
-  );
-};
+export const WorkspacePage = ({ initialMode }: { initialMode: WorkspaceViewMode }) => <LiveWorkspaceView initialMode={initialMode} />;

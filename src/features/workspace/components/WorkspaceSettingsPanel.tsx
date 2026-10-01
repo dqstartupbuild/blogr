@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useVersionedDraft } from "../hooks/useVersionedDraft";
 import { Save } from "lucide-react";
 import { articleStyleValues } from "../constants/articleStyleValues";
 import { imageStyleOptions } from "../constants/imageStyleOptions";
@@ -24,9 +24,10 @@ import { SettingsToggleField } from "./SettingsToggleField";
 
 type WorkspaceSettingsPanelProps = {
   isSaving: boolean;
-  saveSettings: (settings: BlogGenerationSettings) => Promise<void> | void;
+  saveSettings: (settings: BlogGenerationSettings, expectedUpdatedAt: number) => Promise<void> | void;
   settings: BlogGenerationSettings;
   statusMessage: string;
+  productUpdatedAt: number;
 };
 
 export const WorkspaceSettingsPanel = ({
@@ -34,8 +35,9 @@ export const WorkspaceSettingsPanel = ({
   saveSettings,
   settings,
   statusMessage,
+  productUpdatedAt,
 }: WorkspaceSettingsPanelProps) => {
-  const [draft, setDraft] = useState(settings);
+  const { draft, setDraft, expectedUpdatedAt, hasConflict } = useVersionedDraft(settings, productUpdatedAt);
   const selectedImageStyle = imageStyleOptions.find(
     (option) => option.value === draft.imageStyle,
   );
@@ -43,6 +45,7 @@ export const WorkspaceSettingsPanel = ({
   return (
     <section className="rounded-lg border border-black/10 bg-white p-4 shadow-sm">
       <SectionTitle title="Article settings" />
+      {hasConflict ? <p className="mt-3 text-sm text-red-700" role="alert">These settings changed on another tab. Your edits are still here. Reload to review the latest saved settings before saving.</p> : null}
       <form
         className="mt-4 grid gap-5"
         onSubmit={async (event) => {
@@ -52,7 +55,7 @@ export const WorkspaceSettingsPanel = ({
             associateBrandLinks: normalizeAssociateBrandLinks(
               draft.associateBrandLinks,
             ),
-          });
+          }, expectedUpdatedAt);
         }}
       >
         <SettingsFormSection

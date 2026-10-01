@@ -1,141 +1,36 @@
-import { fetchMutation, fetchQuery } from "convex/nextjs";
 import { NextResponse } from "next/server";
-import { getConvexAuthToken } from "@/server/auth/getConvexAuthToken";
-import { requireRouteUserId } from "@/server/auth/requireRouteUserId";
-import { createBlogAiJob } from "@/server/blogAiWorker/createBlogAiJob";
-import { hasBlogAiWorkerJob } from "@/server/blogAiWorker/hasBlogAiWorkerJob";
-import { waitForBlogAiJob } from "@/server/blogAiWorker/waitForBlogAiJob";
-import { castProductId } from "@/server/convex/castProductId";
-import { castTopicId } from "@/server/convex/castTopicId";
-import { getTopicQuery } from "@/server/convex/references/getTopicQuery";
-import { updateTopicNotesMutation } from "@/server/convex/references/updateTopicNotesMutation";
-import { getErrorStatus } from "@/server/http/getErrorStatus";
-import { getPublicErrorMessage } from "@/server/http/getPublicErrorMessage";
-import { logRouteError } from "@/server/http/logRouteError";
-import { PublicError } from "@/server/http/PublicError";
-import { buildTopicBriefNotesForKeyword } from "@/server/topics/buildTopicBriefNotesForKeyword";
+import { assertLocalRequest } from "@/local/server/assertLocalRequest";
+import { readLocalJson } from "@/local/server/readLocalJson";
+import { readLocalState } from "@/local/server/readLocalState";
+import { updateLocalState } from "@/local/server/updateLocalState";
+import { mutateTopic } from "@/local/server/mutateTopic";
+import { localErrorResponse } from "@/local/server/localErrorResponse";
 import { discoverTopicIdeasForProduct } from "@/server/topics/discoverTopicIdeasForProduct";
-import { getTopicBriefFailureMessage } from "@/server/topics/getTopicBriefFailureMessage";
-import { normalizeTopicBriefRouteError } from "@/server/topics/normalizeTopicBriefRouteError";
+import { buildTopicBriefNotesForKeyword } from "@/server/topics/buildTopicBriefNotesForKeyword";
 import { topicDiscoverRequestSchema } from "../../discover/schema";
-
-type TopicBriefRouteContext = {
-  params: Promise<{ topicId: string }>;
-};
-
+export const runtime = "nodejs";
 export const maxDuration = 300;
-
-export async function POST(request: Request, context: TopicBriefRouteContext) {
+export async function POST(request: Request, { params }: { params: Promise<{ topicId: string }> }) {
   try {
-    await requireRouteUserId();
-
-    const token = await getConvexAuthToken();
-    const { topicId: rawTopicId } = await context.params;
-    const topicId = castTopicId(rawTopicId);
-    const body = await request.json();
-    const input = topicDiscoverRequestSchema.parse(body);
-    const productId = input.productId ? castProductId(input.productId) : undefined;
-    const topic = await fetchQuery(
-      getTopicQuery,
-      { productId, topicId },
-      { token },
-    );
-
-    if (!topic) {
-      throw new PublicError("Topic not found.", 404);
-    }
-
-    if (
-      topic.blogId ||
-      topic.status === "written" ||
-      topic.status === "published"
-    ) {
-      throw new PublicError(
-        "This brief is locked because its article is already written.",
-        409,
-      );
-    }
-
-    if (hasBlogAiWorkerJob()) {
-      let jobId;
-
-      try {
-        jobId = await createBlogAiJob({
-          input: {
-            input: {
-              ...input,
-              productId: undefined,
-              seedKeyword: input.seedKeyword || topic.keyword,
-              topicId: rawTopicId,
-              topicKeyword: topic.keyword,
-            },
-            type: "topic.brief",
-          },
-          productId,
-          token,
-          topicId,
-        });
-      } catch (workerError) {
-        logRouteError(workerError);
-      }
-
-      if (jobId) {
-        const job = await waitForBlogAiJob({ jobId, token });
-
-        if (job?.status === "failed") {
-          throw new PublicError(
-            getTopicBriefFailureMessage(
-              new Error(job.error || "Topic brief worker failed."),
-            ),
-            502,
-          );
-        }
-
-        return NextResponse.json(
-          {
-            jobId,
-            notes: (job?.result as { notes?: string } | undefined)?.notes,
-            status: job?.status || "queued",
-          },
-          { status: job?.status === "succeeded" ? 200 : 202 },
-        );
-      }
-    }
-
-    const discovery = await discoverTopicIdeasForProduct({
-      existingBlogs: input.existingBlogs,
-      existingTopics: input.existingTopics.map((item) => item.keyword),
-      includeAiAnswers: input.includeAiAnswers,
-      product: input.product,
-      seedKeyword: input.seedKeyword || topic.keyword,
+    assertLocalRequest(request);
+    const input = topicDiscoverRequestSchema.parse(await readLocalJson(request));
+    const { topicId } = await params;
+    const state = await readLocalState();
+    const topic = state.topics.find((item) => item.id === topicId && item.productId === input.productId);
+    if (!topic) throw new Error("Topic not found.");
+    const product = state.products.find((item) => item.id === topic.productId);
+    if (!product) throw new Error("Project not found.");
+    if (topic.blogId || topic.status === "written" || topic.status === "published") throw new Error("This brief is locked because its article is already written.");
+    const discovery = await discoverTopicIdeasForProduct({ existingBlogs: state.blogs.filter((item) => item.productId === product.id).map((item) => ({ keyword: item.keyword, title: item.title, excerpt: item.excerpt, updatedAt: item.updatedAt })), existingTopics: state.topics.filter((item) => item.productId === product.id).map((item) => item.keyword), includeAiAnswers: input.includeAiAnswers, product, seedKeyword: input.seedKeyword || topic.keyword });
+    const notes = buildTopicBriefNotesForKeyword({ discovery, keyword: topic.keyword });
+    if (!notes.trim()) throw new Error("No search brief was found for this topic.");
+    const latest = await readLocalState();
+    await updateLocalState(latest.revision, (next) => {
+      const current = next.topics.find((item) => item.id === topicId && item.productId === input.productId);
+      const currentProduct = next.products.find((item) => item.id === product.id);
+      if (!current || current.updatedAt !== topic.updatedAt || !currentProduct || currentProduct.updatedAt !== product.updatedAt || current.blogId || current.status === "written" || current.status === "published") throw new Error("This project or topic changed while the brief was being prepared. Review it before trying again.");
+      return mutateTopic(next, "updateTopicNotesMutation", { notes, productId: input.productId, topicId });
     });
-    const notes = buildTopicBriefNotesForKeyword({
-      discovery,
-      keyword: topic.keyword,
-    });
-
-    if (!notes.trim()) {
-      throw new PublicError("No search brief was found for this topic.");
-    }
-
-    await fetchMutation(
-      updateTopicNotesMutation,
-      {
-        notes,
-        productId,
-        topicId,
-      },
-      { token },
-    );
-
-    return NextResponse.json({ notes });
-  } catch (error) {
-    logRouteError(error);
-    const routeError = normalizeTopicBriefRouteError(error);
-
-    return NextResponse.json(
-      { error: getPublicErrorMessage(routeError) },
-      { status: getErrorStatus(routeError) },
-    );
-  }
+    return NextResponse.json({ notes }, { headers: { "Cache-Control": "no-store" } });
+  } catch (error) { return localErrorResponse(error); }
 }

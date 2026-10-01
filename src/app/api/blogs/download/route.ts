@@ -1,35 +1,21 @@
-import { NextResponse } from "next/server";
-import { requireRouteUserId } from "@/server/auth/requireRouteUserId";
+import { assertLocalRequest } from "@/local/server/assertLocalRequest";
+import { readLocalJson } from "@/local/server/readLocalJson";
+import { readLocalState } from "@/local/server/readLocalState";
+import { localErrorResponse } from "@/local/server/localErrorResponse";
 import { buildBlogZip } from "@/server/download/buildBlogZip";
 import { safeFilename } from "@/server/download/safeFilename";
-import { getErrorStatus } from "@/server/http/getErrorStatus";
-import { getPublicErrorMessage } from "@/server/http/getPublicErrorMessage";
-import { logRouteError } from "@/server/http/logRouteError";
 import { blogDownloadRequestSchema } from "./schema";
-
+export const runtime = "nodejs";
 export const maxDuration = 300;
-
 export async function POST(request: Request) {
   try {
-    await requireRouteUserId();
-
-    const body = await request.json();
-    const { blog } = blogDownloadRequestSchema.parse(body);
-    const zipBytes = await buildBlogZip(blog);
-    const filename = `${safeFilename(blog.slug || blog.title)}.zip`;
-
-    return new Response(zipBytes, {
-      headers: {
-        "Content-Disposition": `attachment; filename="${filename}"`,
-        "Content-Type": "application/zip",
-      },
-    });
-  } catch (error) {
-    logRouteError(error);
-
-    return NextResponse.json(
-      { error: getPublicErrorMessage(error) },
-      { status: getErrorStatus(error) },
-    );
-  }
+    assertLocalRequest(request);
+    const { blog: requested } = blogDownloadRequestSchema.parse(await readLocalJson(request, 6 * 1024 * 1024));
+    const state = await readLocalState();
+    const blog = state.blogs.find((item) => item.id === requested.id && item.productId === requested.productId);
+    if (!blog) throw new Error("Article not found.");
+    const draft = { ...blog, ...requested, productId: blog.productId };
+    const bytes = await buildBlogZip(draft);
+    return new Response(bytes, { headers: { "Content-Disposition": `attachment; filename="${safeFilename(draft.slug || draft.title)}.zip"`, "Content-Type": "application/zip", "Cache-Control": "no-store" } });
+  } catch (error) { return localErrorResponse(error); }
 }

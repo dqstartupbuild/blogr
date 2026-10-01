@@ -1,72 +1,35 @@
 import { NextResponse } from "next/server";
-import { getConvexAuthToken } from "@/server/auth/getConvexAuthToken";
-import { getOptionalConvexAuthToken } from "@/server/auth/getOptionalConvexAuthToken";
-import { createBlogAiJob } from "@/server/blogAiWorker/createBlogAiJob";
-import { hasBlogAiWorkerJob } from "@/server/blogAiWorker/hasBlogAiWorkerJob";
-import { waitForBlogAiJob } from "@/server/blogAiWorker/waitForBlogAiJob";
-import { requireRouteUserId } from "@/server/auth/requireRouteUserId";
+import { assertLocalRequest } from "@/local/server/assertLocalRequest";
+import { readLocalJson } from "@/local/server/readLocalJson";
+import { readLocalState } from "@/local/server/readLocalState";
+import { updateLocalState } from "@/local/server/updateLocalState";
+import { mutateBlog } from "@/local/server/mutateBlog";
+import { localErrorResponse } from "@/local/server/localErrorResponse";
 import { generateBlogForKeyword } from "@/server/blog/generateBlogForKeyword";
-import { castProductId } from "@/server/convex/castProductId";
-import { castTopicId } from "@/server/convex/castTopicId";
-import { getErrorStatus } from "@/server/http/getErrorStatus";
-import { getPublicErrorMessage } from "@/server/http/getPublicErrorMessage";
-import { logRouteError } from "@/server/http/logRouteError";
 import { blogGenerateRequestSchema } from "./schema";
-
+import { withManagedMediaScope } from "@/local/server/withManagedMediaScope";
+export const runtime = "nodejs";
 export const maxDuration = 300;
-
 export async function POST(request: Request) {
-  try {
-    const userId = await requireRouteUserId();
-
-    const body = await request.json();
-    const input = blogGenerateRequestSchema.parse(body);
-    const productId = input.productId ? castProductId(input.productId) : undefined;
-    const topicId = input.topicId ? castTopicId(input.topicId) : undefined;
-
-    if (hasBlogAiWorkerJob() && productId) {
-      const token = await getConvexAuthToken();
-      const jobId = await createBlogAiJob({
-        input: {
-          convexAuthToken: token,
-          input,
-          type: "blog.generate",
-          userId,
-        },
-        productId,
-        token,
-        topicId,
-      });
-      const job = await waitForBlogAiJob({ jobId, token });
-
-      if (job?.status === "failed") {
-        throw new Error(job.error || "Could not write that blog yet.");
-      }
-
-      return NextResponse.json(
-        {
-          blogId: (job?.result as { blogId?: string } | undefined)?.blogId,
-          jobId,
-          status: job?.status || "queued",
-        },
-        { status: job?.status === "succeeded" ? 200 : 202 },
-      );
-    }
-
-    const token = await getOptionalConvexAuthToken();
-    const blog = await generateBlogForKeyword({
-      ...input,
-      convexAuthToken: token,
-      userId,
+  try { return await withManagedMediaScope(async () => {
+    assertLocalRequest(request);
+    const input = blogGenerateRequestSchema.parse(await readLocalJson(request));
+    const state = await readLocalState();
+    const product = state.products.find((item) => item.id === input.productId);
+    if (!product) throw new Error("Workspace not found.");
+    const topic = input.topicId ? state.topics.find((item) => item.id === input.topicId && item.productId === product.id) : undefined;
+    if (input.topicId && !topic) throw new Error("Topic not found.");
+    const originalBlog = topic?.blogId ? state.blogs.find((item) => item.id === topic.blogId) : undefined;
+    const blog = await generateBlogForKeyword({ ...input, product });
+    const latest = await readLocalState();
+    const saved = await updateLocalState(latest.revision, (next) => {
+      const currentProduct = next.products.find((item) => item.id === product.id);
+      const currentTopic = topic ? next.topics.find((item) => item.id === topic.id && item.productId === product.id) : undefined;
+      const currentBlog = originalBlog ? next.blogs.find((item) => item.id === originalBlog.id) : undefined;
+      if (!currentProduct || currentProduct.updatedAt !== product.updatedAt || (topic && (!currentTopic || currentTopic.updatedAt !== topic.updatedAt)) || (originalBlog && (!currentBlog || currentBlog.updatedAt !== originalBlog.updatedAt))) throw new Error("This project changed while the article was being written. Review it before trying again.");
+      return mutateBlog(next, "upsertGeneratedBlogMutation", { ...blog, productId: product.id, topicId: input.topicId });
     });
-
-    return NextResponse.json({ blog });
-  } catch (error) {
-    logRouteError(error);
-
-    return NextResponse.json(
-      { error: getPublicErrorMessage(error) },
-      { status: getErrorStatus(error) },
-    );
-  }
+    return NextResponse.json({ blogId: saved.result, blog }, { headers: { "Cache-Control": "no-store" } });
+  });
+  } catch (error) { return localErrorResponse(error); }
 }

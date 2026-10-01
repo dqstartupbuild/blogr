@@ -1,5 +1,7 @@
 # Topic Brief Editing
 
+> Historical implementation note: this page describes the former hosted implementation. Blogger now saves locally. See [Local Blogger application](local-application.md) for current behavior.
+
 ## What changed
 
 Topic briefs can be edited by hand before an article is written. A user can still ask the app to find or refresh a brief, then adjust the notes before writing. Once the article exists, the brief becomes read-only so the source plan stays tied to the article that was created from it.

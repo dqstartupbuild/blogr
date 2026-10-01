@@ -1,48 +1,46 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useConvex, useMutation, useQuery } from "convex/react";
-import { backfillWrittenTopicCalendarDatesMutation } from "@/server/convex/references/backfillWrittenTopicCalendarDatesMutation";
-import { castBlogId } from "@/server/convex/castBlogId";
-import { castProductId } from "@/server/convex/castProductId";
-import { createScheduledTopicMutation } from "@/server/convex/references/createScheduledTopicMutation";
-import { createScheduledTopicBatchMutation } from "@/server/convex/references/createScheduledTopicBatchMutation";
-import { createTopicMutation } from "@/server/convex/references/createTopicMutation";
-import { deleteBlogMutation } from "@/server/convex/references/deleteBlogMutation";
-import { deleteTopicMutation } from "@/server/convex/references/deleteTopicMutation";
-import { ensureWorkspaceReadModelsMutation } from "@/server/convex/references/ensureWorkspaceReadModelsMutation";
-import { getBlogQuery } from "@/server/convex/references/getBlogQuery";
-import { getCurrentProductProfileQuery } from "@/server/convex/references/getCurrentProductProfileQuery";
-import { getCurrentProductQuery } from "@/server/convex/references/getCurrentProductQuery";
-import { getWorkspaceSummaryQuery } from "@/server/convex/references/getWorkspaceSummaryQuery";
-import { listBlogTopicKeywordsQuery } from "@/server/convex/references/listBlogTopicKeywordsQuery";
-import { listBlogsQuery } from "@/server/convex/references/listBlogsQuery";
-import { listScheduledTopicsQuery } from "@/server/convex/references/listScheduledTopicsQuery";
-import { listTopicKeywordsQuery } from "@/server/convex/references/listTopicKeywordsQuery";
-import { listTopicsQuery } from "@/server/convex/references/listTopicsQuery";
-import { saveProductScanMutation } from "@/server/convex/references/saveProductScanMutation";
-import { updateBlogPublishingIntegrationMutation } from "@/server/convex/references/updateBlogPublishingIntegrationMutation";
-import { updateProductSiteLinksMutation } from "@/server/convex/references/updateProductSiteLinksMutation";
-import { updateProductDetailsMutation } from "@/server/convex/references/updateProductDetailsMutation";
-import { updateTopicNotesMutation } from "@/server/convex/references/updateTopicNotesMutation";
-import { updateTopicScheduledDateMutation } from "@/server/convex/references/updateTopicScheduledDateMutation";
-import { updateTopicStatusMutation } from "@/server/convex/references/updateTopicStatusMutation";
-import { updateBlogGenerationSettingsMutation } from "@/server/convex/references/updateBlogGenerationSettingsMutation";
-import { quickFillExistingTopicsMutation } from "@/server/convex/references/quickFillExistingTopicsMutation";
-import { updateCalendarQueueSettingsMutation } from "@/server/convex/references/updateCalendarQueueSettingsMutation";
-import { updateBlogImagesMutation } from "@/server/convex/references/updateBlogImagesMutation";
-import { upsertGeneratedBlogMutation } from "@/server/convex/references/upsertGeneratedBlogMutation";
-import { castTopicId } from "@/server/convex/castTopicId";
+import { useMutation, useQuery } from "@/local/client/hooks";
+import { useLocalWorkspace } from "@/local/client/useLocalWorkspace";
+import { castBlogId } from "@/local/client/castBlogId";
+import { castProductId } from "@/local/client/castProductId";
+import { createScheduledTopicMutation } from "@/local/client/references/createScheduledTopicMutation";
+import { createScheduledTopicBatchMutation } from "@/local/client/references/createScheduledTopicBatchMutation";
+import { createTopicMutation } from "@/local/client/references/createTopicMutation";
+import { deleteBlogMutation } from "@/local/client/references/deleteBlogMutation";
+import { deleteTopicMutation } from "@/local/client/references/deleteTopicMutation";
+import { getBlogQuery } from "@/local/client/references/getBlogQuery";
+import { getCurrentProductProfileQuery } from "@/local/client/references/getCurrentProductProfileQuery";
+import { getCurrentProductQuery } from "@/local/client/references/getCurrentProductQuery";
+import { getWorkspaceSummaryQuery } from "@/local/client/references/getWorkspaceSummaryQuery";
+import { listBlogTopicKeywordsQuery } from "@/local/client/references/listBlogTopicKeywordsQuery";
+import { listBlogsQuery } from "@/local/client/references/listBlogsQuery";
+import { listScheduledTopicsQuery } from "@/local/client/references/listScheduledTopicsQuery";
+import { listTopicKeywordsQuery } from "@/local/client/references/listTopicKeywordsQuery";
+import { listTopicsQuery } from "@/local/client/references/listTopicsQuery";
+import { saveProductScanMutation } from "@/local/client/references/saveProductScanMutation";
+import { updateBlogPublishingIntegrationMutation } from "@/local/client/references/updateBlogPublishingIntegrationMutation";
+import { updateProductSiteLinksMutation } from "@/local/client/references/updateProductSiteLinksMutation";
+import { updateProductDetailsMutation } from "@/local/client/references/updateProductDetailsMutation";
+import { updateTopicNotesMutation } from "@/local/client/references/updateTopicNotesMutation";
+import { updateTopicScheduledDateMutation } from "@/local/client/references/updateTopicScheduledDateMutation";
+import { updateTopicStatusMutation } from "@/local/client/references/updateTopicStatusMutation";
+import { updateBlogGenerationSettingsMutation } from "@/local/client/references/updateBlogGenerationSettingsMutation";
+import { quickFillExistingTopicsMutation } from "@/local/client/references/quickFillExistingTopicsMutation";
+import { updateCalendarQueueSettingsMutation } from "@/local/client/references/updateCalendarQueueSettingsMutation";
+import { updateBlogImagesMutation } from "@/local/client/references/updateBlogImagesMutation";
+import { upsertGeneratedBlogMutation } from "@/local/client/references/upsertGeneratedBlogMutation";
+import { castTopicId } from "@/local/client/castTopicId";
 import { workspaceListPageSize } from "../constants/workspaceListPageSize";
 import { useCursorPagination } from "./useCursorPagination";
-import { useOneShotConvexQuery } from "./useOneShotConvexQuery";
+import { useOneShotLocalQuery } from "./useOneShotLocalQuery";
 import { buildInitialProductScanProduct } from "../mappers/buildInitialProductScanProduct";
 import { buildPendingProductScanProduct } from "../mappers/buildPendingProductScanProduct";
-import { mapConvexBlog } from "../mappers/mapConvexBlog";
-import { mapConvexBlogSummary } from "../mappers/mapConvexBlogSummary";
-import { mapConvexProduct } from "../mappers/mapConvexProduct";
-import { mapConvexTopic } from "../mappers/mapConvexTopic";
-import { mapProductScanResult } from "../mappers/mapProductScanResult";
+import { mapLocalBlog } from "../mappers/mapLocalBlog";
+import { mapLocalBlogSummary } from "../mappers/mapLocalBlogSummary";
+import { mapLocalProduct } from "../mappers/mapLocalProduct";
+import { mapLocalTopic } from "../mappers/mapLocalTopic";
 import { buildBlogRefreshSeedKeyword } from "../utils/buildBlogRefreshSeedKeyword";
 import { filterActiveLinks } from "../utils/filterActiveLinks";
 import { formatCalendarMonthLabel } from "../utils/formatCalendarMonthLabel";
@@ -66,7 +64,6 @@ import type { BlogGenerationSettings } from "../types/BlogGenerationSettings";
 import type { BlogListViewState } from "../types/BlogListViewState";
 import type { BlogItem } from "../types/BlogItem";
 import type { BlogStatusFilter } from "../types/BlogStatusFilter";
-import type { ProductProfile } from "../types/ProductProfile";
 import type { ProductLinksRefreshResponse } from "../types/ProductLinksRefreshResponse";
 import type { ProductDetailsDraft } from "../types/ProductDetailsDraft";
 import type { ProductScanResponse } from "../types/ProductScanResponse";
@@ -87,16 +84,13 @@ export const useLiveWorkspace = (
   initialMode: WorkspaceViewMode,
   workspaceSwitcher: WorkspaceSwitcherState,
 ) => {
-  const convex = useConvex();
+  const localWorkspace = useLocalWorkspace();
+  const { refresh: refreshLocalWorkspace } = useLocalWorkspace();
   const activeProductId = workspaceSwitcher.activeWorkspaceId;
   const [mode, setMode] = useState<WorkspaceViewMode>(initialMode);
   const [selectedBlogSelection, setSelectedBlogSelection] = useState<{
     blog?: BlogItem;
     blogId: string;
-    productId: string;
-  } | null>(null);
-  const [scannedProduct, setScannedProduct] = useState<{
-    product: ProductProfile;
     productId: string;
   } | null>(null);
   const [productScanMessage, setProductScanMessage] = useState("");
@@ -151,7 +145,6 @@ export const useLiveWorkspace = (
   const [calendarMonthDate, setCalendarMonthDate] = useState(() =>
     getCalendarMonthStartDate(new Date()),
   );
-  const backfilledCalendarKeyRef = useRef("");
   const calendarDateKeys = useMemo(
     () => getCalendarMonthDateKeys(calendarMonthDate),
     [calendarMonthDate],
@@ -194,27 +187,26 @@ export const useLiveWorkspace = (
     resetPagination: resetBlogPagination,
   } = useCursorPagination();
   const activeProductIdRef = useRef(activeProductId);
-  const ensuredReadModelProductRef = useRef("");
   const selectedBlogId =
     selectedBlogSelection?.productId === activeProductId
       ? selectedBlogSelection.blogId
       : "";
-  const convexProductId = activeProductId
+  const localProductId = activeProductId
     ? castProductId(activeProductId)
     : null;
 
   useEffect(() => {
     activeProductIdRef.current = activeProductId;
   }, [activeProductId]);
-  const convexSelectedBlogId = selectedBlogId ? castBlogId(selectedBlogId) : null;
+  const localSelectedBlogId = selectedBlogId ? castBlogId(selectedBlogId) : null;
   const productProfileResult = useQuery(
     getCurrentProductProfileQuery,
     activeProductId ? {} : "skip",
   );
   const selectedBlogResult = useQuery(
     getBlogQuery,
-    convexProductId && convexSelectedBlogId
-      ? { blogId: convexSelectedBlogId, productId: convexProductId }
+    localProductId && localSelectedBlogId
+      ? { blogId: localSelectedBlogId, productId: localProductId }
       : "skip",
   );
   const refreshReadQueries = useCallback(() => {
@@ -225,17 +217,17 @@ export const useLiveWorkspace = (
       return null;
     }
 
-    return await convex.query(getCurrentProductQuery, {});
-  }, [activeProductId, convex]);
-  const topicResultsQuery = useOneShotConvexQuery(
+    return await localWorkspace.query(getCurrentProductQuery, {});
+  }, [activeProductId, localWorkspace]);
+  const topicResultsQuery = useOneShotLocalQuery<{ page: Array<TopicItem & { _id: string }>; isDone: boolean; continueCursor: string }>(
     listTopicsQuery,
-    convexProductId && mode === "topics"
+    localProductId && mode === "topics"
       ? {
           paginationOpts: {
             cursor: topicPageCursor,
             numItems: workspaceListPageSize,
           },
-          productId: convexProductId,
+          productId: localProductId,
           searchQuery: topicSearchQuery.trim(),
           ...(topicStatusFilter === "all" ? {} : { status: topicStatusFilter }),
         }
@@ -243,15 +235,15 @@ export const useLiveWorkspace = (
     readQueryRefreshKey,
   );
   const topicResults = topicResultsQuery.result;
-  const blogResultsQuery = useOneShotConvexQuery(
+  const blogResultsQuery = useOneShotLocalQuery<{ page: Array<BlogItem & { blogId: string }>; isDone: boolean; continueCursor: string }>(
     listBlogsQuery,
-    convexProductId && mode === "blogs"
+    localProductId && mode === "blogs"
       ? {
           paginationOpts: {
             cursor: blogPageCursor,
             numItems: workspaceListPageSize,
           },
-          productId: convexProductId,
+          productId: localProductId,
           searchQuery: blogSearchQuery.trim(),
           ...(blogStatusFilter === "all" ? {} : { status: blogStatusFilter }),
           ...(blogTopicFilter === "all"
@@ -262,43 +254,40 @@ export const useLiveWorkspace = (
     readQueryRefreshKey,
   );
   const blogResults = blogResultsQuery.result;
-  const blogTopicKeywordResultsQuery = useOneShotConvexQuery(
+  const blogTopicKeywordResultsQuery = useOneShotLocalQuery<string[]>(
     listBlogTopicKeywordsQuery,
-    convexProductId && (mode === "blogs" || mode === "calendar")
-      ? { productId: convexProductId }
+    localProductId && (mode === "blogs" || mode === "calendar")
+      ? { productId: localProductId }
       : "skip",
     readQueryRefreshKey,
   );
   const blogTopicKeywordResults = blogTopicKeywordResultsQuery.result;
-  const scheduledTopicResults = useQuery(
+  const scheduledTopicResults = useQuery<Array<TopicItem & { _id: string }>>(
     listScheduledTopicsQuery,
-    convexProductId && mode === "calendar"
+    localProductId && mode === "calendar"
       ? {
           endDate: calendarDateKeys[calendarDateKeys.length - 1],
-          productId: convexProductId,
+          productId: localProductId,
           startDate: calendarDateKeys[0],
         }
       : "skip",
   );
-  const topicKeywordResultsQuery = useOneShotConvexQuery(
+  const topicKeywordResultsQuery = useOneShotLocalQuery<TopicItem[]>(
     listTopicKeywordsQuery,
-    convexProductId && (mode === "calendar" || mode === "topics")
-      ? { productId: convexProductId }
+    localProductId && (mode === "calendar" || mode === "topics")
+      ? { productId: localProductId }
       : "skip",
     readQueryRefreshKey,
   );
   const topicKeywordResults = topicKeywordResultsQuery.result;
-  const workspaceSummaryResultQuery = useOneShotConvexQuery(
+  const workspaceSummaryResultQuery = useOneShotLocalQuery(
     getWorkspaceSummaryQuery,
-    convexProductId && mode === "dashboard"
-      ? { productId: convexProductId }
+    localProductId && mode === "dashboard"
+      ? { productId: localProductId }
       : "skip",
     readQueryRefreshKey,
   );
   const workspaceSummaryResult = workspaceSummaryResultQuery.result;
-  const backfillWrittenTopicCalendarDates = useMutation(
-    backfillWrittenTopicCalendarDatesMutation,
-  );
   const createScheduledTopic = useMutation(createScheduledTopicMutation);
   const createScheduledTopicBatch = useMutation(
     createScheduledTopicBatchMutation,
@@ -308,9 +297,6 @@ export const useLiveWorkspace = (
   const createTopic = useMutation(createTopicMutation);
   const deleteBlogRecord = useMutation(deleteBlogMutation);
   const deleteTopicRecord = useMutation(deleteTopicMutation);
-  const ensureWorkspaceReadModels = useMutation(
-    ensureWorkspaceReadModelsMutation,
-  );
   const saveProductScan = useMutation(saveProductScanMutation);
   const updateProductSiteLinks = useMutation(updateProductSiteLinksMutation);
   const updateProductDetails = useMutation(updateProductDetailsMutation);
@@ -347,75 +333,21 @@ export const useLiveWorkspace = (
     resetBlogPagination,
   ]);
 
-  useEffect(() => {
-    if (!convexProductId || !activeProductId) {
-      ensuredReadModelProductRef.current = "";
-      return;
-    }
-
-    if (ensuredReadModelProductRef.current === activeProductId) {
-      return;
-    }
-
-    ensuredReadModelProductRef.current = activeProductId;
-
-    void ensureWorkspaceReadModels({ productId: convexProductId })
-      .then((result) => {
-        if (result.rebuilt) {
-          refreshReadQueries();
-        }
-      })
-      .catch(() => undefined);
-  }, [
-    activeProductId,
-    convexProductId,
-    ensureWorkspaceReadModels,
-    refreshReadQueries,
-  ]);
-
-  useEffect(() => {
-    if (!convexProductId || mode !== "calendar") {
-      return;
-    }
-
-    const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-    const backfillKey = `${activeProductId}:${timeZone}`;
-
-    if (backfilledCalendarKeyRef.current === backfillKey) {
-      return;
-    }
-
-    backfilledCalendarKeyRef.current = backfillKey;
-    void backfillWrittenTopicCalendarDates({
-      productId: convexProductId,
-      timeZone,
-    }).catch(() => {
-      backfilledCalendarKeyRef.current = "";
-    });
-  }, [
-    activeProductId,
-    backfillWrittenTopicCalendarDates,
-    convexProductId,
-    mode,
-  ]);
-
-  const visibleScannedProduct =
-    scannedProduct?.productId === activeProductId ? scannedProduct.product : null;
-  const product = visibleScannedProduct || mapConvexProduct(productProfileResult);
+  const product = mapLocalProduct(productProfileResult);
   const blogGenerationSettings = normalizeBlogGenerationSettings(
     productProfileResult?.blogGenerationSettings,
   );
   const calendarQueueSettings = normalizeCalendarQueueSettings(productProfileResult?.calendarQueueSettings);
   const topics = useMemo(
-    () => (topicResults?.page || []).map(mapConvexTopic),
+    () => (topicResults?.page || []).map(mapLocalTopic),
     [topicResults],
   );
   const blogs: BlogItem[] = useMemo(
-    () => (blogResults?.page || []).map(mapConvexBlogSummary),
+    () => (blogResults?.page || []).map(mapLocalBlogSummary),
     [blogResults],
   );
   const calendarTopics = useMemo(
-    () => (scheduledTopicResults || []).map(mapConvexTopic),
+    () => (scheduledTopicResults || []).map(mapLocalTopic),
     [scheduledTopicResults],
   );
   const occupiedCalendarDateSet = useMemo(() => new Set(calendarTopics.map((topic) => topic.scheduledDate).filter((date): date is string => Boolean(date))), [calendarTopics]);
@@ -423,7 +355,7 @@ export const useLiveWorkspace = (
   const openQueueDateKeys = useMemo(() => queueDateKeys.filter((date) => !occupiedCalendarDateSet.has(date)), [occupiedCalendarDateSet, queueDateKeys]);
   const actionQueueDateKeys = useMemo(() => openQueueDateKeys.slice(0, 30), [openQueueDateKeys]);
   const visibleTopics = useMemo(() => {
-    const topicMap = new Map<string, ReturnType<typeof mapConvexTopic>>();
+    const topicMap = new Map<string, ReturnType<typeof mapLocalTopic>>();
 
     [...topics, ...calendarTopics].forEach((topic) => {
       topicMap.set(topic.id, topic);
@@ -474,7 +406,7 @@ export const useLiveWorkspace = (
       isQuickFilling: isQuickFillingCalendar,
       isSavingQueueSettings: isSavingCalendarQueueSettings,
       isLoading: Boolean(
-        convexProductId &&
+        localProductId &&
           mode === "calendar" &&
           (!scheduledTopicResults || topicKeywordResultsQuery.isLoading),
       ),
@@ -488,7 +420,7 @@ export const useLiveWorkspace = (
       calendarDateKeys,
       calendarMessage,
       fillableCalendarDateKeys,
-      convexProductId,
+      localProductId,
       goToCurrentMonth,
       goToNextMonth,
       goToPreviousMonth,
@@ -523,7 +455,7 @@ export const useLiveWorkspace = (
             imageCount: workspaceSummaryResult.imageCount,
             publishedBlogCount: workspaceSummaryResult.publishedBlogCount,
             recentBlogs:
-              workspaceSummaryResult.recentBlogs.map(mapConvexBlogSummary),
+              workspaceSummaryResult.recentBlogs.map(mapLocalBlogSummary),
             topicCount: workspaceSummaryResult.topicCount,
           }
         : undefined,
@@ -544,7 +476,7 @@ export const useLiveWorkspace = (
     [activeProductId, blogs, workspaceSummary?.recentBlogs],
   );
   const selectedBlogFromQuery = useMemo(
-    () => (selectedBlogResult ? mapConvexBlog(selectedBlogResult) : undefined),
+    () => (selectedBlogResult ? mapLocalBlog(selectedBlogResult) : undefined),
     [selectedBlogResult],
   );
   const topicListState: TopicListViewState = useMemo(
@@ -560,7 +492,7 @@ export const useLiveWorkspace = (
         },
         goToPreviousPage: goToPreviousTopicPage,
         isLoading: Boolean(
-          convexProductId &&
+          localProductId &&
             mode === "topics" &&
             (topicResultsQuery.isLoading || !topicResults),
         ),
@@ -571,7 +503,7 @@ export const useLiveWorkspace = (
       setSearchQuery: setTopicSearchQuery,
     }),
     [
-      convexProductId,
+      localProductId,
       canGoToPreviousTopicPage,
       goToNextTopicPage,
       goToPreviousTopicPage,
@@ -596,7 +528,7 @@ export const useLiveWorkspace = (
         },
         goToPreviousPage: goToPreviousBlogPage,
         isLoading: Boolean(
-          convexProductId &&
+          localProductId &&
             mode === "blogs" &&
             (blogResultsQuery.isLoading || !blogResults),
         ),
@@ -618,7 +550,7 @@ export const useLiveWorkspace = (
       blogStatusFilter,
       blogTopicFilter,
       blogTopicOptions,
-      convexProductId,
+      localProductId,
       goToNextBlogPage,
       goToPreviousBlogPage,
       mode,
@@ -652,20 +584,16 @@ export const useLiveWorkspace = (
         websiteUrl,
       });
       const pendingProduct = buildPendingProductScanProduct({
-        existingSiteLinks: convexProductId ? product.siteLinks : undefined,
+        existingSiteLinks: localProductId ? product.siteLinks : undefined,
         initialProduct,
       });
 
       const savedProductId = await saveProductScan({
         ...pendingProduct,
-        preserveSiteLinks: Boolean(convexProductId),
-        productId: convexProductId || undefined,
+        preserveSiteLinks: Boolean(localProductId),
+        productId: localProductId || undefined,
       });
       savedInitialProduct = true;
-      setScannedProduct({
-        product: mapProductScanResult(pendingProduct),
-        productId: savedProductId,
-      });
       setProductScanMessage("Saved your site. Scanning for details.");
 
       const response = await fetch("/api/product/scan", {
@@ -684,26 +612,7 @@ export const useLiveWorkspace = (
       }
 
       if (data.product) {
-        const scannedProduct = {
-          ...data.product,
-          externalLinks: data.product.externalLinks || [],
-          features: data.product.features || [],
-          offers: data.product.offers || [],
-          pricing: data.product.pricing || [],
-        };
-        const siteLinks = mergeProductLinkStates({
-          currentLinks: product.siteLinks,
-          refreshedLinks: scannedProduct.siteLinks,
-        });
-        const savedProductId = await saveProductScan({
-          ...scannedProduct,
-          siteLinks,
-          productId: convexProductId || undefined,
-        });
-        setScannedProduct({
-          product: mapProductScanResult({ ...scannedProduct, siteLinks }),
-          productId: savedProductId,
-        });
+        await refreshLocalWorkspace();
       }
 
       setProductScanMessage(
@@ -724,7 +633,7 @@ export const useLiveWorkspace = (
   };
 
   const refreshProductLinks = async () => {
-    if (!convexProductId) {
+    if (!localProductId) {
       setProductLinksMessage("Choose a workspace first.");
       return;
     }
@@ -759,15 +668,8 @@ export const useLiveWorkspace = (
       });
 
       await updateProductSiteLinks({
-        productId: convexProductId,
+        productId: localProductId,
         siteLinks,
-      });
-      setScannedProduct({
-        product: {
-          ...product,
-          siteLinks,
-        },
-        productId: activeProductId,
       });
       setProductLinksMessage("Links refreshed.");
     } catch (error) {
@@ -780,7 +682,7 @@ export const useLiveWorkspace = (
   };
 
   const setProductLinkActive = async (url: string, isActive: boolean) => {
-    if (!convexProductId) {
+    if (!localProductId) {
       setProductLinksMessage("Choose a workspace first.");
       return;
     }
@@ -793,15 +695,8 @@ export const useLiveWorkspace = (
 
     try {
       await updateProductSiteLinks({
-        productId: convexProductId,
+        productId: localProductId,
         siteLinks,
-      });
-      setScannedProduct({
-        product: {
-          ...product,
-          siteLinks,
-        },
-        productId: activeProductId,
       });
       setProductLinksMessage(
         isActive ? "Link turned back on." : "Link paused.",
@@ -813,8 +708,8 @@ export const useLiveWorkspace = (
     }
   };
 
-  const saveProductDetails = async (details: ProductDetailsDraft) => {
-    if (!convexProductId || !activeProductId) {
+  const saveProductDetails = async (details: ProductDetailsDraft, expectedUpdatedAt: number) => {
+    if (!localProductId || !activeProductId) {
       setProductDetailsMessage("Choose a workspace first.");
       return;
     }
@@ -825,15 +720,8 @@ export const useLiveWorkspace = (
     try {
       await updateProductDetails({
         ...details,
-        productId: convexProductId,
-      });
-      setScannedProduct({
-        product: {
-          ...product,
-          ...details,
-          updatedAt: Date.now(),
-        },
-        productId: activeProductId,
+        expectedProductUpdatedAt: expectedUpdatedAt,
+        productId: localProductId,
       });
       setProductDetailsMessage("Product details saved.");
     } catch (error) {
@@ -848,14 +736,14 @@ export const useLiveWorkspace = (
   };
 
   const addTopic = async (keyword: string, notes?: string) => {
-    if (!convexProductId) {
+    if (!localProductId) {
       return;
     }
 
     await createTopic({
       keyword,
       notes,
-      productId: convexProductId,
+      productId: localProductId,
     });
     resetTopicPagination();
     refreshReadQueries();
@@ -866,14 +754,14 @@ export const useLiveWorkspace = (
     scheduledDate: string,
     notes?: string,
   ) => {
-    if (!convexProductId) {
+    if (!localProductId) {
       return;
     }
 
     await createScheduledTopic({
       keyword,
       notes,
-      productId: convexProductId,
+      productId: localProductId,
       scheduledDate,
       sourceType: "manual",
     });
@@ -883,12 +771,12 @@ export const useLiveWorkspace = (
   };
 
   const removeTopicFromCalendar = async (topicId: string) => {
-    if (!convexProductId) {
+    if (!localProductId) {
       return;
     }
 
     await updateTopicScheduledDate({
-      productId: convexProductId,
+      productId: localProductId,
       scheduledDate: null,
       topicId: castTopicId(topicId),
     });
@@ -901,12 +789,12 @@ export const useLiveWorkspace = (
     topicId: string,
     scheduledDate: string,
   ) => {
-    if (!convexProductId) {
+    if (!localProductId) {
       return;
     }
 
     await updateTopicScheduledDate({
-      productId: convexProductId,
+      productId: localProductId,
       scheduledDate,
       topicId: castTopicId(topicId),
     });
@@ -916,7 +804,7 @@ export const useLiveWorkspace = (
   };
 
   const fillCalendarBlankDays = async () => {
-    if (!convexProductId || calendarFillActionRef.current) {
+    if (!localProductId || calendarFillActionRef.current) {
       return;
     }
 
@@ -1029,7 +917,7 @@ export const useLiveWorkspace = (
       }
 
       const result = await createScheduledTopicBatch({
-        productId: convexProductId,
+        productId: localProductId,
         topics,
       });
 
@@ -1059,14 +947,14 @@ export const useLiveWorkspace = (
   };
 
   const quickFillCalendar = async () => {
-    if (!convexProductId || calendarFillActionRef.current) return;
+    if (!localProductId || calendarFillActionRef.current) return;
     if (!actionQueueDateKeys.length) { setCalendarMessage("All queue dates in this month are already filled."); return; }
     if (!knownEligibleTopicCount) { setCalendarMessage("No saved topics are available for quick fill."); return; }
     const operationProductId = activeProductId;
     calendarFillActionRef.current = "quick";
     setIsQuickFillingCalendar(true); setCalendarMessage("Scheduling.");
     try {
-      const result = await quickFillExistingTopics({ productId: convexProductId, scheduledDates: actionQueueDateKeys });
+      const result = await quickFillExistingTopics({ productId: localProductId, scheduledDates: actionQueueDateKeys });
       if (operationProductId !== activeProductIdRef.current) return;
       setCalendarMessage(result.scheduledCount ? `Scheduled ${result.scheduledCount} existing topics.${result.unusedDateCount ? ` ${result.unusedDateCount} queue dates remain open.` : ""}` : "No saved topics are available for quick fill.");
       resetTopicPagination(); refreshReadQueries();
@@ -1074,15 +962,15 @@ export const useLiveWorkspace = (
     finally { if (calendarFillActionRef.current === "quick") calendarFillActionRef.current = null; setIsQuickFillingCalendar(false); }
   };
 
-  const saveCalendarQueueSettings = async (settings: CalendarQueueSettings) => {
-    if (!convexProductId) return;
+  const saveCalendarQueueSettings = async (settings: CalendarQueueSettings, expectedUpdatedAt: number) => {
+    if (!localProductId) return;
     const operationProductId = activeProductId;
     const previous = calendarQueueSettings;
     const normalized = normalizeCalendarQueueSettings(settings);
     const next = normalized.cadence === "custom" && previous.cadence === "custom" && previous.intervalDays === normalized.intervalDays ? { ...normalized, anchorDate: previous.anchorDate } : normalized;
     setIsSavingCalendarQueueSettings(true);
-    try { await updateCalendarQueueSettings({ productId: convexProductId, settings: next }); if (operationProductId === activeProductIdRef.current) { setCalendarMessage("Calendar queue saved."); refreshReadQueries(); } }
-    catch (error) { if (operationProductId === activeProductIdRef.current) setCalendarMessage(error instanceof Error ? error.message : "Could not save the calendar queue."); }
+    try { await updateCalendarQueueSettings({ productId: localProductId, settings: next, expectedProductUpdatedAt: expectedUpdatedAt }); if (operationProductId === activeProductIdRef.current) { setCalendarMessage("Calendar queue saved."); refreshReadQueries(); } }
+    catch (error) { if (operationProductId === activeProductIdRef.current) setCalendarMessage(error instanceof Error ? error.message : "Could not save the calendar queue."); throw error; }
     finally { setIsSavingCalendarQueueSettings(false); }
   };
 
@@ -1168,7 +1056,7 @@ export const useLiveWorkspace = (
       );
     }
 
-    if (!convexProductId) {
+    if (!localProductId) {
       throw new Error("Choose a workspace first.");
     }
 
@@ -1247,13 +1135,13 @@ export const useLiveWorkspace = (
       );
     }
 
-    if (!convexProductId) {
+    if (!localProductId) {
       throw new Error("Choose a workspace first.");
     }
 
     await updateTopicNotes({
       notes: trimmedNotes || undefined,
-      productId: convexProductId,
+      productId: localProductId,
       topicId: castTopicId(topicId),
     });
     refreshReadQueries();
@@ -1263,7 +1151,7 @@ export const useLiveWorkspace = (
 
   const deleteTopic = async (topicId: string) => {
     await deleteTopicRecord({
-      productId: convexProductId || undefined,
+      productId: localProductId || undefined,
       topicId: castTopicId(topicId),
     });
     resetTopicPagination();
@@ -1343,8 +1231,9 @@ export const useLiveWorkspace = (
 
   const saveBlogGenerationSettings = async (
     settings: BlogGenerationSettings,
+    expectedUpdatedAt: number,
   ) => {
-    if (!convexProductId) {
+    if (!localProductId) {
       setSettingsStatusMessage("Choose a workspace first.");
       return;
     }
@@ -1354,8 +1243,9 @@ export const useLiveWorkspace = (
 
     try {
       await updateBlogGenerationSettings({
-        productId: convexProductId,
+        productId: localProductId,
         settings,
+        expectedProductUpdatedAt: expectedUpdatedAt,
       });
       setSettingsStatusMessage("Settings saved.");
     } catch (error) {
@@ -1369,8 +1259,9 @@ export const useLiveWorkspace = (
 
   const saveBlogPublishingIntegration = async (
     integration: BlogPublishingIntegrationDraft,
+    expectedUpdatedAt: number,
   ) => {
-    if (!convexProductId) {
+    if (!localProductId) {
       setPublishingIntegrationStatusMessage("Choose a workspace first.");
       return;
     }
@@ -1382,9 +1273,10 @@ export const useLiveWorkspace = (
       await updateBlogPublishingIntegration({
         accessToken: integration.accessToken,
         enabled: integration.enabled,
-        productId: convexProductId,
+        productId: localProductId,
         sourceName: integration.sourceName,
         webhookUrl: integration.webhookUrl,
+        expectedProductUpdatedAt: expectedUpdatedAt,
       });
       setPublishingIntegrationStatusMessage(
         integration.enabled ? "Publishing connected." : "Publishing removed.",
@@ -1395,6 +1287,7 @@ export const useLiveWorkspace = (
           ? error.message
           : "Could not save publishing yet.";
       setPublishingIntegrationStatusMessage(message);
+      throw error;
     } finally {
       setIsSavingBlogPublishingIntegration(false);
     }
@@ -1408,9 +1301,9 @@ export const useLiveWorkspace = (
       return;
     }
 
-    const convexTopicId = castTopicId(topicId);
+    const localTopicId = castTopicId(topicId);
 
-    if (!convexProductId) {
+    if (!localProductId) {
       return;
     }
 
@@ -1419,18 +1312,18 @@ export const useLiveWorkspace = (
     if (!fullProduct) {
       await updateTopicStatus({
         lastError: "Scan your product website first.",
-        productId: convexProductId || undefined,
+        productId: localProductId || undefined,
         status: "failed",
-        topicId: convexTopicId,
+        topicId: localTopicId,
       }).catch(() => undefined);
       refreshReadQueries();
       return;
     }
 
     await updateTopicStatus({
-      productId: convexProductId || undefined,
+      productId: localProductId || undefined,
       status: "writing",
-      topicId: convexTopicId,
+      topicId: localTopicId,
     });
     refreshReadQueries();
 
@@ -1463,10 +1356,12 @@ export const useLiveWorkspace = (
         (data.blog
           ? await upsertGeneratedBlog({
               ...data.blog,
-              productId: convexProductId,
-              topicId: convexTopicId,
+              productId: localProductId,
+              topicId: localTopicId,
             })
           : "");
+
+      if (data.blogId) await refreshLocalWorkspace();
 
       if (blogId) {
         setSelectedBlogId(blogId);
@@ -1479,9 +1374,9 @@ export const useLiveWorkspace = (
         error instanceof Error ? error.message : "Could not write that blog yet.";
       await updateTopicStatus({
         lastError: message,
-        productId: convexProductId || undefined,
+        productId: localProductId || undefined,
         status: "failed",
-        topicId: convexTopicId,
+        topicId: localTopicId,
       }).catch(() => undefined);
       refreshReadQueries();
     }
@@ -1490,7 +1385,7 @@ export const useLiveWorkspace = (
   const deleteBlog = async (blogId: string) => {
     await deleteBlogRecord({
       blogId: castBlogId(blogId),
-      productId: convexProductId || undefined,
+      productId: localProductId || undefined,
     });
     resetBlogPagination();
     refreshReadQueries();
@@ -1536,7 +1431,7 @@ export const useLiveWorkspace = (
   };
 
   const updateBlogImages: UpdateBlogImages = async (blogId, changes) => {
-    if (!convexProductId) {
+    if (!localProductId) {
       throw new Error("Choose a workspace first.");
     }
 
@@ -1545,7 +1440,8 @@ export const useLiveWorkspace = (
       featureImageUrl: changes.featureImageUrl,
       images: changes.images,
       mdx: changes.mdx,
-      productId: convexProductId,
+      productId: localProductId,
+      expectedBlogUpdatedAt: blogs.find((item) => item.id === blogId)?.updatedAt,
     });
     refreshReadQueries();
   };

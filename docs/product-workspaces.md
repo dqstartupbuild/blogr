@@ -1,5 +1,7 @@
 # Product Workspaces
 
+> Historical implementation note: this page describes the former hosted implementation. Blogger now saves locally. See [Local Blogger application](local-application.md) for current behavior.
+
 ## What It Does
 
 Users can keep more than one product or project under the same account. One workspace is active at a time, and the active workspace appears in the dashboard header and the live blog editor header.

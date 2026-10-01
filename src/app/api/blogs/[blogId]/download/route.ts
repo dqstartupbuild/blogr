@@ -1,28 +1,16 @@
-import { NextResponse } from "next/server";
-import { requireRouteUserId } from "@/server/auth/requireRouteUserId";
-import { getErrorStatus } from "@/server/http/getErrorStatus";
-import { getPublicErrorMessage } from "@/server/http/getPublicErrorMessage";
-import { logRouteError } from "@/server/http/logRouteError";
-
-type BlogDownloadRouteContext = {
-  params: Promise<{ blogId: string }>;
-};
-
-export async function GET(_request: Request, context: BlogDownloadRouteContext) {
+import { assertLocalRequest } from "@/local/server/assertLocalRequest";
+import { readLocalState } from "@/local/server/readLocalState";
+import { localErrorResponse } from "@/local/server/localErrorResponse";
+import { buildBlogZip } from "@/server/download/buildBlogZip";
+import { safeFilename } from "@/server/download/safeFilename";
+export const runtime = "nodejs";
+export async function GET(request: Request, { params }: { params: Promise<{ blogId: string }> }) {
   try {
-    await requireRouteUserId();
-    await context.params;
-
-    return NextResponse.json(
-      { error: "Use the download button in the app." },
-      { status: 405 },
-    );
-  } catch (error) {
-    logRouteError(error);
-
-    return NextResponse.json(
-      { error: getPublicErrorMessage(error) },
-      { status: getErrorStatus(error) },
-    );
-  }
+    assertLocalRequest(request);
+    const { blogId } = await params;
+    const blog = (await readLocalState()).blogs.find((item) => item.id === blogId);
+    if (!blog) throw new Error("Article not found.");
+    const bytes = await buildBlogZip(blog);
+    return new Response(bytes, { headers: { "Content-Disposition": `attachment; filename="${safeFilename(blog.slug || blog.title)}.zip"`, "Content-Type": "application/zip", "Cache-Control": "no-store" } });
+  } catch (error) { return localErrorResponse(error); }
 }

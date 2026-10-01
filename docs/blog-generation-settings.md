@@ -1,5 +1,7 @@
 # Blog Generation Settings
 
+> Historical implementation note: this page describes the former hosted implementation. Blogger now saves locally. See [Local Blogger application](local-application.md) for current behavior.
+
 ## What It Does
 
 Each product workspace has its own blog generation settings. The Settings tab lets a user choose article style, writing rules, internal link count, associate brand links, image style, image count, and article extras before generating posts.

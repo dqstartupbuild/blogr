@@ -1,170 +1,39 @@
-import { fetchMutation, fetchQuery } from "convex/nextjs";
 import { NextResponse } from "next/server";
-import { getConvexAuthToken } from "@/server/auth/getConvexAuthToken";
-import { createBlogAiJob } from "@/server/blogAiWorker/createBlogAiJob";
-import { hasBlogAiWorkerJob } from "@/server/blogAiWorker/hasBlogAiWorkerJob";
-import { waitForBlogAiJob } from "@/server/blogAiWorker/waitForBlogAiJob";
-import { requireRouteUserId } from "@/server/auth/requireRouteUserId";
+import { assertLocalRequest } from "@/local/server/assertLocalRequest";
+import { readLocalJson } from "@/local/server/readLocalJson";
+import { readLocalState } from "@/local/server/readLocalState";
+import { updateLocalState } from "@/local/server/updateLocalState";
+import { mutateBlog } from "@/local/server/mutateBlog";
+import { localErrorResponse } from "@/local/server/localErrorResponse";
 import { regenerateBlogImage } from "@/server/blog/regenerateBlogImage";
 import { replaceImageUrlInMdx } from "@/server/blog/replaceImageUrlInMdx";
 import { resolveRegenerateImageTarget } from "@/server/blog/resolveRegenerateImageTarget";
-import { castBlogId } from "@/server/convex/castBlogId";
-import { castProductId } from "@/server/convex/castProductId";
-import { getBlogQuery } from "@/server/convex/references/getBlogQuery";
-import { updateBlogImageMutation } from "@/server/convex/references/updateBlogImageMutation";
-import { hasConvexUrl } from "@/server/convex/hasConvexUrl";
-import { getErrorStatus } from "@/server/http/getErrorStatus";
-import { getPublicErrorMessage } from "@/server/http/getPublicErrorMessage";
-import { logRouteError } from "@/server/http/logRouteError";
-import { PublicError } from "@/server/http/PublicError";
 import { regenerateImageRequestSchema } from "./schema";
-
-type RegenerateImageRouteContext = {
-  params: Promise<{ blogId: string }>;
-};
-
-const imageRegenerationJobWaitMs = 90000;
-
+import { withManagedMediaScope } from "@/local/server/withManagedMediaScope";
+export const runtime = "nodejs";
 export const maxDuration = 120;
-
-export async function POST(request: Request, context: RegenerateImageRouteContext) {
-  try {
-    const userId = await requireRouteUserId();
-
-    if (!hasConvexUrl()) {
-      throw new PublicError("Connect Convex before refreshing images.", 503);
-    }
-
-    const token = await getConvexAuthToken();
-    const { blogId: rawBlogId } = await context.params;
-    const blogId = castBlogId(rawBlogId);
-    const body = await request.json();
-    const input = regenerateImageRequestSchema.parse(body);
-    const productId = input.productId ? castProductId(input.productId) : undefined;
-
-    const blog = await fetchQuery(
-      getBlogQuery,
-      { blogId, productId },
-      { token },
-    );
-
-    if (!blog) {
-      return NextResponse.json({ error: "Blog not found." }, { status: 404 });
-    }
-
-    const target = resolveRegenerateImageTarget({
-      alt: input.alt,
-      imageIndex: input.imageIndex,
-      images: blog.images,
-      prompt: input.prompt,
-      src: input.src,
+export async function POST(request: Request, { params }: { params: Promise<{ blogId: string }> }) {
+  try { return await withManagedMediaScope(async () => {
+    assertLocalRequest(request);
+    const input = regenerateImageRequestSchema.parse(await readLocalJson(request));
+    const { blogId } = await params;
+    const state = await readLocalState();
+    const blog = state.blogs.find((item) => item.id === blogId && item.productId === input.productId);
+    if (!blog) throw new Error("Article not found.");
+    const target = resolveRegenerateImageTarget({ alt: input.alt, imageIndex: input.imageIndex, images: blog.images, prompt: input.prompt, src: input.src });
+    if (!target) throw new Error("Add an image description before refreshing.");
+    const previous = target.imageIndex === null ? undefined : blog.images[target.imageIndex];
+    const image = await regenerateBlogImage({ alt: target.alt, prompt: target.prompt, sectionHeading: previous?.sectionHeading, sectionIndex: previous?.sectionIndex });
+    if (!image) throw new Error("Could not refresh that image yet.");
+    const featureImageUrl = input.isFeatureImage || target.imageIndex === 0 ? image.url : blog.featureImageUrl;
+    const mdx = replaceImageUrlInMdx({ mdx: blog.mdx, nextUrl: image.url, previousUrl: previous?.url || input.src });
+    const latest = await readLocalState();
+    await updateLocalState(latest.revision, (next) => {
+      const current = next.blogs.find((item) => item.id === blogId && item.productId === blog.productId);
+      if (!current || current.updatedAt !== blog.updatedAt) throw new Error("This article changed while the image was being made. Reload before trying again.");
+      return mutateBlog(next, "updateBlogImageMutation", { blogId, productId: blog.productId, imageIndex: target.imageIndex, image, featureImageUrl, mdx });
     });
-
-    if (!target) {
-      return NextResponse.json(
-        { error: "Add an image description before refreshing." },
-        { status: 400 },
-      );
-    }
-
-    const previousImage =
-      target.imageIndex !== null ? blog.images[target.imageIndex] : undefined;
-    const previousUrl = previousImage?.url || input.src;
-    const isFeatureImage =
-      input.isFeatureImage || target.imageIndex === 0;
-
-    if (hasBlogAiWorkerJob()) {
-      const jobId = await createBlogAiJob({
-        blogId,
-        input: {
-          convexAuthToken: token,
-          input: {
-            alt: target.alt,
-            currentFeatureImageUrl: blog.featureImageUrl,
-            imageIndex: target.imageIndex ?? undefined,
-            isFeatureImage,
-            mdx: blog.mdx,
-            previousUrl,
-            productId: input.productId,
-            prompt: target.prompt,
-            sectionHeading: previousImage?.sectionHeading,
-            sectionIndex: previousImage?.sectionIndex,
-          },
-          type: "blog.regenerateImage",
-          userId,
-        },
-        productId,
-        token,
-      });
-      const job = await waitForBlogAiJob({
-        jobId,
-        maximumWaitMs: imageRegenerationJobWaitMs,
-        token,
-      });
-
-      if (job?.status === "failed") {
-        throw new Error(job.error || "Could not refresh that image.");
-      }
-
-      return NextResponse.json(
-        {
-          jobId,
-          ...(job?.result && typeof job.result === "object" ? job.result : {}),
-          status: job?.status || "queued",
-        },
-        { status: job?.status === "succeeded" ? 200 : 202 },
-      );
-    }
-
-    const nextImage = await regenerateBlogImage({
-      alt: target.alt,
-      prompt: target.prompt,
-      sectionHeading: previousImage?.sectionHeading,
-      sectionIndex: previousImage?.sectionIndex,
-      token,
-      userId,
-    });
-
-    if (!nextImage) {
-      return NextResponse.json(
-        { error: "Could not refresh that image yet." },
-        { status: 502 },
-      );
-    }
-
-    const nextFeatureImageUrl = isFeatureImage
-      ? nextImage.url
-      : blog.featureImageUrl;
-    const nextMdx = replaceImageUrlInMdx({
-      mdx: blog.mdx,
-      nextUrl: nextImage.url,
-      previousUrl,
-    });
-
-    await fetchMutation(
-      updateBlogImageMutation,
-      {
-        blogId,
-        productId,
-        imageIndex: target.imageIndex ?? undefined,
-        image: nextImage,
-        featureImageUrl: nextFeatureImageUrl,
-        mdx: nextMdx,
-      },
-      { token },
-    );
-
-    return NextResponse.json({
-      image: nextImage,
-      featureImageUrl: nextFeatureImageUrl,
-      mdx: nextMdx,
-    });
-  } catch (error) {
-    logRouteError(error);
-
-    return NextResponse.json(
-      { error: getPublicErrorMessage(error) },
-      { status: getErrorStatus(error) },
-    );
-  }
+    return NextResponse.json({ image, featureImageUrl, mdx }, { headers: { "Cache-Control": "no-store" } });
+  });
+  } catch (error) { return localErrorResponse(error); }
 }

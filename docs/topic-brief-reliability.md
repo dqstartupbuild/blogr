@@ -1,5 +1,7 @@
 # Topic Brief Reliability
 
+> Historical implementation note: this page describes the former hosted implementation. Blogger now saves locally. See [Local Blogger application](local-application.md) for current behavior.
+
 ## Overview
 
 Finding a topic brief uses the durable background worker without accidentally starting the same long search twice. The route returns the completed brief when it is ready, or a background status while the worker finishes, instead of running into the web request limit and showing a generic error.

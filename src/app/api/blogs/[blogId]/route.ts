@@ -1,82 +1,18 @@
-import { fetchMutation, fetchQuery } from "convex/nextjs";
 import { NextResponse } from "next/server";
-import { getConvexAuthToken } from "@/server/auth/getConvexAuthToken";
-import { requireRouteUserId } from "@/server/auth/requireRouteUserId";
-import { castBlogId } from "@/server/convex/castBlogId";
-import { getBlogQuery } from "@/server/convex/references/getBlogQuery";
-import { updateBlogContentMutation } from "@/server/convex/references/updateBlogContentMutation";
-import { hasConvexUrl } from "@/server/convex/hasConvexUrl";
-import { getErrorStatus } from "@/server/http/getErrorStatus";
-import { getPublicErrorMessage } from "@/server/http/getPublicErrorMessage";
-import { logRouteError } from "@/server/http/logRouteError";
-import { PublicError } from "@/server/http/PublicError";
+import { assertLocalRequest } from "@/local/server/assertLocalRequest";
+import { readLocalJson } from "@/local/server/readLocalJson";
+import { readLocalState } from "@/local/server/readLocalState";
+import { updateLocalState } from "@/local/server/updateLocalState";
+import { mutateBlog } from "@/local/server/mutateBlog";
+import { localErrorResponse } from "@/local/server/localErrorResponse";
 import { blogUpdateRequestSchema } from "./schema";
-
-type BlogRouteContext = {
-  params: Promise<{ blogId: string }>;
-};
-
-export async function GET(_request: Request, context: BlogRouteContext) {
-  try {
-    await requireRouteUserId();
-
-    if (!hasConvexUrl()) {
-      throw new PublicError("Connect Convex before loading live blogs.", 503);
-    }
-
-    const token = await getConvexAuthToken();
-    const { blogId: rawBlogId } = await context.params;
-    const blogId = castBlogId(rawBlogId);
-    const blog = await fetchQuery(getBlogQuery, { blogId }, { token });
-
-    if (!blog) {
-      return NextResponse.json({ error: "Blog not found." }, { status: 404 });
-    }
-
-    return NextResponse.json({ blog });
-  } catch (error) {
-    logRouteError(error);
-
-    return NextResponse.json(
-      { error: getPublicErrorMessage(error) },
-      { status: getErrorStatus(error) },
-    );
-  }
+export const runtime = "nodejs";
+type Context = { params: Promise<{ blogId: string }> };
+export async function GET(request: Request, context: Context) {
+  try { assertLocalRequest(request); const { blogId } = await context.params; const state = await readLocalState(); const blog = state.blogs.find((item) => item.id === blogId); if (!blog) throw new Error("Article not found."); return NextResponse.json({ blog }, { headers: { "Cache-Control": "no-store" } }); }
+  catch (error) { return localErrorResponse(error); }
 }
-
-export async function PATCH(request: Request, context: BlogRouteContext) {
-  try {
-    await requireRouteUserId();
-
-    if (!hasConvexUrl()) {
-      throw new PublicError("Connect Convex before saving live blogs.", 503);
-    }
-
-    const token = await getConvexAuthToken();
-    const { blogId: rawBlogId } = await context.params;
-    const blogId = castBlogId(rawBlogId);
-    const body = await request.json();
-    const input = blogUpdateRequestSchema.parse(body);
-
-    await fetchMutation(
-      updateBlogContentMutation,
-      {
-        blogId,
-        excerpt: input.excerpt,
-        mdx: input.mdx,
-        seoTitle: input.seoTitle,
-        title: input.title,
-      },
-      { token },
-    );
-
-    return NextResponse.json({ saved: true });
-  } catch (error) {
-    logRouteError(error);
-
-    return NextResponse.json(
-      { error: getPublicErrorMessage(error) },
-      { status: getErrorStatus(error) },
-    );
-  }
+export async function PATCH(request: Request, context: Context) {
+  try { assertLocalRequest(request); const { blogId } = await context.params; const input = blogUpdateRequestSchema.parse(await readLocalJson(request)); const state = await readLocalState(); const blog = state.blogs.find((item) => item.id === blogId); if (!blog) throw new Error("Article not found."); await updateLocalState(state.revision, (next) => mutateBlog(next, "updateBlogContentMutation", { ...input, blogId, productId: blog.productId })); return NextResponse.json({ saved: true }, { headers: { "Cache-Control": "no-store" } }); }
+  catch (error) { return localErrorResponse(error); }
 }

@@ -5,6 +5,7 @@ export type TopicItem = {
   createdAt?: number;
   id: string;
   intentKey?: string;
+  lastError?: string;
   keyword: string;
   notes?: string;
   scheduledDate?: string;

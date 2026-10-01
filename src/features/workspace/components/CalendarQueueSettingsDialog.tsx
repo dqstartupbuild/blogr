@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { calendarQueueWeekdayLabels } from "../constants/calendarQueueWeekdayLabels";
 import type { CalendarQueueSettings } from "../types/CalendarQueueSettings";
 import type { CalendarQueueSettingsDraft } from "../types/CalendarQueueSettingsDraft";
@@ -17,6 +17,7 @@ type CalendarQueueSettingsDialogProps = {
   saveCalendarQueueSettings: SaveCalendarQueueSettings;
   settings: CalendarQueueSettings;
   stableSeed: string;
+  productUpdatedAt: number;
 };
 
 export const CalendarQueueSettingsDialog = ({
@@ -26,7 +27,9 @@ export const CalendarQueueSettingsDialog = ({
   saveCalendarQueueSettings,
   settings,
   stableSeed,
+  productUpdatedAt,
 }: CalendarQueueSettingsDialogProps) => {
+  const expectedUpdatedAt = useRef(productUpdatedAt).current;
   const [draft, setDraft] = useState(() =>
     buildCalendarQueueSettingsDraft(settings),
   );
@@ -59,10 +62,10 @@ export const CalendarQueueSettingsDialog = ({
     }
 
     try {
-      await saveCalendarQueueSettings(strictSettings);
+      await saveCalendarQueueSettings(strictSettings, expectedUpdatedAt);
       onClose();
-    } catch {
-      setMessage("Could not save the calendar queue.");
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "Could not save the calendar queue.");
     }
   };
 

@@ -1,5 +1,7 @@
 # Topic Discovery
 
+> Historical implementation note: this page describes the former hosted implementation. Blogger now saves locally. See [Local Blogger application](local-application.md) for current behavior.
+
 ## What It Does
 
 Topic Discovery helps users find blog topics inside the Topics tab. The user can click **Find topic ideas**, add an optional seed keyword, review a list of suggested topics, choose the ones they want, and save them.

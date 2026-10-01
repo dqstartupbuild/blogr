@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useVersionedDraft } from "../hooks/useVersionedDraft";
 import { Plug, Save, Trash2 } from "lucide-react";
 import { emptyBlogPublishingIntegration } from "../constants/emptyBlogPublishingIntegration";
 import type { BlogPublishingIntegration } from "../types/integrations/BlogPublishingIntegration";
@@ -19,8 +19,10 @@ type BlogPublishingIntegrationPanelProps = {
   productName: string;
   saveIntegration: (
     integration: BlogPublishingIntegrationDraft,
+    expectedUpdatedAt: number,
   ) => Promise<void> | void;
   statusMessage: string;
+  productUpdatedAt: number;
 };
 
 export const BlogPublishingIntegrationPanel = ({
@@ -29,13 +31,14 @@ export const BlogPublishingIntegrationPanel = ({
   productName,
   saveIntegration,
   statusMessage,
+  productUpdatedAt,
 }: BlogPublishingIntegrationPanelProps) => {
-  const [draft, setDraft] = useState<BlogPublishingIntegrationDraft>({
+  const { draft, setDraft, expectedUpdatedAt, hasConflict } = useVersionedDraft<BlogPublishingIntegrationDraft>({
     accessToken: "",
     enabled: integration.enabled,
     sourceName: integration.sourceName || "Blogr",
     webhookUrl: integration.webhookUrl,
-  });
+  }, productUpdatedAt);
 
   const handleRemove = async () => {
     await saveIntegration({
@@ -43,7 +46,7 @@ export const BlogPublishingIntegrationPanel = ({
       enabled: false,
       sourceName: draft.sourceName || "Blogr",
       webhookUrl: "",
-    });
+    }, expectedUpdatedAt);
     setDraft({
       accessToken: "",
       enabled: false,
@@ -55,6 +58,7 @@ export const BlogPublishingIntegrationPanel = ({
   return (
     <section className="rounded-lg border border-black/10 bg-white p-4 shadow-sm">
       <SectionTitle title="Publishing" />
+      {hasConflict ? <p className="mt-3 text-sm text-red-700" role="alert">Publishing settings changed on another tab. Your edits are still here. Reload to review them before saving.</p> : null}
       <div className="mt-5 grid gap-5">
         <BlogPublishingSetupGuide productName={productName} />
         <form
@@ -64,7 +68,7 @@ export const BlogPublishingIntegrationPanel = ({
             await saveIntegration({
               ...draft,
               enabled: true,
-            });
+            }, expectedUpdatedAt);
             setDraft((current) => ({
               ...current,
               accessToken: "",
@@ -90,23 +94,9 @@ export const BlogPublishingIntegrationPanel = ({
                 type="url"
                 value={draft.webhookUrl}
               />
-              <TextField
-                id="blog-publishing-access-token"
-                label="Access token"
-                onChange={(event) =>
-                  setDraft((current) => ({
-                    ...current,
-                    accessToken: event.target.value,
-                  }))
-                }
-                placeholder={
-                  integration.hasAccessToken
-                    ? "Token saved. Paste a new one to replace it."
-                    : "Paste the token from your receiving app."
-                }
-                type="password"
-                value={draft.accessToken}
-              />
+              <p className="text-sm leading-6 text-black/60">
+                Set <code>BLOG_PUBLISH_WEBHOOK_TOKEN</code> in the local server environment before publishing. The token stays outside your project and backup.
+              </p>
               <TextField
                 id="blog-publishing-source-name"
                 label="Publisher label"

@@ -32,7 +32,7 @@ export const BlogRow = ({
 
   return (
     <article
-      className={`grid min-w-0 gap-4 border-b border-black/10 bg-white p-4 text-black last:border-b-0 xl:grid-cols-[minmax(0,1.4fr)_minmax(160px,0.7fr)_120px_minmax(160px,0.8fr)_340px] xl:items-center ${
+      className={`grid min-w-0 gap-4 border-b border-black/10 bg-white p-4 text-black last:border-b-0 2xl:grid-cols-[minmax(220px,1.4fr)_minmax(150px,0.7fr)_110px_minmax(150px,0.8fr)_300px] 2xl:items-center ${
         isSelected ? "bg-black/5" : ""
       }`}
     >
@@ -45,7 +45,7 @@ export const BlogRow = ({
           <FileText size={18} aria-hidden="true" />
         </span>
         <span className="min-w-0">
-          <span className="block [overflow-wrap:anywhere] text-sm font-semibold leading-6">
+          <span className="block break-words text-sm font-semibold leading-6">
             {blog.title}
           </span>
           <span className="mt-1 block text-sm text-black/60">
@@ -54,7 +54,7 @@ export const BlogRow = ({
         </span>
       </button>
       <div>
-        <p className="mb-1 text-xs font-semibold text-black/50 xl:hidden">
+        <p className="mb-1 text-xs font-semibold text-black/50 2xl:hidden">
           Topic
         </p>
         <p className="line-clamp-2 [overflow-wrap:anywhere] text-sm leading-6 text-black/70">
@@ -62,18 +62,18 @@ export const BlogRow = ({
         </p>
       </div>
       <div>
-        <p className="mb-1 text-xs font-semibold text-black/50 xl:hidden">
+        <p className="mb-1 text-xs font-semibold text-black/50 2xl:hidden">
           Status
         </p>
         <StatusBadge status={blog.status} />
       </div>
       <div>
-        <p className="mb-1 text-xs font-semibold text-black/50 xl:hidden">
+        <p className="mb-1 text-xs font-semibold text-black/50 2xl:hidden">
           Dates
         </p>
         <ArticleDateSummary blog={blog} />
       </div>
-      <div className="flex flex-col gap-2 sm:flex-row xl:justify-end">
+      <div className="flex flex-col gap-2 sm:flex-row 2xl:justify-end">
         <Link
           className="inline-flex h-10 items-center justify-center gap-2 whitespace-nowrap rounded-md border border-black/15 bg-white px-4 text-sm font-semibold text-black shadow-sm transition hover:border-black hover:bg-black hover:text-white"
           href={`/blogs/${blog.id}`}
@@ -87,7 +87,7 @@ export const BlogRow = ({
           savePlan={savePlan}
         />
         <DeleteActionButton
-          confirmMessage="Delete this article? This cannot be undone."
+          confirmMessage="Delete this article and its saved versions from this computer? This cannot be undone."
           label="Delete"
           onDelete={() => deleteBlog(blog.id)}
         />

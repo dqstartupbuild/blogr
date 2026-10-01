@@ -1,5 +1,7 @@
 # Google Cloud AI Worker Job
 
+> Historical implementation note: this page describes the former hosted implementation. Blogger now saves locally. See [Local Blogger application](local-application.md) for current behavior.
+
 ## What It Does
 
 The Google Cloud AI worker moves expensive writing, planning, search briefing,

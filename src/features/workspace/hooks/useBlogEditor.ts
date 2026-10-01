@@ -1,15 +1,15 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { useMutation, useQuery } from "convex/react";
+import { useMemo, useRef, useState } from "react";
+import { useMutation, useQuery } from "@/local/client/hooks";
 import { isLiveWorkspaceEnabled } from "@/config/isLiveWorkspaceEnabled";
-import { castBlogId } from "@/server/convex/castBlogId";
-import { castProductId } from "@/server/convex/castProductId";
-import { getBlogQuery } from "@/server/convex/references/getBlogQuery";
-import { updateBlogContentMutation } from "@/server/convex/references/updateBlogContentMutation";
-import { updateBlogImagesMutation } from "@/server/convex/references/updateBlogImagesMutation";
+import { castBlogId } from "@/local/client/castBlogId";
+import { castProductId } from "@/local/client/castProductId";
+import { getBlogQuery } from "@/local/client/references/getBlogQuery";
+import { updateBlogContentMutation } from "@/local/client/references/updateBlogContentMutation";
+import { updateBlogImagesMutation } from "@/local/client/references/updateBlogImagesMutation";
 import { demoBlogs } from "../constants/demoBlogs";
-import { mapConvexBlog } from "../mappers/mapConvexBlog";
+import { mapLocalBlog } from "../mappers/mapLocalBlog";
 import type { BlogEditorState } from "../types/BlogEditorState";
 import type { UpdateBlogImages } from "../types/UpdateBlogImages";
 
@@ -25,8 +25,8 @@ export const useBlogEditor = ({
   forceDemo,
 }: UseBlogEditorOptions) => {
   const isLive = !forceDemo && isLiveWorkspaceEnabled();
-  const convexBlogId = castBlogId(blogId);
-  const convexProductId = activeWorkspaceId
+  const localBlogId = castBlogId(blogId);
+  const localProductId = activeWorkspaceId
     ? castProductId(activeWorkspaceId)
     : null;
   const fallbackBlog = useMemo(
@@ -38,8 +38,8 @@ export const useBlogEditor = ({
   );
   const liveBlog = useQuery(
     getBlogQuery,
-    isLive && convexProductId
-      ? { blogId: convexBlogId, productId: convexProductId }
+    isLive && localProductId
+      ? { blogId: localBlogId, productId: localProductId }
       : "skip",
   );
   const updateBlogContent = useMutation(updateBlogContentMutation);
@@ -65,12 +65,14 @@ export const useBlogEditor = ({
     title: fallbackBlog?.title || "",
   });
   const [isDirty, setIsDirty] = useState(false);
+  const editBaseUpdatedAt = useRef<number | null>(null);
   const [message, setMessage] = useState("");
   const [isSaving, setIsSaving] = useState(false);
   const editorState = isDirty ? state : liveState;
-  const blog = liveBlog ? mapConvexBlog(liveBlog) : fallbackBlog;
+  const blog = liveBlog ? mapLocalBlog(liveBlog) : fallbackBlog;
 
   const updateField = (field: keyof BlogEditorState, value: string) => {
+    if (!isDirty) editBaseUpdatedAt.current = liveBlog?.updatedAt ?? null;
     setIsDirty(true);
     setState((current) => ({
       ...(isDirty ? current : editorState),
@@ -88,20 +90,23 @@ export const useBlogEditor = ({
         return;
       }
 
-      if (!convexProductId) {
+      if (!localProductId) {
         setMessage("Choose a workspace first.");
         return;
       }
 
       await updateBlogContent({
-        blogId: convexBlogId,
+        blogId: localBlogId,
         excerpt: editorState.excerpt,
         mdx: editorState.mdx,
-        productId: convexProductId || undefined,
+        productId: localProductId || undefined,
         seoTitle: editorState.seoTitle,
         title: editorState.title,
+        expectedBlogUpdatedAt: editBaseUpdatedAt.current ?? liveBlog?.updatedAt,
       });
 
+      setIsDirty(false);
+      editBaseUpdatedAt.current = null;
       setMessage("Saved.");
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "Could not save yet.");
@@ -129,7 +134,7 @@ export const useBlogEditor = ({
       return;
     }
 
-    if (!convexProductId) {
+    if (!localProductId) {
       throw new Error("Choose a workspace first.");
     }
 
@@ -182,18 +187,20 @@ export const useBlogEditor = ({
       return;
     }
 
-    if (!convexProductId) {
+    if (!localProductId) {
       throw new Error("Choose a workspace first.");
     }
 
     try {
-      await updateBlogImagesRecord({
-        blogId: convexBlogId,
+      const saved = await updateBlogImagesRecord({
+        blogId: localBlogId,
         featureImageUrl: changes.featureImageUrl,
         images: changes.images,
         mdx: changes.mdx,
-        productId: convexProductId,
+        productId: localProductId,
+        expectedBlogUpdatedAt: isDirty ? editBaseUpdatedAt.current : blog.updatedAt,
       });
+      if (isDirty) editBaseUpdatedAt.current = saved.updatedAt;
     } catch (error) {
       setMessage(
         error instanceof Error ? error.message : "Could not update that image.",

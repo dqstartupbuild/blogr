@@ -1,103 +1,44 @@
 # Blogr
 
-Blogr is a simple Next.js workspace for turning saved keywords into longform MDX blog posts for a user's niche.
+Blogr is a local workspace for planning topics and writing longform MDX articles. Projects, topic lists, calendar dates, articles, versions, settings, and managed images are saved on your computer. No account or hosted database is needed. Website scanning, topic research, AI writing, image generation, and webhook publishing use optional outside services when you configure their keys.
 
-The app uses Clerk for auth, Convex for data, Firecrawl for website and web research, Apify for Google topic discovery, Replicate for the writer and image models, Cloudflare R2 for stored images, and OpenAI embeddings for product context retrieval.
+## Local setup
 
-## Project
+1. Install dependencies in this repository: `npm install`.
+2. Copy `.env.example` to `.env.local` and add only the provider keys you want to use.
+3. Start the local server: `npm run dev`.
+4. Open [http://127.0.0.1:3000](http://127.0.0.1:3000). Create a project to begin.
 
-- Blogr's software is available under the [MIT License](LICENSE).
-- The Blogr name, logo, icons, and other brand assets are not covered by the MIT License. See the [branding policy](BRANDING.md).
-- [Security policy](SECURITY.md)
-- [Contributing guide](CONTRIBUTING.md)
-- [Code of conduct](CODE_OF_CONDUCT.md)
+The server binds to `127.0.0.1`. Data is stored under `~/.blogr` by default. Set `BLOGR_HOME` to another folder before starting if you want a different location. Closing and reopening the server does not remove your work. In Settings, download a ZIP backup of every local project and its managed images; importing a backup replaces the current local work after confirmation. Deleting a project removes its topics, articles, and versions from this computer. The backup format is version 1.
 
-## Local Setup
+For a built local installation, set `BLOGR_MODE=local-production` in `.env.local`, then run `npm run build` and `npm run start`. Both development and production are local device modes. `BLOGR_MODE` accepts `local-development`, `local-production`, or `test`; invalid values fail startup. Production also fails when the mode is missing or set to `local-development`. Test mode requires an isolated `BLOGR_HOME`. No hosted mode or account fallback exists.
 
-```bash
-npm install
-cp .env.example .env.local
-npm run dev
-```
+## Optional services
 
-Open [http://localhost:3000](http://localhost:3000).
+- `FIRECRAWL_API_KEY` scans a product site and refreshes links.
+- `APIFY_TOKEN` supports Google topic discovery and research.
+- `REPLICATE_API_TOKEN`, `REPLICATE_WRITER_MODEL`, `REPLICATE_IMAGE_PLANNER_MODEL`, and `REPLICATE_IMAGE_MODEL` support AI writing and images.
+- `YOUTUBE_API_KEY` and `EXA_API_KEY` are optional video research providers.
+- `BLOG_PUBLISH_WEBHOOK_URL`, `BLOG_PUBLISH_WEBHOOK_TOKEN`, and `BLOG_PUBLISH_SOURCE_NAME` configure a publishing receiver. `BLOG_PUBLISH_WEBHOOK_TOKENS` can instead provide a JSON map from local project UUIDs to separate tokens; the project token takes priority over the global token. A product can override the URL and source name in Settings. Keep tokens in the server environment. Articles with images stored only on this computer cannot be sent to a remote receiver through the current webhook contract; download the article ZIP, upload its images to the destination, and replace local image URLs in the article before publishing.
 
-Without keys, the workspace shows a local demo layout. With Clerk and Convex public env vars set, it switches to the live workspace.
+Provider keys are kept in the server environment and are never included in a workspace backup. Manual project setup, topic and calendar editing, blank article creation, article editing, ZIP export, and backups work without these services. Scanning, research, generation, and publishing require network access and the relevant key.
 
-## Credentials Needed
+The optional [Convex-to-local migration command](docs/convex-to-local-migration.md) converts a verified account export and downloaded R2 media into a separate local staging folder. It never installs data into the active local home automatically. Keep the original export until the staged records and images are verified.
 
-- `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`
-- `CLERK_SECRET_KEY`
-- `CLERK_JWT_ISSUER_DOMAIN`
-- `NEXT_PUBLIC_CONVEX_URL`
-- `REPLICATE_API_TOKEN`
-- `REPLICATE_WRITER_MODEL`
-- `REPLICATE_IMAGE_PLANNER_MODEL`
-- `REPLICATE_IMAGE_MODEL`
-- `OPENAI_API_KEY` for Convex RAG embeddings
-- `FIRECRAWL_API_KEY`
-- `APIFY_TOKEN`
-- `YOUTUBE_API_KEY` optional
-- `EXA_API_KEY` optional video search fallback
-- `BLOG_AI_WORKER_JOB_PROJECT_ID` optional Google Cloud project for the AI worker job
-- `BLOG_AI_WORKER_JOB_LOCATION` optional Google Cloud region for the AI worker job
-- `BLOG_AI_WORKER_JOB_NAME` optional Cloud Run Job name
-- `BLOG_AI_WORKER_DISPATCH_CLIENT_EMAIL` optional dispatcher service account email
-- `BLOG_AI_WORKER_DISPATCH_PRIVATE_KEY` optional dispatcher service account private key
-- `BLOG_AI_WORKER_SECRET` shared secret for the Google Cloud AI worker
-- `BLOG_AI_WORKER_ONLY=true` for the Cloud Run worker service image
-- `BLOG_PUBLISH_WEBHOOK_URL` optional fallback blog publishing destination
-- `BLOG_PUBLISH_WEBHOOK_TOKEN` optional fallback blog publishing token
-- `BLOG_PUBLISH_SOURCE_NAME` optional fallback publishing source label
-- `BLOG_PUBLISH_TIMEOUT_MS` optional publishing request timeout
+## Project information
 
-Set `AUTH_DISABLED_FOR_PREVIEW=true` only for local preview work. Keep it false in production.
-
-Blog publishing is normally configured per product from the Settings tab. The blog publishing env vars are only needed when you want one deployment-level fallback destination.
-
-## Convex Setup
-
-Run this after creating the Convex project:
-
-```bash
-npx convex dev
-```
-
-This will replace the local `convex/_generated` shim with the fully typed generated API.
-
-Set component credentials on the Convex deployment when using stored images or product context retrieval. The same R2 credentials also need to exist on the Vercel/Next.js deployment so long-running routes can store generated images directly when Convex auth is unavailable:
-
-```bash
-npx convex env set OPENAI_API_KEY <openai-api-key>
-npx convex env set R2_TOKEN <token>
-npx convex env set R2_ACCESS_KEY_ID <access-key-id>
-npx convex env set R2_SECRET_ACCESS_KEY <secret-access-key>
-npx convex env set R2_ENDPOINT <endpoint>
-npx convex env set R2_BUCKET <bucket>
-```
-
-## Feature Docs
-
+- [Local application storage and access](docs/local-application.md)
+- [Convex-to-local migration](docs/convex-to-local-migration.md)
 - [Product website ingestion](docs/product-website-ingestion.md)
-- [Product link management](docs/product-link-management.md)
 - [Topic workspace](docs/topic-workspace.md)
-- [Topic discovery](docs/topic-discovery.md)
 - [Content calendar](docs/content-calendar.md)
 - [Blog generation workflow](docs/blog-generation-workflow.md)
 - [Article version history](docs/article-version-history.md)
-- [Associate brand links](docs/associate-brand-links.md)
-- [Article image planning agent](docs/article-image-planning-agent.md)
-- [Google Cloud AI worker](docs/google-cloud-ai-worker.md)
-- [RAG product context](docs/rag-product-context.md)
-- [Blog generation reliability](docs/blog-generation-reliability.md)
 - [Blog editor](docs/blog-editor.md)
+- [Start a blank article](docs/manual-article-creation.md)
 - [Blog webhook publishing](docs/blog-webhook-publishing.md)
-- [Blogr publishing receiver skill](docs/blogr-publishing-receiver-skill.md)
-- [Target app blog publishing brief](docs/target-app-blog-publishing-brief.md)
-- [Zip export](docs/zip-export.md)
-- [Auth](docs/auth.md)
-- [Convex data](docs/convex-data.md)
-- [Security hardening](docs/security-hardening.md)
-- [Theme](docs/theme.md)
-
-The in-app version of the publishing setup guide is available from **Settings** > **Publishing** for the active product.
+- [ZIP export](docs/zip-export.md)
+- [MIT License](LICENSE)
+- [Branding policy](BRANDING.md)
+- [Security policy](SECURITY.md)
+- [Contributing guide](CONTRIBUTING.md)

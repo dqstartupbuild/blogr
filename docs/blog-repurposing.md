@@ -1,5 +1,7 @@
 # Blog Repurposing
 
+> Historical implementation note: this page describes the former hosted implementation. Blogger now saves locally. See [Local Blogger application](local-application.md) for current behavior.
+
 ## What It Does
 
 Blog repurposing lets a user start from existing text instead of a blank topic.

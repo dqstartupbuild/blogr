@@ -90,7 +90,7 @@ export const BlogPreviewPanel = ({
           {isSummary ? null : <BlogZipButton blog={blog} />}
           {deleteBlog ? (
             <DeleteActionButton
-              confirmMessage="Delete this article? This cannot be undone."
+              confirmMessage="Delete this article and its saved versions from this computer? This cannot be undone."
               label="Delete"
               onDelete={async () => {
                 await deleteBlog(blog.id);

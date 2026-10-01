@@ -1,5 +1,7 @@
 # Convex Read Models
 
+> Historical implementation note: this page describes the former hosted implementation. Blogger now saves locally. See [Local Blogger application](local-application.md) for current behavior.
+
 ## What It Does
 
 The workspace uses small Convex read-model tables for screens that only need list rows, filter options, workspace names, or dashboard totals. This keeps common reads from pulling full article bodies, raw product scan context, image arrays, and link arrays.

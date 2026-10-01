@@ -10,7 +10,7 @@ export const blogItemSchema = z.object({
   images: z.array(blogImageSchema).default([]),
   internalLinks: z.array(linkItemSchema).default([]),
   keyword: z.string(),
-  mdx: z.string(),
+  mdx: z.string().max(5_000_000),
   productId: z.string().optional(),
   publishedAt: z.number().optional(),
   slug: z.string(),

@@ -1,5 +1,7 @@
 # Blog Publication Timestamps
 
+> Historical implementation note: this page describes the former hosted implementation. Blogger now saves locally. See [Local Blogger application](local-application.md) for current behavior.
+
 ## Overview
 
 Articles now show three separate dates: Created, Updated, and Published. This makes it clear when an article was first made, when it last changed, and when it first went live.

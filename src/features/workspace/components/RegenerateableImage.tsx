@@ -5,6 +5,7 @@ import { ImageActionsMenu } from "./ImageActionsMenu";
 import { ImageAltTextDialog } from "./ImageAltTextDialog";
 import { ImagePromptDialog } from "./ImagePromptDialog";
 import { ImageRepositionDialog } from "./ImageRepositionDialog";
+import { LocalConfirmDialog } from "./LocalConfirmDialog";
 import { useBlogImageActions } from "../hooks/useBlogImageActions";
 import { useImageRegenerationPrompt } from "../hooks/useImageRegenerationPrompt";
 import type { BlogImageItem } from "../types/BlogImageItem";
@@ -145,6 +146,7 @@ export const RegenerateableImage = ({
         onMove={imageActions.saveMove}
         sectionHeadings={imageActions.sectionHeadings}
       />
+      {imageActions.isRemoveDialogOpen ? <LocalConfirmDialog actionLabel="Remove image" busy={imageActions.isSaving} description="Remove this image from the article on this computer? The article text and image list will be updated." onCancel={imageActions.cancelRemove} onConfirm={imageActions.confirmRemove} title="Remove image" /> : null}
       {imageRegeneration.error || imageActions.error ? (
         <p className="text-xs font-medium text-red-600">
           {imageRegeneration.error || imageActions.error}

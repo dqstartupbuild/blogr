@@ -12,45 +12,34 @@ import { writeBlogDraft } from "./writeBlogDraft";
 import { normalizeBlogGenerationSettings } from "@/features/workspace/utils/normalizeBlogGenerationSettings";
 import { filterActiveLinks } from "@/features/workspace/utils/filterActiveLinks";
 import type { BlogGenerationSettings } from "@/features/workspace/types/BlogGenerationSettings";
-import { searchProductRagContext } from "../rag/searchProductRagContext";
 import type { GeneratedBlog } from "./types/GeneratedBlog";
 import type { StoredProduct } from "./types/StoredProduct";
 
 type GenerateBlogForKeywordOptions = {
   blogGenerationSettings?: BlogGenerationSettings;
-  convexAuthToken?: string;
   keyword: string;
   product: StoredProduct;
   productId?: string;
   sourceText?: string;
   topicBrief?: string;
-  userId?: string;
 };
 
 export const generateBlogForKeyword = async ({
   blogGenerationSettings,
-  convexAuthToken,
   keyword,
   product,
-  productId,
   sourceText,
   topicBrief,
-  userId,
 }: GenerateBlogForKeywordOptions): Promise<GeneratedBlog> => {
   const normalizedKeyword = normalizeBlogKeyword(keyword) || keyword.trim();
   const settings = normalizeBlogGenerationSettings(
     blogGenerationSettings || product.blogGenerationSettings,
   );
-  const [sources, youtubeVideos, productRagContext] = await Promise.all([
+  const [sources, youtubeVideos] = await Promise.all([
     runBlogResearch(normalizedKeyword),
     settings.youtubeVideo
       ? findYoutubeVideos(normalizedKeyword)
       : Promise.resolve([]),
-    searchProductRagContext({
-      productId,
-      query: normalizedKeyword,
-      token: convexAuthToken,
-    }),
   ]);
   const activeSiteLinks = filterActiveLinks(product.siteLinks || []);
   const internalLinks = chooseInternalLinks({
@@ -65,7 +54,7 @@ export const generateBlogForKeyword = async ({
     internalLinks,
     keyword: normalizedKeyword,
     product,
-    productRagContext,
+    productRagContext: "",
     settings,
     sourceText,
     topicBrief,
@@ -83,11 +72,7 @@ export const generateBlogForKeyword = async ({
   const images = await generateBlogImages({
     prompts: imagePrompts,
   });
-  const storedImages = await storeGeneratedBlogImages({
-    images,
-    token: convexAuthToken,
-    userId,
-  });
+  const storedImages = await storeGeneratedBlogImages({ images });
   const mdx = applyBlogImagesToMdx({
     images: storedImages,
     mdx: textBlog.mdx,
