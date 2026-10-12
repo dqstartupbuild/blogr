@@ -28,8 +28,7 @@ export async function POST(request: Request) {
         : null
       : configured;
     if (!destination) throw new Error("Set BLOG_PUBLISH_WEBHOOK_URL and BLOG_PUBLISH_WEBHOOK_TOKEN before publishing.");
-    if (blog.images.some((image) => image.url.startsWith("/api/local/")) || blog.featureImageUrl?.startsWith("/api/local/") || blog.mdx.includes("/api/local/media/")) throw new Error("This article has images saved only on this computer. Export it or use a publishing receiver that accepts uploaded images.");
-    const message = await sendBlogPublishWebhook(buildBlogPublishPayload(blog, getBlogPublishEventType(blog), destination.sourceName), destination);
+    const message = await sendBlogPublishWebhook(await buildBlogPublishPayload(blog, getBlogPublishEventType(blog), destination.sourceName), destination);
     try {
       const latest = await readLocalState();
       await updateLocalState(latest.revision, (next) => {

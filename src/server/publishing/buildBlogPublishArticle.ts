@@ -2,17 +2,19 @@ import type { BlogItem } from "@/features/workspace/types/BlogItem";
 import { buildBlogPublishTags } from "./buildBlogPublishTags";
 import { getBlogPublishImageUrl } from "./getBlogPublishImageUrl";
 import { getBlogPublishSource } from "./getBlogPublishSource";
+import type { BlogPublishMedia } from "./buildBlogPublishMedia";
 import type { BlogPublishArticle } from "./types/BlogPublishArticle";
 
 type BuildBlogPublishArticleOptions = {
   createdAt: string;
   sourceName?: string;
   updatedAt: string;
+  media: BlogPublishMedia[];
 };
 
 export const buildBlogPublishArticle = (
   blog: BlogItem,
-  { createdAt, sourceName, updatedAt }: BuildBlogPublishArticleOptions,
+  { createdAt, sourceName, updatedAt, media }: BuildBlogPublishArticleOptions,
 ): BlogPublishArticle => {
   return {
     content_format: "mdx",
@@ -22,6 +24,7 @@ export const buildBlogPublishArticle = (
     created_at: createdAt,
     id: blog.id,
     image_url: getBlogPublishImageUrl(blog),
+    ...(media.length ? { media } : {}),
     meta_description: blog.excerpt,
     seo_title: blog.seoTitle || blog.title,
     slug: blog.slug,

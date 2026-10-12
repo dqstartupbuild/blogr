@@ -9,7 +9,7 @@ When the Blogr source checkout is available, inspect the current sender before c
 - `convex/products/publishBlogWithIntegration.ts`
 - `src/features/workspace/constants/publishing/blogPublishingPayloadExample.ts`
 - `src/features/workspace/utils/buildBlogPublishingIntegrationPrompt.ts`
-- `src/server/publishing/buildBlogPublishArticle.ts` and `src/server/publishing/getBlogPublishImageUrl.ts`
+- `src/server/publishing/buildBlogPublishArticle.ts`, `src/server/publishing/buildBlogPublishMedia.ts`, and `src/server/publishing/getBlogPublishImageUrl.ts`
 
 These paths are in Blogr, not the receiving app. A separately installed skill can use this bundled contract and its fixtures for a fresh setup; do not block because the target lacks Blogr's source files. If observed payloads differ, obtain the sender version or supplied payload before changing the contract. Fixtures in `assets/fixtures/` are test inputs and should be checked against the sender when available.
 
@@ -44,6 +44,8 @@ The current sender requires:
 - `content_format`, currently the literal `mdx`
 - `content_markdown`, `content_mdx`, and `content_html`
 - `image_url`, `tags`, `source`, `created_at`, and `updated_at`
+
+Articles can also include an optional `media` array for files stored on the sender's computer. Each media item contains `source_url`, `content_type`, and base64-encoded `data_base64`. The `source_url` is an exact reference such as `/api/local/media/<uuid>.jpg`, not a URL the receiver can fetch. Validate the item count, decoded byte limit, declared raster MIME type, and byte signature. Upload the bytes to target-owned storage, then replace exact references in `image_url`, frontmatter, and Markdown images in both body fields before saving. Do not make an outbound request to a local source URL. Keep handling existing public image URLs as before.
 
 Map `id` to a stable `sourceId`. Store visible title and SEO title separately. Use `content_mdx` as the body, with `content_markdown` as fallback. `content_html` is a supplied compatibility field, not a trusted rendering shortcut; do not render it unsanitized or prefer it over the controlled Markdown path. `source` is a sending-app label, not an author.
 

@@ -30,6 +30,7 @@ ${blogPublishingPayloadExample}
 Contract:
 - Validate event_type, timestamp, data, and every article. publish_articles uses a non-empty data.articles array; update_article uses data.article.
 - The sender requires content_html for compatibility, but content_mdx is the body source of truth with content_markdown fallback. Never use content_html as an unsanitized rendering shortcut.
+- Articles may include a media array for images stored on the sender's computer. Each item has source_url, content_type, and data_base64. Validate the raster signature and size, upload the bytes to target-owned storage, then replace exact source_url references in image_url and both body fields with the durable target URL before writing the article. Do not fetch a /api/local/ URL from the network.
 - Blogr allows 15 seconds for the complete webhook response. Bound article count, image count, bytes, media concurrency, per-download timeouts, and total work. Reject over-limit batches before side effects.
 - Return 200 with { "message": "Published." } only after images and database records are durable. Do not acknowledge early unless the sender contract is deliberately changed for durable asynchronous receipt.
 - Match stable Blogr id first. Fall back to slug only for a legacy record without a source ID. If the slug belongs to a different established source ID, reject the whole request with 409 and overwrite nothing.
@@ -50,7 +51,7 @@ Route and Convex:
 - Use indexed source ID and slug lookups and cursor pagination where results can grow.
 
 R2:
-- Copy image_url, Markdown images in both body fields, and frontmatter featureImage before saving. Rewrite every stored reference to a target-owned object key or stable serving URL.
+- Copy inline media bytes, public image_url values, Markdown images in both body fields, and frontmatter featureImage before saving. Rewrite local source_url references and every other image reference to a target-owned object key or stable serving URL.
 - An empty image_url is valid when Blogr has no feature image: skip that download and save no feature image, while processing body/frontmatter images normally. Reject non-empty malformed URLs.
 - Preserve existing env names. Typical S3-compatible values are R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_ENDPOINT, and R2_BUCKET; an existing R2_BUCKET_NAME or equivalent does not need renaming.
 - Cloudflare creates the S3 key pair through its R2 API-token interface. A runtime env var named R2_TOKEN is not required unless this app already uses one for another purpose.

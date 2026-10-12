@@ -28,7 +28,7 @@ The sender includes `event_type`, `timestamp`, and `data`, and requires `content
 
 These source paths belong to Blogr, not the target app. A fresh target installation uses the bundled contract and fixtures when it has no Blogr checkout.
 
-Blogr can send an empty `image_url` when no feature image exists. The receiver skips that download and still handles body/frontmatter images.
+Blogr can send an empty `image_url` when no feature image exists. The receiver skips that download and still handles body/frontmatter images. Local Blogr also sends locally stored images as optional `media` items with a source reference, raster MIME type, and base64 bytes. The receiver must copy those bytes into target-owned storage and rewrite the matching article references. Current limits are 20 files and 10 MB combined per article.
 
 ## Task-Routed References
 

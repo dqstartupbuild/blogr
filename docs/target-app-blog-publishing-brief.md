@@ -50,6 +50,8 @@ The entrypoint routes tasks to only the needed references. Repo ingestion is not
 
 Blogr sends `publish_articles` with `data.articles` and `update_article` with `data.article`. The sender also includes `timestamp`. Current article validators include `content_html`, but the receiver must use the controlled Markdown path rather than trusting that HTML.
 
+Local Blogr can include a `media` array on each article. Each item has `source_url`, `content_type`, and base64-encoded `data_base64`. These are image files stored on the sending computer. Validate count, decoded size, MIME type, and raster signature, upload bytes to target-owned storage, and replace matching references in `image_url`, frontmatter, and Markdown body fields before saving. Never fetch a `/api/local/media/` URL. The current sender limit is 20 images and 10 MB combined per article.
+
 Blogr waits 15 seconds for the full response. The receiver must bound batch size, image count, media concurrency, per-image bytes, and timeouts. It returns success only after images and database records are durable.
 
 Stable source ID wins. Slug fallback is limited to legacy rows without an established source ID. A slug owned by another source ID returns `409` instead of overwriting unrelated content.
