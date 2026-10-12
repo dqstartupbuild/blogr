@@ -6,7 +6,7 @@ import { getLocalHome } from "@/local/server/getLocalHome";
 
 const localMediaPattern = /\/api\/local\/media\/([a-f0-9-]{36}\.(?:png|jpg|webp|gif))/g;
 const maxMediaCount = 20;
-const maxTotalBytes = 10 * 1024 * 1024;
+const maxTotalBytes = 2 * 1024 * 1024;
 
 export type BlogPublishMedia = {
   content_type: "image/gif" | "image/jpeg" | "image/png" | "image/webp";
